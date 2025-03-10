@@ -1,0 +1,7 @@
+{
+    "name": "128-project",
+    "dependencies": {
+        "mongoose": "^8.12.1"
+    },
+    "type": "module"
+}
