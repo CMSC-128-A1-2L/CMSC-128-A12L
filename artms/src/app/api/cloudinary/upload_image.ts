@@ -1,14 +1,15 @@
-import { v2 as cloudinary } from "cloudinary";
-import {}
 
+import { v2 as cloudinary } from "cloudinary";
 import dotenv from "dotenv";
+
 import { NextApiRequest, NextApiResponse } from "next";
+import { NextRequest } from "next/server";
 
 dotenv.config()
 
 
 cloudinary.config({
-    cloud_name: process.env.CLOUD_NAME,
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET
 });
@@ -48,9 +49,9 @@ const uploader = cloudinary.uploader;
 //         })
 
 //     }
-}
+// }
 
-async function uploadImage(imageString: string) {
+async function uploadImage(fileBuffer: Buffer) {
     console.log("Uploading image to cloudinary.");
 
 
@@ -59,21 +60,14 @@ async function uploadImage(imageString: string) {
     };
 
     try {
-        let uploadString = `data:image/png;base64,${imageString}`;
-        let imageUpload_result = await uploader.upload(
-            uploadString,
-            tags
-        );
-
-        console.log("Successfully uploaded image to cloudinary.");
-        return(imageUpload_result);
-        
+      
+    
     } catch (err) {
         console.log("There was an error uploading the image:", err);
         return(err);
     }
 }
 
-// export {
-//     uploadImageEndpoint
-// }
+export {
+  uploadImage
+}
