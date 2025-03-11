@@ -1,20 +1,30 @@
 {
-  "name": "cmsc-128-a12l",
-  "version": "1.0.0",
-  "description": "## Overview   This repository hosts the web application for **CMSC 128 Section A1-2L**.",
-  "main": "index.js",
-  "type": "module",
+  "name": "artms",
+  "version": "0.1.0",
+  "private": true,
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "npx tsc && node dist/main.js"
+    "dev": "next dev --turbopack",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
   },
-  "author": "",
-  "license": "ISC",
   "dependencies": {
+    "cloudinary": "^2.5.1",
+    "dotenv": "^16.4.7",
     "mongoose": "^8.12.1",
-    "typescript": "^5.8.2"
+    "next": "15.2.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "ts-node": "^10.9.2"
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "15.2.1",
+    "tailwindcss": "^4",
+    "typescript": "^5"
   }
 }
