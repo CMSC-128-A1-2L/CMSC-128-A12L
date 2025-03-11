@@ -7,8 +7,8 @@ import mongoose, { Schema, Document, model } from 'mongoose';
 interface IAddress extends Document {
   addressId: mongoose.Types.ObjectId; //pkey, required
   alumniID?: mongoose.Types.ObjectId; // fkey
-  unitNumber?: string;
-  street?: string;
+  unitNumber?: string; 
+  street?: string; 
   districtMunicipality?: string;
   city?: string;
   stateProvince?: string;
@@ -27,7 +27,7 @@ const AddressSchema = new Schema<IAddress>(
     stateProvince: { type: String},
     country: { type: String, required: true },
   },
-
+   {timestamps: true}
 );
 
 

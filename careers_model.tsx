@@ -36,6 +36,8 @@ const CareerSchema = new Schema<ICareer>(
     endDate: { type: Date },
     tags: { type: [String], default: [] },
   }
+  , {timestamps: true}
+
 );
 
 
