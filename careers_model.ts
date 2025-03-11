@@ -42,6 +42,8 @@ const CareerSchema = new Schema<ICareer>(
 
 
 
+
+
 //  career model
 const Career = model<ICareer>('Career', CareerSchema);
 
