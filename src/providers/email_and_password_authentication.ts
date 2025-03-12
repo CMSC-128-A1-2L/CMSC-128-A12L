@@ -49,6 +49,8 @@ export class EmailAndPasswordAuthenticationProvider {
      * 
      * @param userRepository The user repository to use for the service.
      * @param userEmailCredentialsRepository The user credentials repository to use for the service.
+     * @param passwordEncryptionProvider The password encryption provider to use for the service.
+     * @param userIdProvider The user id provider to use for the service.
      */
     constructor(
         @inject("UserRepository") userRepository: UserRepository,
