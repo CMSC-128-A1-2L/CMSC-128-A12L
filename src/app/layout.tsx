@@ -26,6 +26,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // TODO: Use environment variables to determine if we need an in-memory repository or a database repository.
+  // Doesn't matter right now since we don't have a database repository just yet.
   container.registerSingleton<UserRepository>(InMemoryUserRepository);
 
   return (
