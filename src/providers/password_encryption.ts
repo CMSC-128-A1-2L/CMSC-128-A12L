@@ -6,7 +6,7 @@ import { injectable } from "tsyringe";
  * 
  * This is turned into an interface for testability purposes.
  **/
-export interface PasswordEncryptionService {
+export interface PasswordEncryptionProvider {
     /**
      * Encrypts a password.
      * 
@@ -32,7 +32,7 @@ export interface PasswordEncryptionService {
  * used for mocking purposes.
  **/
 @injectable()
-export class BcryptPasswordEncryptionService implements PasswordEncryptionService {
+export class BcryptPasswordEncryptionProvider implements PasswordEncryptionProvider {
     encrypt(password: string): string {
         const salt = bcrypt.genSaltSync();
         const encryptedPassword = bcrypt.hashSync(password, salt);
