@@ -29,8 +29,8 @@ export default function RootLayout({
 }>) {
   // TODO: Use environment variables to determine if we need an in-memory repository or a database repository.
   // Doesn't matter right now since we don't have a database repository just yet.
-  container.registerSingleton<UserRepository>(InMemoryUserRepository);
-  container.registerSingleton<UserEmailCredentialsRepository>(InMemoryUserEmailCredentialsRepository);
+  container.registerSingleton<UserRepository>("UserRepository", InMemoryUserRepository);
+  container.registerSingleton<UserEmailCredentialsRepository>("UserEmailCredentialsRepository", InMemoryUserEmailCredentialsRepository);
 
   return (
     <html lang="en">
