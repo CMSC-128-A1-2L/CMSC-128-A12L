@@ -7,7 +7,7 @@ export type User = {
      * 
      * @todo Check if we need a better id data type like UUID.
      */
-    id: string;
+    id?: string;
 
     /**
      * The first name of the user.
