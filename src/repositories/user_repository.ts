@@ -11,6 +11,7 @@ export interface UserRepository {
     deleteUser(id: string): Promise<void>;
 }
 
+@injectable()
 export class InMemoryUserRepository implements UserRepository {
     private users: { [id: string]: User } = {};
 

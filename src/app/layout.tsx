@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
+import 'reflect-metadata';
+import { container } from "tsyringe";
+import { InMemoryUserRepository, UserRepository } from "@/repositories/user_repository";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -22,6 +26,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  container.registerSingleton<UserRepository>(InMemoryUserRepository);
+
   return (
     <html lang="en">
       <body
