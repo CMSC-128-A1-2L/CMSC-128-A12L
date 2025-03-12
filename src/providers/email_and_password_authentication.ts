@@ -13,7 +13,7 @@ import { inject, injectable } from "tsyringe";
 export class EmailAndPasswordAuthenticationProvider {
     private userRepository: UserRepository;
     private userEmailCredentialsRepository: UserEmailCredentialsRepository
-    private passwordEncryptionService: PasswordEncryptionProvider;
+    private passwordEncryptionProvider: PasswordEncryptionProvider;
     private userIdProvider: UserIdProvider
 
     /**
@@ -53,13 +53,13 @@ export class EmailAndPasswordAuthenticationProvider {
     constructor(
         @inject("UserRepository") userRepository: UserRepository,
         @inject("UserEmailCredentialsRepository") userEmailCredentialsRepository: UserEmailCredentialsRepository,
-        @inject("PasswordEncryptionService") passwordEncryptionService: PasswordEncryptionProvider,
+        @inject("PasswordEncryptionProvider") passwordEncryptionProvider: PasswordEncryptionProvider,
         @inject("UserIdProvider") userIdProvider: UserIdProvider
     )
     {
         this.userRepository = userRepository;
         this.userEmailCredentialsRepository = userEmailCredentialsRepository;
-        this.passwordEncryptionService = passwordEncryptionService;
+        this.passwordEncryptionProvider = passwordEncryptionProvider;
         this.userIdProvider = userIdProvider;
     }
 }
