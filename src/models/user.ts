@@ -24,3 +24,23 @@ export type User = {
      **/
     lastName: string;
 };
+
+/**
+ * The internal data structure for user credentials. These are used by the user for authentication.
+ **/
+export type UserEmailCredentials = {
+    /**
+     * The id of the user who owns the credentials.
+     **/
+    userId: string;
+
+    /**
+     * The email address of the user.
+     **/
+    email: string;
+
+    /**
+     * The password of the user. MUST BE ENCRYPTED.
+     **/
+    password: string;
+}
