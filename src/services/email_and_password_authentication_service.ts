@@ -1,6 +1,7 @@
 import { User } from "@/models/user";
 import type { UserEmailCredentialsRepository } from "@/repositories/user_email_credentials_repository";
 import type { UserRepository } from "@/repositories/user_repository";
+import type { PasswordEncryptionService } from "@/services/password_encryption_service";
 
 import { inject, injectable } from "tsyringe";
 
@@ -11,6 +12,7 @@ import { inject, injectable } from "tsyringe";
 export class EmailAndPasswordAuthenticationService {
     private userRepository: UserRepository;
     private userEmailCredentialsRepository: UserEmailCredentialsRepository
+    private passwordEncryptionService: PasswordEncryptionService;
 
     /**
      * Registers a user via email-and-password authentication.
@@ -48,10 +50,12 @@ export class EmailAndPasswordAuthenticationService {
      */
     constructor(
         @inject("UserRepository") userRepository: UserRepository,
-        @inject("UserEmailCredentialsRepository") userEmailCredentialsRepository: UserEmailCredentialsRepository
+        @inject("UserEmailCredentialsRepository") userEmailCredentialsRepository: UserEmailCredentialsRepository,
+        @inject("PasswordEncryptionService") passwordEncryptionService: PasswordEncryptionService
     )
     {
         this.userRepository = userRepository;
         this.userEmailCredentialsRepository = userEmailCredentialsRepository;
+        this.passwordEncryptionService = passwordEncryptionService;
     }
 }
