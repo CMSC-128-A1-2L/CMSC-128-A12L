@@ -9,7 +9,7 @@ export interface UserEmailCredentialsRepository {
      * Adds user credentials to the repository.
      *
      * @param userCredentials The credentials to add.
-     * @return A promise that resolves when the credentials are added, or rejects on error.
+     * @return A promise that resolves when the credentials are added successfully.
      **/
     createUserCredentials(userCredentials: UserEmailCredentials): Promise<void>;
 
@@ -17,24 +17,26 @@ export interface UserEmailCredentialsRepository {
      * Gets user credentials based on their email.
      * 
      * @param email The email to fetch.
-     * @return A promise containing the fetched credentials when resolved, or an error when rejected.
+     * @return A promise that resolves to either the fetched user credentials, or `null` if the credentials could not be
+     *         found.
      */
-    getUserCredentialsByEmail(email: string): Promise<UserEmailCredentials>;
+    getUserCredentialsByEmail(email: string): Promise<UserEmailCredentials | null>;
 
     /**
      * Gets user credentials based on their id.
      * 
      * @param userId The user id to fetch.
-     * @return A promise containing the fetched credentials when resolved, or an error when rejected.
+     * @return A promise that resolves to either the fetched user credentials, or `null` if the credentials could not be
+     *         found.
      **/
-    getUserCredentialsById(userId: string): Promise<UserEmailCredentials>;
+    getUserCredentialsById(userId: string): Promise<UserEmailCredentials | null>;
 
     /**
      * Updates user credentials on the repository. This will use the user id in the credentials to determine which entry
      * should be updated.
      * 
      * @param userCredentials The user credentials to update.
-     * @return A promise that resolves when the credentials are updated, or rejects on error.
+     * @return A promise that resolves when the credentials are updated successfully.
      */
     updateUserCredentials(userCredentials: UserEmailCredentials): Promise<void>;
 
@@ -42,7 +44,7 @@ export interface UserEmailCredentialsRepository {
      * Deletes user credentials on the repository.
      * 
      * @param email The id of the user whose credentials are to be deleted.
-     * @return A promise that resolves when the credentials are deleted, or rejects on error.
+     * @return A promise that resolves when the credentials are deleted successfully.
      */
     deleteUserCredentials(userId: string): Promise<void>;
 }
@@ -63,24 +65,24 @@ export class InMemoryUserEmailCredentialsRepository implements UserEmailCredenti
         return Promise.resolve();
     }
 
-    getUserCredentialsByEmail(email: string): Promise<UserEmailCredentials> {
+    getUserCredentialsByEmail(email: string): Promise<UserEmailCredentials | null> {
         for (const user of this.credentials) {
             if (user.email === email) {
                 return Promise.resolve(user);
             }
         }
 
-        return Promise.reject(new Error("The user does not exist."));
+        return Promise.resolve(null);
     }
 
-    getUserCredentialsById(userId: string): Promise<UserEmailCredentials> {
+    getUserCredentialsById(userId: string): Promise<UserEmailCredentials | null> {
         for (const user of this.credentials) {
             if (user.userId === userId) {
                 return Promise.resolve(user);
             }
         }
 
-        return Promise.reject(new Error("The user does not exist."));
+        return Promise.resolve(null);
     }
 
     updateUserCredentials(userCredentials: UserEmailCredentials): Promise<void> {

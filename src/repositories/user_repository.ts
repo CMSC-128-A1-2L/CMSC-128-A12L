@@ -9,8 +9,7 @@ export interface UserRepository {
      * Adds a new user to the repository.
      * 
      * @param user The user to add.
-     * @returns A promise that is resolved when the user is added, or rejected if a problem occurs during registration
-     *          like the user already existing.
+     * @returns A promise that is resolved when the user is added successfully.
      **/
     createUser(user: User): Promise<void>;
 
@@ -18,17 +17,15 @@ export interface UserRepository {
      * Gets a user from the repository.
      * 
      * @param id The id of the user to fetch.
-     * @returns A promise that contains the fetched user when resolved, or rejected if a problem occurs during fetching
-     *          like a user with the provided id not existing.
+     * @returns A promise that resolves to either the fetched user or `null` if the user does not exist.
      **/
-    getUserById(id: string): Promise<User>;
+    getUserById(id: string): Promise<User | null>;
 
     /**
      * Updates an existing user in the repository.
      * 
      * @param user The user to update.
-     * @returns A promise that is resolved when the user is updated, or rejected if a problem occurs during updating
-     *          like a user with the provided id not existing.
+     * @returns A promise that is resolved when the user is updated successfully.
      **/
     updateUser(user: User): Promise<void>;
 
@@ -36,8 +33,7 @@ export interface UserRepository {
      * Deletes a user from the repository.
      * 
      * @param id The id of the user to delete.
-     * @returns A promise that is resolved when the user is deleted, or rejected if a problem occurs during deletion
-     *          like a user with the provided id not existing.
+     * @returns A promise that is resolved when the user is deleted successfully
      **/
     deleteUser(id: string): Promise<void>;
 }
@@ -54,23 +50,26 @@ export class InMemoryUserRepository implements UserRepository {
     private users: { [id: string]: User } = {};
 
     createUser(user: User): Promise<void> {
+        if (user.id === undefined) {
+            return Promise.reject(new Error("Cannot add user with no id"));
+        }
         this.users[user.id] = user;
 
         return Promise.resolve();
     }
 
-    getUserById(id: string): Promise<User> {
-        let user = this.users[id];
+    getUserById(id: string): Promise<User | null> {
+        const user = this.users[id];
 
         if (user === undefined) {
-            return Promise.reject(new Error("User not found"));
+            return Promise.resolve(null);
         }
 
         return Promise.resolve(user);
     }
 
     updateUser(user: User): Promise<void> {
-        if (this.users[user.id] === undefined) {
+        if (user.id === undefined || this.users[user.id] === undefined) {
             return Promise.reject(new Error("User not found"));
         }
 
