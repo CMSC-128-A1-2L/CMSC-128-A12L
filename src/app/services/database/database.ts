@@ -15,12 +15,13 @@ if (!MONGODB_URI) {
 let cached = (global as any).mongoose || { conn: null, promise: null };
 
 export async function connectDB() {
+  // console.log("Accessing database.");
   if (cached.conn) return cached.conn; // Return cached connection
 
   if (!cached.promise) {
-    cached.promise = mongoose.connect(MONGODB_URI as string, {
-      dbName: "ARTMS",
-      bufferCommands: false,
+    cached.promise = await mongoose.connect(MONGODB_URI as string, {
+      dbName: "DEV_ARTMS",
+      bufferCommands: true,
     }).then((mongoose) => {
       return mongoose;
     });
