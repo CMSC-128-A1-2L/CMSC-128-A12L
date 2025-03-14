@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createUser, editUser } from "@/app/services/user/userService";
 import { IUser } from "@/models/user_model";
 
+// Edit user endpoint
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   console.log("Edit user endpoint has been triggered.");
 
@@ -11,7 +12,6 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   let user = await req.json();
   console.log(user);
 
-  let edited_user = await editUser(params.id, user);
+  let edited_user = await editUser(id, user);
   return NextResponse.json(edited_user);
 }
-
