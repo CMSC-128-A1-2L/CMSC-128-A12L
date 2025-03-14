@@ -33,7 +33,7 @@ export function isValidContactNumber(number: string): boolean { // Is currently 
 
 interface IUser extends Document {
   role: UserRole,
-  studentId?: number,
+  studentId?: string,
   firstName: string,
   middleName: string,
   lastName: string,
@@ -48,7 +48,7 @@ interface IUser extends Document {
 const UserSchema = new Schema<IUser>(
   {
     role: { type: Number, required: true},
-    studentId: { type: Number },
+    studentId: { type: String },
     firstName: { type: String, required: true },
     middleName: { type: String },
     lastName: { type: String, required: true },
@@ -64,7 +64,6 @@ const UserSchema = new Schema<IUser>(
       validator: isValidContactNumber,
       message: "Invalid contact number."
     } 
-
     }
   },
   {
@@ -72,4 +71,9 @@ const UserSchema = new Schema<IUser>(
   },
 )
 
-export default UserSchema;
+const UserModel: Model<IUser> = mongoose.model<IUser>("Users", UserSchema);
+
+export {
+  UserModel
+};
+export type { IUser };
