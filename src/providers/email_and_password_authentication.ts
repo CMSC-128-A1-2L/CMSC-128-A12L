@@ -4,14 +4,13 @@ import type { UserRepository } from "@/repositories/user_repository";
 import type { PasswordEncryptionProvider } from "@/providers/password_encryption";
 import type { UserIdProvider } from "@/providers/user_id";
 
-import { inject, injectable } from "tsyringe";
 import validator from 'validator';
 import { EmailAlreadyInUseError, InvalidEmailFormat, MissingEmailError, MissingPasswordError, UserRegistrationError, WrongLoginCredentialsError } from "@/errors/email_password_authentication";
+import { InconsistentInternalStateError } from "@/errors/internal_errors";
 
 /**
  * A service that implements email-and-password authentication.
  **/
-@injectable()
 export class EmailAndPasswordAuthenticationProvider {
     private userRepository: UserRepository;
     private userEmailCredentialsRepository: UserEmailCredentialsRepository
@@ -112,10 +111,10 @@ export class EmailAndPasswordAuthenticationProvider {
      * @param userIdProvider The user id provider to use for the service.
      */
     constructor(
-        @inject("UserRepository") userRepository: UserRepository,
-        @inject("UserEmailCredentialsRepository") userEmailCredentialsRepository: UserEmailCredentialsRepository,
-        @inject("PasswordEncryptionProvider") passwordEncryptionProvider: PasswordEncryptionProvider,
-        @inject("UserIdProvider") userIdProvider: UserIdProvider
+        userRepository: UserRepository,
+        userEmailCredentialsRepository: UserEmailCredentialsRepository,
+        passwordEncryptionProvider: PasswordEncryptionProvider,
+        userIdProvider: UserIdProvider
     )
     {
         this.userRepository = userRepository;

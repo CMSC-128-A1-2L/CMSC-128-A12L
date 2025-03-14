@@ -1,5 +1,4 @@
 import { UserEmailCredentials } from "@/models/user";
-import { injectable } from "tsyringe";
 
 /**
  * The interface for a repository containing user credentials.
@@ -49,8 +48,7 @@ export interface UserEmailCredentialsRepository {
     deleteUserCredentials(userId: string): Promise<void>;
 }
 
-@injectable()
-export class InMemoryUserEmailCredentialsRepository implements UserEmailCredentialsRepository {
+class InMemoryUserEmailCredentialsRepository implements UserEmailCredentialsRepository {
     private credentials: UserEmailCredentials[];
 
     createUserCredentials(userCredentials: UserEmailCredentials): Promise<void> {
@@ -108,4 +106,15 @@ export class InMemoryUserEmailCredentialsRepository implements UserEmailCredenti
     constructor() {
         this.credentials = [];
     }
+}
+
+const userEmailCredentialsRepository = new InMemoryUserEmailCredentialsRepository();
+userEmailCredentialsRepository.createUserCredentials({
+    userId: "test",
+    email: "test@example.com",
+    password: "Sample Text"
+});
+
+export function getUserCredentialRepository(): UserEmailCredentialsRepository {
+    return userEmailCredentialsRepository;
 }

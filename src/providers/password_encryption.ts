@@ -1,5 +1,4 @@
 import bcrypt from "bcrypt";
-import { injectable } from "tsyringe";
 
 /**
  * A service which handles password encryption.
@@ -31,8 +30,8 @@ export interface PasswordEncryptionProvider {
  * The app should use this when handling passwords. Other implementations of `PasswordEncryptionService` should only be
  * used for mocking purposes.
  **/
-@injectable()
-export class BcryptPasswordEncryptionProvider implements PasswordEncryptionProvider {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+class BcryptPasswordEncryptionProvider implements PasswordEncryptionProvider {
     encrypt(password: string): string {
         const salt = bcrypt.genSaltSync();
         const encryptedPassword = bcrypt.hashSync(password, salt);
@@ -44,3 +43,22 @@ export class BcryptPasswordEncryptionProvider implements PasswordEncryptionProvi
         return bcrypt.compareSync(password, encryptedPassword);
     }
 }
+
+/**
+ * A password encryption provider which does not perform any encryption. DO NOT USE IN PRODUCTION.
+ **/
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+class NoEncryptionPasswordEncryptionProvider implements PasswordEncryptionProvider {
+    encrypt(password: string): string {
+        return password;
+    }
+
+    validate(password: string, encryptedPassword: string): boolean {
+        return password === encryptedPassword;
+    }
+}
+
+export function getPasswordEncryptionProvider(): PasswordEncryptionProvider {
+    return new NoEncryptionPasswordEncryptionProvider();
+}
+

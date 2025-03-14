@@ -1,5 +1,4 @@
 import { User } from "@/models/user";
-import { injectable } from "tsyringe";
 
 /**
  * A repository for managing data of registered users.
@@ -41,8 +40,7 @@ export interface UserRepository {
 /**
  * A repository that stores user data in memory.
  **/
-@injectable()
-export class InMemoryUserRepository implements UserRepository {
+class InMemoryUserRepository implements UserRepository {
     /**
      * The users stored in memory. Even though the `User` type already contains the id of the user, they are still
      * stored in a dictionary for faster access and updating.
@@ -90,3 +88,15 @@ export class InMemoryUserRepository implements UserRepository {
         this.users = {};
     }
 }
+
+const userRepository = new InMemoryUserRepository();
+userRepository.createUser({
+    id: "test",
+    firstName: "Test",
+    lastName: "User"
+});
+
+export function getUserRepository(): UserRepository {
+    return userRepository;
+}
+
