@@ -5,6 +5,8 @@ import type { PasswordEncryptionProvider } from "@/providers/password_encryption
 import type { UserIdProvider } from "@/providers/user_id";
 
 import { inject, injectable } from "tsyringe";
+import validator from 'validator';
+import { EmailAlreadyInUseError, InvalidEmailFormat, MissingEmailError, MissingPasswordError, UserRegistrationError, WrongLoginCredentialsError } from "@/errors/email_password_authentication";
 
 /**
  * A service that implements email-and-password authentication.
@@ -26,9 +28,46 @@ export class EmailAndPasswordAuthenticationProvider {
      * 
      * @returns A promise that contains the registered user when resolved, or an error when rejected.
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async registerUser(user: User, email: string, password: string): Promise<User> {
-        throw new Error("Not yet implemented");
+        if (validator.isEmpty(email)) {
+            throw new MissingEmailError();
+        }
+
+        if (validator.isEmpty(password)) {
+            throw new MissingPasswordError();
+        }
+
+        if (!validator.isEmail(email)) {
+            throw new InvalidEmailFormat();
+        }
+
+        if (user.id !== undefined) {
+            throw new UserRegistrationError("User already has id");
+        }
+
+        const existingUserCredentials = await this.userEmailCredentialsRepository.getUserCredentialsByEmail(email);
+        if (existingUserCredentials !== null) {
+            throw new EmailAlreadyInUseError();
+        }
+
+        const encryptedPassword = this.passwordEncryptionProvider.encrypt(password);
+
+        const userToRegister = user;
+        userToRegister.id = this.userIdProvider.generate();
+        while (await this.userRepository.getUserById(userToRegister.id) !== null) {
+            userToRegister.id = this.userIdProvider.generate();
+        }
+
+        await Promise.all([
+            this.userEmailCredentialsRepository.createUserCredentials({
+                userId: userToRegister.id,
+                email: email,
+                password: encryptedPassword
+            }),
+            this.userRepository.createUser(userToRegister)
+        ]);
+
+        return userToRegister;
     }
 
     /**
@@ -39,9 +78,29 @@ export class EmailAndPasswordAuthenticationProvider {
      * 
      * @returns A promise that contains the authenticated user's data when resolved, or an error when rejected.
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     async loginUser(email: string, password: string): Promise<User> {
-        throw new Error("Not yet implemented");
+        if (validator.isEmpty(email) || validator.isEmpty(password)) {
+            throw new WrongLoginCredentialsError();
+        }
+
+        const credentials = await this.userEmailCredentialsRepository.getUserCredentialsByEmail(email);
+        if (credentials === null) {
+            throw new WrongLoginCredentialsError();
+        }
+
+        if (!this.passwordEncryptionProvider.validate(password, credentials.password)) {
+            throw new WrongLoginCredentialsError();
+        }
+
+        const user = await this.userRepository.getUserById(credentials.userId);
+        if (user === null) {
+            // If, somehow, the user credentials repository and user repository have inconsistent states on
+            // which users are registered, throw an error.
+            // This, ideally, should never happen, which is why this branch is not being tested.
+            throw new InconsistentInternalStateError("User with valid credentials not in user repository");
+        }
+
+        return user;
     }
 
     /**
