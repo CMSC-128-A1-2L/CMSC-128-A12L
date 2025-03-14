@@ -17,7 +17,16 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: CLIENT_ID,
       clientSecret: CLIENT_SECRET,
-    }),
+      // this authorization parameter makes it so that every time the user logs in the refresh token is given always
+      authorization: {
+        params: {
+          prompt: "consent",
+          access_type: "offline",
+          response_type: "code"
+        },
+      },
+    }
+    ),
   ],
   callbacks: {
     async session({ session, user }) {
@@ -26,11 +35,12 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
     async signIn({ user, account, profile }) {
+      // account contains 'refresh token'
       console.log("Sign in: ", { user, account, profile })
       return true;
     },
-    async jwt({ token, user, account}) {
-      if (account && user){
+    async jwt({ token, user, account }) {
+      if (account && user) {
         token.id = user.id;
         token.email = user.email;
         token.accessToken = account.access_token;

@@ -12,8 +12,8 @@ export default function Login() {
 			Test login:
 			<br />
 			< SignIn />
-			<p>Are you currently logged in?:</p> 
-			{session ? (<>	
+			<p>Are you currently logged in?:</p>
+			{session ? (<>
 				<p>Yes, I am {session.user?.name}</p>
 				<button onClick={() => signOut()}>Sign Out</button>
 			</>
