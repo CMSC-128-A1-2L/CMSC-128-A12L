@@ -11,6 +11,7 @@ import { getUserCredentialRepository } from "@/repositories/user_email_credentia
 import { getUserRepository } from "@/repositories/user_repository";
 import { getPasswordEncryptionProvider } from "@/providers/password_encryption";
 import { getUserIdProvider } from "@/providers/user_id";
+import { WrongLoginCredentialsError } from "@/errors/email_password_authentication";
 
 // Define the google id and secret 
 const googleClientId = process.env.CLIENT_ID ?? (() => {
@@ -83,8 +84,12 @@ const authOptions: NextAuthOptions = {
           };
         }
         catch (error) {
-          console.error(error);
-          return null;
+          if (error instanceof WrongLoginCredentialsError) {
+            console.error(error);
+            return null;
+          }
+
+          throw error;
         }
       }
     })
