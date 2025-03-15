@@ -25,9 +25,9 @@ function isValidLinkedIn(url: string): boolean {
   return linkedInRegex.test(url);
 }
 
-export function isValidContactNumber(number: string): boolean { // Is currently setup for only valid phone numbers
+export function isValidContactNumbers(numbers: string[]): boolean { // Is currently setup for only valid phone numbers
   const contactNumberRegex = /^(\+63|0)9[0-9]{9}$/;
-  return contactNumberRegex.test(number);
+  return numbers.every(number => contactNumberRegex.test(number));
 }
 
 
@@ -61,7 +61,7 @@ const UserSchema = new Schema<IUser>(
       } 
     },
     contactNumbers : { type: [String], validate: {
-      validator: isValidContactNumber,
+      validator: isValidContactNumbers,
       message: "Invalid contact number."
     } 
     }
@@ -71,9 +71,14 @@ const UserSchema = new Schema<IUser>(
   },
 )
 
-const UserModel: Model<IUser> = mongoose.model<IUser>("Users", UserSchema);
+/*
+Source: https://stackoverflow.com/questions/76724544/overwritemodelerror-cannot-overwrite-model-once-compiled-in-nextjs-and-typescri
+Sometimes, the server sends an error saying "Cannot overwrite 'indicated' model once compiled".
+By adding this line 'mongoose.models.'indicated_model', we can avoid this error as sometimes it instantiates another mongoose model when Next.js is 'hot-reloading'
+*/
+const UserModel: Model<IUser> = mongoose.models.Users || mongoose.model<IUser>("Users", UserSchema);
 
 export {
-  UserModel
+  UserModel, UserRole
 };
 export type { IUser };
