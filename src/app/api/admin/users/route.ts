@@ -4,7 +4,7 @@ import { createUser, getAllUsers, editUser} from "@/app/services/user/userServic
 import { IUser, IUserRequest } from "@/models/user_model";
 
 // Create user endpoint
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   console.log("Create user endpoint has been triggered.");
 
   let request = await req.json();
