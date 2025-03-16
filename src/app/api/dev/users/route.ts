@@ -7,16 +7,9 @@ import { Types } from "mongoose";
 
 // Populate database endpoint
 export async function POST(req: NextRequest) {
-  console.log("[DEV] Triggered populate database endpoint.");
-
-  
+  console.log("[DEV] Triggered populate user collection endpoint.");
 
   try {
-    await connectDB().catch(
-      (error) => {
-        console.log("There was an error with connecting to the database.", error)
-      }
-    );
 
     let originalLog = console.log();
     (console as any).log = () => {}
@@ -33,7 +26,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: "Successfully populated the database."
+      message: "Successfully populated the user collection."
     });
     
 
@@ -41,13 +34,13 @@ export async function POST(req: NextRequest) {
     console.log(error);
     return NextResponse.json({
       success: false,
-      message: "There was an error with populating the database."
+      message: "There was an error with populating the user collection.."
     });
   }
 }
 
 export async function DELETE(req: NextRequest) {
-  console.log("[DEV] Triggered populate database endpoint.");
+  console.log("[DEV] Triggered clear user collection endpoint.");
 
   
 
@@ -58,22 +51,11 @@ export async function DELETE(req: NextRequest) {
       }
     );
     
-    let originalLog = console.log();
-    (console as any).log = () => {}
-
-    data.forEach(async (element) => {
-      let user = element as unknown as IUser;
-      user.adviser = new Types.ObjectId(element.adviser["$oid"]);
-      user.currentAddress = new Types.ObjectId(element.currentAddress["$oid"]);
-
-      await createUser(user);
-    });
-
-    (console as any).log = originalLog;
+    let deleted_users = await UserModel.deleteMany({});
 
     return NextResponse.json({
       success: true,
-      message: "Successfully populated the database."
+      message: "Successfully cleared the user collection."
     });
     
 
@@ -81,7 +63,7 @@ export async function DELETE(req: NextRequest) {
     console.log(error);
     return NextResponse.json({
       success: false,
-      message: "There was an error with populating the database."
+      message: "There was an error with clearing the user collection."
     });
   }
 }
