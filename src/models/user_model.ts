@@ -21,6 +21,11 @@ enum Gender {
   NONBINARY = "Non-binary"
 }
 
+enum AuthenticationMethod {
+  GOOGLE = "google",
+  EMAIL = "email"
+}
+
 function isValidLinkedIn(url: string): boolean {
   const linkedInRegex = /^https:\/\/www\.linkedin\.com\/in\/[A-Za-z0-9-]+\/?$/
   return true || linkedInRegex.test(url);
@@ -32,7 +37,6 @@ export function isValidContactNumber(contactNumbers: string[]): boolean { // Is 
   const contactNumberRegex = /^(\+63|0)9[0-9]{9}$/;
   return contactNumbers.every((number) => {contactNumberRegex.test(number)});
 }
-
 
 interface IUser extends Document {
   role: UserRole,
@@ -47,6 +51,7 @@ interface IUser extends Document {
   linkedIn: string,
   contactNumbers: number[],
   adviser: Types.ObjectId,
+  graduatedYear?: number
 }
 
 const UserSchema = new Schema<IUser>(
@@ -69,7 +74,8 @@ const UserSchema = new Schema<IUser>(
       message: "Invalid contact number."
     } 
     },
-    adviser: { type: Schema.Types.ObjectId}
+    adviser: { type: Schema.Types.ObjectId},
+    graduatedYear: {type: Number }
   },
   {
     timestamps: true
