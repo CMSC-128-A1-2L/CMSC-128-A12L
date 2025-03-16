@@ -1,0 +1,25 @@
+
+/* 
+ * Sample component that FE can use (optional)
+ * */
+"use client";
+
+import { signIn } from "next-auth/react";
+
+export default function SignIn() {
+  return (
+            <button
+              className="w-3/4 md:w-2/5 bg-[#0C0051] text-white py-3 px-2 rounded-full flex items-center justify-center shadow-md hover:bg-[#0A0041] transition md:text-left ml-4 md:ml-10 mt-2 cursor-pointer"
+              style={{ fontFamily: "Montserrat, sans-serif", fontSize: "12px" }}
+              onClick={() => signIn("google")}
+            >
+              <img src="/assets/google.png" alt="Google" className="w-4 h-4 mr-2" />
+              Sign in with Google
+            </button>
+
+  );
+}
+
+
+
+

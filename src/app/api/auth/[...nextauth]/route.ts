@@ -58,7 +58,7 @@ async function refreshAccessToken(token: any) {
 }
 
 // Introducing NextAuthOptions type-safety reduces the need to include types in parameters in callbacks
-const authOptions: NextAuthOptions = {
+export const authOptions: NextAuthOptions = {
   providers: [
     GoogleProvider({
       clientId: googleClientId,
