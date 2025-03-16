@@ -40,7 +40,7 @@ export class EmailAndPasswordAuthenticationProvider {
         }
 
         return {
-            id: credentials.password.id,
+            id: credentials.id,
             email: credentials.email,
             emailVerified: credentials.emailVerified
         };

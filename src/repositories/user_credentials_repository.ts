@@ -31,6 +31,16 @@ export interface UserCredentialsRepository {
     getUserCredentialsById(id: string): Promise<UserCredentials | null>;
 
     /**
+     * Gets user credentials based on their provider and provider account id.
+     * 
+     * @param provider The provider to fetch.
+     * @param providerAccountId The provider account id to fetch.
+     * @return A promise that resolves to either the fetched user credentials, or `null` if the credentials could not be
+     *         found.
+     **/
+    getUserCredentialsByProvider(provider: string, providerAccountId: string): Promise<UserCredentials | null>;
+
+    /**
      * Updates user credentials on the repository. This will use the user id in the credentials to determine which entry
      * should be updated.
      * 
@@ -77,6 +87,25 @@ class InMemoryUserCredentialsRepository implements UserCredentialsRepository {
         for (const user of this.credentials) {
             if (user.id === id) {
                 return Promise.resolve(user);
+            }
+        }
+
+        return Promise.resolve(null);
+    }
+
+    getUserCredentialsByProvider(provider: string, providerAccountId: string): Promise<UserCredentials | null> {
+        for (const user of this.credentials) {
+            switch (provider) {
+                case "email-password":
+                    if (user.password?.id === providerAccountId) {
+                        return Promise.resolve(user);
+                    }
+                    break;
+                case "google":
+                    if (user.google?.id === providerAccountId) {
+                        return Promise.resolve(user);
+                    }
+                    break;
             }
         }
 

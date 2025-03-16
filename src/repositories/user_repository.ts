@@ -21,6 +21,14 @@ export interface UserRepository {
     getUserById(id: string): Promise<User | null>;
 
     /**
+     * Gets a user from the repository.
+     * 
+     * @param email The email of the user to fetch.
+     * @returns A promise that resolves to either the fetched user or `null` if the user does not exist.
+     */
+    getUserByEmail(email: string): Promise<User | null>;
+
+    /**
      * Updates an existing user in the repository.
      * 
      * @param user The user to update.
@@ -66,6 +74,16 @@ class InMemoryUserRepository implements UserRepository {
         return Promise.resolve(user);
     }
 
+    getUserByEmail(email: string): Promise<User | null> {
+        for (const user of Object.values(this.users)) {
+            if (user.email === email) {
+                return Promise.resolve(user);
+            }
+        }
+
+        return Promise.resolve(null);
+    }
+
     updateUser(user: User): Promise<void> {
         if (user.id === undefined || this.users[user.id] === undefined) {
             return Promise.reject(new Error("User not found"));
@@ -92,8 +110,9 @@ class InMemoryUserRepository implements UserRepository {
 const userRepository = new InMemoryUserRepository();
 userRepository.createUser({
     id: "test",
-    firstName: "Test",
-    lastName: "User"
+    name: "Sample User",
+    email: "test@example.com",
+    emailVerified: null
 });
 
 export function getUserRepository(): UserRepository {

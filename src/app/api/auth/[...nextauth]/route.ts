@@ -10,6 +10,10 @@ import { EmailAndPasswordAuthenticationProvider } from '@/providers/email_and_pa
 import { getUserCredentialRepository } from "@/repositories/user_credentials_repository";
 import { getPasswordEncryptionProvider } from "@/providers/password_encryption";
 import { WrongLoginCredentialsError } from "@/errors/email_password_authentication";
+import { Adapter, AdapterAccount, AdapterUser } from "next-auth/adapters";
+import { getUserIdProvider } from "@/providers/user_id";
+import { getUserRepository } from "@/repositories/user_repository";
+import { User, UserCredentials } from "@/models/user";
 
 // Define the google id and secret 
 const googleClientId = process.env.CLIENT_ID ?? (() => {
@@ -20,8 +24,117 @@ const googleClientSecret = process.env.CLIENT_SECRET ?? (() => {
   throw new Error("Missing client secret in .env file");
 })();
 
+const adapter: Adapter = (() => {
+  const userRepository = getUserRepository();
+  const userIdProvider = getUserIdProvider();
+  const userCredentialRepository = getUserCredentialRepository();
+
+  async function createUser(user: Omit<AdapterUser, "id">): Promise<AdapterUser> {
+    console.log("Adapter.createUser() called");
+    const userToRegister: User = {
+      ...user,
+      id: userIdProvider.generate()
+    };
+
+    while ((await userRepository.getUserById(userToRegister.id)) !== null) {
+      userToRegister.id = userIdProvider.generate();
+    }
+
+    await userRepository.createUser(userToRegister);
+
+    return userToRegister;
+  }
+
+  async function getUser(id: string): Promise<AdapterUser | null> {
+    console.log("Adapter.getUser() called");
+    return await userRepository.getUserById(id);
+  }
+
+  async function getUserByAccount(providerAccountId: Pick<AdapterAccount, "provider" | "providerAccountId">): Promise<AdapterUser | null> {
+    console.log("Adapter.getUserByAccount() called");
+    const userCredentials = await userCredentialRepository.getUserCredentialsByProvider(providerAccountId.provider, providerAccountId.providerAccountId);
+    if (!userCredentials) {
+      return null;
+    }
+
+    const user = await userRepository.getUserById(userCredentials.id);
+    return user;
+  }
+
+  async function updateUser(user: Partial<AdapterUser> & Pick<AdapterUser, "id">): Promise<AdapterUser> {
+    console.log("Adapter.updateUser() called");
+    const userToUpdate = await userRepository.getUserById(user.id);
+    if (!userToUpdate) {
+      throw new Error("User not found");
+    }
+
+    const updatedUser: User = {
+      ...userToUpdate,
+      ...user
+    };
+
+    await userRepository.updateUser(updatedUser);
+    return updatedUser;
+  }
+
+  async function linkAccount(account: AdapterAccount): Promise<void> {
+    console.log("Adapter.linkAccount() called");
+    let userCredentials: UserCredentials | null = await userCredentialRepository.getUserCredentialsById(account.userId);
+    const shouldAdd: boolean = userCredentials === null;
+
+    if (userCredentials === null) {
+      const user = await userRepository.getUserById(account.userId);
+      if (user === null) {
+        throw new Error("User not found");
+      }
+
+      userCredentials = {
+        id: user.id,
+        email: user.email,
+        emailVerified: user.emailVerified
+      };
+    }
+
+    switch (account.provider) {
+      case "google":
+        if (account.refresh_token === undefined) {
+          throw new Error("Cannot link without refresh token.");
+        }
+
+        userCredentials.google = {
+          id: account.providerAccountId,
+          refreshToken: account.refresh_token
+        };
+        break;
+    }
+
+    if (shouldAdd) {
+      await userCredentialRepository.createUserCredentials(userCredentials);
+    }
+    else {
+      await userCredentialRepository.updateUserCredentials(userCredentials);
+    }
+  }
+
+  const getUserByEmail = async (email: string): Promise<AdapterUser | null> => {
+    console.log("Adapter.getUserByEmail() called");
+    const user = await userRepository.getUserByEmail(email);
+    return user;
+  }
+
+  return {
+    createUser: createUser,
+    getUser: getUser,
+    getUserByAccount: getUserByAccount,
+    getUserByEmail: getUserByEmail,
+    updateUser: updateUser,
+    linkAccount: linkAccount,
+  };
+})()
+
 // Introducing NextAuthOptions type-safety reduces the need to include types in parameters in callbacks
 const authOptions: NextAuthOptions = {
+  adapter: adapter,
   providers: [
     GoogleProvider({
       clientId: googleClientId,
@@ -55,6 +168,7 @@ const authOptions: NextAuthOptions = {
           return null;
         }
 
+        const userRepository = getUserRepository();
         const userCredentialsRepository = getUserCredentialRepository();
         const passwordEncryptionProvider = getPasswordEncryptionProvider();
 
@@ -64,7 +178,10 @@ const authOptions: NextAuthOptions = {
         );
 
         try {
-          return await provider.loginUser(credentials.email, credentials.password);
+          const authenticatedUser = await provider.loginUser(credentials.email, credentials.password);
+          const user = await userRepository.getUserById(authenticatedUser.id);
+          
+          return user;
         }
         catch (error) {
           if (error instanceof WrongLoginCredentialsError) {
@@ -93,7 +210,7 @@ const authOptions: NextAuthOptions = {
     async session({ session }) {
       return session;
     },
-    async signIn({ user, account, profile }) {
+    async signIn({ user, account }) {
       /* 
       The account contaisn the following properties:
       - provider: string (Google)
@@ -101,6 +218,9 @@ const authOptions: NextAuthOptions = {
       - token_type: string (usually the Bearer) 
       - expires_at: number (Expiration time in seconds) 
       */
+      console.log("Sign in callback.")
+      // console.log(user);
+      // console.log(account);
       return true;
     },
     /*
@@ -110,6 +230,10 @@ const authOptions: NextAuthOptions = {
  *   - accessToken: string (OAuth access token)
  */
     async jwt({ token, user, account }) {
+      console.log("JWT callback.")
+      // console.log(user);
+      // console.log(account);
+
       if (account && user) {
         token.id = user.id;
         token.email = user.email;
@@ -122,5 +246,4 @@ const authOptions: NextAuthOptions = {
 
 const handler = NextAuth(authOptions);
 
-export { handler as GET, handler as POST };
-
+export { handler as GET, handler as POST }

@@ -4,22 +4,7 @@
 
 import { AdapterUser } from "next-auth/adapters";
 
-export type User = AdapterUser & {
-    /**
-     * The first name of the user.
-     **/
-    firstName: string;
-
-    /**
-     * The middle name of the user.
-     **/
-    middleName?: string;
-
-    /**
-     * The last name of the user.
-     **/
-    lastName: string;
-};
+export type User = AdapterUser & {};
 
 /**
  * The internal data structure for user credentials. These are used by the user for authentication.

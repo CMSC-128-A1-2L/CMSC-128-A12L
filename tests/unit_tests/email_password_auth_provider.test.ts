@@ -13,6 +13,7 @@ const mockedUserCredentialsRepository: UserCredentialsRepository = {
     createUserCredentials: jest.fn<() => Promise<void>>(),
     getUserCredentialsByEmail: jest.fn<() => Promise<UserCredentials | null>>(),
     getUserCredentialsById: jest.fn<() => Promise<UserCredentials | null>>(),
+    getUserCredentialsByProvider: jest.fn<() => Promise<UserCredentials | null>>(),
     updateUserCredentials: jest.fn<() => Promise<void>>(),
     deleteUserCredentials: jest.fn<() => Promise<void>>(),
 };
