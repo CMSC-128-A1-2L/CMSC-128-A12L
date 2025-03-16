@@ -81,8 +81,34 @@ async function editUser(id: string, user: IUser) {
   }
 }
 
+async function deleteUser(id: string) {
+  console.log("Delete a user details.");
+
+  try {
+    await connectDB().catch(
+      (error) => {
+        console.log("There was an error with connecting to the database.", error)
+      }
+    );
+
+    let edited_user = await UserModel.deleteOne({_id: id});
+    return {
+      success: true,
+      data: edited_user
+    }
+
+  } catch (error) {
+    console.log(error);
+    return {
+      success: false,
+      data: error
+    }
+  }
+}
+
 export {
   getAllUsers,
   createUser,
-  editUser
+  editUser,
+  deleteUser
 };
