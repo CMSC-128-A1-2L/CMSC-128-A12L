@@ -2,9 +2,10 @@ import mongoose, { Schema, Document, Model, Types} from "mongoose";
 
 
 enum UserRole {
-  ADMIN,
-  ALUMNI,
-  ALUMNIADMIN
+  ADMIN = "admin",
+  ALUMNI = "alumni",
+  ALUMNIADMIN = "alumniadmin",
+  STUDENT = "student"
 }
 
 enum NameSuffixes {
@@ -20,14 +21,33 @@ enum Gender {
   NONBINARY = "Non-binary"
 }
 
-function isValidLinkedIn(url: string): boolean {
-  const linkedInRegex = /^https:\/\/www\.linkedin\.com\/in\/[A-Za-z0-9-]+\/?$/
-  return linkedInRegex.test(url);
+enum SortBy {
+  NAME = "lastName",
+  STUDENT_ID = "studentId",
+  DATE_CREATED = "createdAt",
+  LAST_ACTIVE = "last_active",
+  ADDRESS = "currentAddress"
 }
 
-export function isValidContactNumbers(numbers: string[]): boolean { // Is currently setup for only valid phone numbers
+interface IUserRequest extends Partial<IUser>{
+  page: number,
+  amountPerPage: number,
+  sortBy: SortBy,
+  sortOrder: ["asc", "desc"]
+}
+
+
+function isValidLinkedIn(url: string): boolean {
+  const linkedInRegex = /^https:\/\/www\.linkedin\.com\/in\/[A-Za-z0-9-]+\/?$/
+  return true || linkedInRegex.test(url);
+}
+
+// TODO: fix for validation for non-Philippines phone and mobile numbers
+export function isValidContactNumber(contactNumbers: string[]): boolean { // Is currently setup for only valid phone numbers
   const contactNumberRegex = /^(\+63|0)9[0-9]{9}$/;
-  return numbers.every(number => contactNumberRegex.test(number));
+  // return contactNumbers.every((number) => {contactNumberRegex.test(number)});
+  // temporarily return all numbers as validated, will be fixed later by @erjoyrobles
+  return contactNumbers.every((number) => true);
 }
 
 
@@ -47,6 +67,7 @@ interface IUser extends Document {
   bio: string,
   linkedIn: string,
   contactNumbers: number[],
+  adviser: Types.ObjectId,
 }
 
 const UserSchema = new Schema<IUser>(
@@ -55,7 +76,6 @@ const UserSchema = new Schema<IUser>(
     googleId: { type: String },
     refreshToken: { type: String },
     email: { type: String, required: true },
-    role: { type: Number, required: true },
     studentId: { type: String },
     firstName: { type: String, required: true },
     middleName: { type: String},
@@ -69,10 +89,11 @@ const UserSchema = new Schema<IUser>(
       } 
     },
     contactNumbers : { type: [String], validate: {
-      validator: isValidContactNumbers,
+      validator: isValidContactNumber,
       message: "Invalid contact number."
     } 
-    }
+    },
+    adviser: { type: Schema.Types.ObjectId}
   },
   {
     timestamps: true
@@ -87,6 +108,8 @@ By adding this line 'mongoose.models.'indicated_model', we can avoid this error 
 const UserModel: Model<IUser> = mongoose.models.Users || mongoose.model<IUser>("Users", UserSchema);
 
 export {
-  UserModel, UserRole
+  UserModel,
+  SortBy
 };
-export type { IUser };
+
+export type { IUser, IUserRequest };
