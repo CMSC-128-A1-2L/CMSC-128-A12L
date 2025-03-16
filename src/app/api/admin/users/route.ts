@@ -1,7 +1,7 @@
 import { connectDB } from "@/app/services/database/database";
 import { NextRequest, NextResponse } from "next/server";
 import { createUser, getAllUsers, editUser} from "@/app/services/user/userService";
-import { IUser } from "@/models/user_model";
+import { IUser, IUserRequest } from "@/models/user_model";
 
 // Create user endpoint
 export async function POST(req: Request) {
@@ -15,11 +15,21 @@ export async function POST(req: Request) {
 }
 
 // Get all users endpoint
-export async function GET(req: Request) {
+export async function GET(req: NextRequest,  { params }: { params: { id: string } }) {
   console.log("Get all users endpoint has been triggered.");
   
-  console.log(req.body);
+  let searchParams = convertUserRequestToJSON(req.nextUrl.searchParams);
+  console.log(searchParams);
 
-  let result = await getAllUsers();
+  // let body = await req.json();
+
+  // let {filters} = body;
+
+  let result = await getAllUsers(searchParams);
   return NextResponse.json(result);
+}
+
+function convertUserRequestToJSON(params: URLSearchParams): IUserRequest {
+  let parameters = Object.fromEntries(params.entries()) as unknown as IUserRequest;
+  return parameters;
 }
