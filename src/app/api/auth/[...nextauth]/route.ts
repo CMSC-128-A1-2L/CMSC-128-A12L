@@ -57,13 +57,11 @@ const authOptions: NextAuthOptions = {
           return null;
         }
 
-        const userRepository = getUserRepository();
         const userCredentialsRepository = getUserCredentialRepository();
         const passwordEncryptionProvider = getPasswordEncryptionProvider();
         const userIdProvider = getUserIdProvider();
 
         const provider = new EmailAndPasswordAuthenticationProvider(
-          userRepository,
           userCredentialsRepository,
           passwordEncryptionProvider,
           userIdProvider
@@ -78,9 +76,7 @@ const authOptions: NextAuthOptions = {
 
           return {
             id: user.id,
-            email: credentials.email,
-            name: `${user.firstName} ${user.lastName}`,
-            image: null
+            email: credentials.email
           };
         }
         catch (error) {

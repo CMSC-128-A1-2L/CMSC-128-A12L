@@ -1,11 +1,15 @@
 /**
  * The internal data structure for a user.
  */
-export type User = {
+
+export type AuthenticatedUser = {
     /**
      * The id of the user.
      **/
     id: string;
+}
+
+export type User = AuthenticatedUser & {
     /**
      * The first name of the user.
      **/

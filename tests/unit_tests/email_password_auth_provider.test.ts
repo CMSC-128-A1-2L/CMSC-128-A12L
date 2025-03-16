@@ -1,21 +1,13 @@
 import { EmailAndPasswordAuthenticationProvider } from "@/providers/email_and_password_authentication";
 
 import { User, UserCredentials } from "@/models/user";
-import { UserRepository } from "@/repositories/user_repository";
 import { UserCredentialsRepository } from "@/repositories/user_credentials_repository";
 import { PasswordEncryptionProvider } from "@/providers/password_encryption";
 
 import { describe, expect, test, jest } from "@jest/globals";
 import { UserIdProvider } from '@/providers/user_id';
-import { EmailAlreadyInUseError, InvalidAuthenticationMethodError, InvalidEmailFormat, MissingEmailError, MissingPasswordError, WrongLoginCredentialsError } from '@/errors/email_password_authentication';
+import { InvalidAuthenticationMethodError, WrongLoginCredentialsError } from '@/errors/email_password_authentication';
 import { FailedToFetchDataError } from '@/errors/internal_errors';
-
-const mockedUserRepository: UserRepository = {
-    createUser: jest.fn<() => Promise<void>>(),
-    getUserById: jest.fn<() => Promise<User | null>>(),
-    updateUser: jest.fn<() => Promise<void>>(),
-    deleteUser: jest.fn<() => Promise<void>>(),
-};
 
 const mockedUserCredentialsRepository: UserCredentialsRepository = {
     createUserCredentials: jest.fn<() => Promise<void>>(),
@@ -34,14 +26,8 @@ const mockedUserIdProvider: UserIdProvider = {
     generate: jest.fn<() => string>()
 };
 
-describe("EmailAndPasswordAuthenticationProvider login", () => {
+describe("EmailAndPasswordAuthenticationProvider", () => {
     test("should pass with matching credentials", async () => {
-        (mockedUserRepository.getUserById as jest.Mock<() => Promise<User | null>>).mockResolvedValue({
-            id: "test",
-            firstName: "Lorem",
-            lastName: "Ipsum"
-        });
-
         (mockedUserCredentialsRepository.getUserCredentialsByEmail as jest.Mock<() => Promise<UserCredentials | null>>).mockResolvedValue({
             userId: "test",
             email: "test@example.com",
@@ -49,7 +35,6 @@ describe("EmailAndPasswordAuthenticationProvider login", () => {
         });
 
         const service = new EmailAndPasswordAuthenticationProvider(
-            mockedUserRepository,
             mockedUserCredentialsRepository,
             mockedPasswordEncryptionProvider,
             mockedUserIdProvider
@@ -58,18 +43,14 @@ describe("EmailAndPasswordAuthenticationProvider login", () => {
         (mockedPasswordEncryptionProvider.validate as jest.Mock<() => boolean>).mockReturnValue(true);
 
         await expect(service.loginUser("test@example.com", "sampleText")).resolves.toEqual({
-            id: "test",
-            firstName: "Lorem",
-            lastName: "Ipsum"
+            id: "test"
         });
         expect(mockedPasswordEncryptionProvider.validate).toHaveBeenCalledWith("sampleText", "encryptedPassword");
         expect(mockedUserCredentialsRepository.getUserCredentialsByEmail).toHaveBeenCalledWith("test@example.com");
-        expect(mockedUserRepository.getUserById).toHaveBeenCalledWith("test");
     });
 
     test("should fail with no email passed", async () => {
         const service = new EmailAndPasswordAuthenticationProvider(
-            mockedUserRepository,
             mockedUserCredentialsRepository,
             mockedPasswordEncryptionProvider,
             mockedUserIdProvider
@@ -80,7 +61,6 @@ describe("EmailAndPasswordAuthenticationProvider login", () => {
 
     test("should fail with no password passed", async () => {
         const service = new EmailAndPasswordAuthenticationProvider(
-            mockedUserRepository,
             mockedUserCredentialsRepository,
             mockedPasswordEncryptionProvider,
             mockedUserIdProvider
@@ -90,12 +70,6 @@ describe("EmailAndPasswordAuthenticationProvider login", () => {
     });
 
     test("should fail with wrong password", async () => {
-        (mockedUserRepository.getUserById as jest.Mock<() => Promise<User>>).mockResolvedValue({
-            id: "test",
-            firstName: "Lorem",
-            lastName: "Ipsum"
-        });
-
         (mockedUserCredentialsRepository.getUserCredentialsByEmail as jest.Mock<() => Promise<UserCredentials>>).mockResolvedValue({
             userId: "test",
             email: "test@example.com",
@@ -105,7 +79,6 @@ describe("EmailAndPasswordAuthenticationProvider login", () => {
         (mockedPasswordEncryptionProvider.validate as jest.Mock<() => boolean>).mockReturnValue(false);
 
         const service = new EmailAndPasswordAuthenticationProvider(
-            mockedUserRepository,
             mockedUserCredentialsRepository,
             mockedPasswordEncryptionProvider,
             mockedUserIdProvider
@@ -119,7 +92,6 @@ describe("EmailAndPasswordAuthenticationProvider login", () => {
         (mockedUserCredentialsRepository.getUserCredentialsByEmail as jest.Mock<() => Promise<UserCredentials | null>>).mockResolvedValue(null);
 
         const service = new EmailAndPasswordAuthenticationProvider(
-            mockedUserRepository,
             mockedUserCredentialsRepository,
             mockedPasswordEncryptionProvider,
             mockedUserIdProvider
@@ -132,27 +104,6 @@ describe("EmailAndPasswordAuthenticationProvider login", () => {
         (mockedUserCredentialsRepository.getUserCredentialsByEmail as jest.Mock<() => Promise<UserCredentials | null>>).mockRejectedValue(new FailedToFetchDataError());
 
         const service = new EmailAndPasswordAuthenticationProvider(
-            mockedUserRepository,
-            mockedUserCredentialsRepository,
-            mockedPasswordEncryptionProvider,
-            mockedUserIdProvider
-        );
-
-        await expect(() => service.loginUser("test@example.com", "sampleText")).rejects.toThrow(new FailedToFetchDataError());
-    });
-
-    test("should throw if user repository fails", async () => {
-        (mockedUserCredentialsRepository.getUserCredentialsByEmail as jest.Mock<() => Promise<UserCredentials | null>>).mockResolvedValue({
-            userId: "test",
-            email: "test@example.com",
-            password: "sampleText"
-        });
-        (mockedPasswordEncryptionProvider.validate as jest.Mock<() => boolean>).mockReturnValue(true);
-
-        (mockedUserRepository.getUserById as jest.Mock<() => Promise<User | null>>).mockRejectedValue(new FailedToFetchDataError());
-
-        const service = new EmailAndPasswordAuthenticationProvider(
-            mockedUserRepository,
             mockedUserCredentialsRepository,
             mockedPasswordEncryptionProvider,
             mockedUserIdProvider
@@ -168,7 +119,6 @@ describe("EmailAndPasswordAuthenticationProvider login", () => {
         });
 
         const service = new EmailAndPasswordAuthenticationProvider(
-            mockedUserRepository,
             mockedUserCredentialsRepository,
             mockedPasswordEncryptionProvider,
             mockedUserIdProvider
@@ -176,203 +126,4 @@ describe("EmailAndPasswordAuthenticationProvider login", () => {
 
         await expect(() => service.loginUser("test@example.com", "sampleText")).rejects.toThrow(new InvalidAuthenticationMethodError());
     })
-});
-
-describe("EmailAndPasswordAuthenticationProvider register", () => {
-    test("should pass with valid data", async () => {
-        const userToRegister: Omit<User, "id"> = {
-            firstName: "Lorem",
-            lastName: "Ipsum"
-        };
-
-        (mockedUserCredentialsRepository.getUserCredentialsByEmail as jest.Mock<() => Promise<UserCredentials | null>>).mockResolvedValue(null);
-        (mockedUserRepository.getUserById as jest.Mock<() => Promise<User | null>>).mockResolvedValue(null);
-
-        (mockedUserRepository.createUser as jest.Mock<() => Promise<void>>).mockResolvedValue();
-        (mockedUserCredentialsRepository.createUserCredentials as jest.Mock<() => Promise<void>>).mockResolvedValue();
-
-        (mockedUserIdProvider.generate as jest.Mock<() => string>).mockReturnValue("420");
-        (mockedPasswordEncryptionProvider.encrypt as jest.Mock<() => string>).mockReturnValue("encryptedPassword");
-
-        const service = new EmailAndPasswordAuthenticationProvider(
-            mockedUserRepository,
-            mockedUserCredentialsRepository,
-            mockedPasswordEncryptionProvider,
-            mockedUserIdProvider
-        );
-
-        const expectedUser: User = {
-            id: "420",
-            firstName: "Lorem",
-            lastName: "Ipsum"
-        };
-
-        await expect(service.registerUser(userToRegister, "test@example.com", "sampleText")).resolves.toEqual(expectedUser);
-        expect(mockedUserIdProvider.generate).toHaveBeenCalled();
-        expect(mockedPasswordEncryptionProvider.encrypt).toHaveBeenCalledWith("sampleText");
-        expect(mockedUserRepository.createUser).toHaveBeenCalledWith(expectedUser);
-        expect(mockedUserCredentialsRepository.createUserCredentials).toHaveBeenCalledWith({
-            userId: "420",
-            email: "test@example.com",
-            password: "encryptedPassword"
-        });
-    });
-
-    test("should fail with invalid email format", async () => {
-        const userToRegister: Omit<User, "id"> = {
-            firstName: "Lorem",
-            lastName: "Ipsum"
-        };
-
-        const service = new EmailAndPasswordAuthenticationProvider(
-            mockedUserRepository,
-            mockedUserCredentialsRepository,
-            mockedPasswordEncryptionProvider,
-            mockedUserIdProvider
-        );
-
-        await expect(() => service.registerUser(userToRegister, "test", "sampleText")).rejects.toThrow(new InvalidEmailFormat());
-    });
-
-    test("should fail with no email passed", async () => {
-        const userToRegister: Omit<User, "id"> = {
-            firstName: "Lorem",
-            lastName: "Ipsum"
-        };
-
-        const service = new EmailAndPasswordAuthenticationProvider(
-            mockedUserRepository,
-            mockedUserCredentialsRepository,
-            mockedPasswordEncryptionProvider,
-            mockedUserIdProvider
-        );
-
-        await expect(() => service.registerUser(userToRegister, "", "sampleTest")).rejects.toThrow(new MissingEmailError());
-    });
-
-    test("should fail with no password passed", async () => {
-        const userToRegister: Omit<User, "id"> = {
-            firstName: "Lorem",
-            lastName: "Ipsum"
-        };
-
-        const service = new EmailAndPasswordAuthenticationProvider(
-            mockedUserRepository,
-            mockedUserCredentialsRepository,
-            mockedPasswordEncryptionProvider,
-            mockedUserIdProvider
-        );
-
-        await expect(() => service.registerUser(userToRegister, "test@example.com", "")).rejects.toThrow(new MissingPasswordError());
-    });
-
-    test("should fail if email already in use", async () => {
-        const userToRegister: Omit<User, "id"> = {
-            firstName: "Lorem",
-            lastName: "Ipsum"
-        };
-
-        (mockedUserCredentialsRepository.getUserCredentialsByEmail as jest.Mock<() => Promise<UserCredentials>>).mockResolvedValue({
-            userId: "another-test",
-            email: "test@example.com",
-            password: "sampleText2"
-        });
-        
-        const service = new EmailAndPasswordAuthenticationProvider(
-            mockedUserRepository,
-            mockedUserCredentialsRepository,
-            mockedPasswordEncryptionProvider,
-            mockedUserIdProvider
-        );
-
-        await expect(() => service.registerUser(userToRegister, "test@example.com", "sampleText")).rejects.toThrow(new EmailAlreadyInUseError());
-    });
-
-    test("should not register with repeated id", async () => {
-        const userToRegister: Omit<User, "id"> = {
-            firstName: "Sample",
-            lastName: "Text"
-        };
-
-        const ids: string[] = ["420"];
-        (mockedUserIdProvider.generate as jest.Mock<() => string>).mockImplementation(() => ids.pop() || "421");
-
-        const registeredUsers: User[] = [
-            {
-                id: "420",
-                firstName: "Lorem",
-                lastName: "Ipsum"
-            }
-        ];
-        (mockedUserRepository.getUserById as jest.Mock<() => Promise<User | null>>).mockImplementation(async () => registeredUsers.pop() || null);
-
-        (mockedUserRepository.createUser as jest.Mock<() => Promise<void>>).mockResolvedValue();
-        (mockedUserCredentialsRepository.createUserCredentials as jest.Mock<() => Promise<void>>).mockResolvedValue();
-        (mockedUserCredentialsRepository.getUserCredentialsByEmail as jest.Mock<() => Promise<UserCredentials | null>>).mockResolvedValue(null);
-
-        (mockedPasswordEncryptionProvider.encrypt as jest.Mock<() => string>).mockReturnValue("encryptedPassword");
-
-        const service = new EmailAndPasswordAuthenticationProvider(
-            mockedUserRepository,
-            mockedUserCredentialsRepository,
-            mockedPasswordEncryptionProvider,
-            mockedUserIdProvider
-        );
-
-        await expect(service.registerUser(userToRegister, "test@example.com", "sampleText")).resolves.toEqual({
-            id: "421",
-            firstName: "Sample",
-            lastName: "Text"
-        });
-        expect(mockedUserIdProvider.generate).toHaveBeenCalled();
-        expect(mockedPasswordEncryptionProvider.encrypt).toHaveBeenCalledWith("sampleText");
-        expect(mockedUserRepository.createUser).toHaveBeenCalledWith({
-            id: "421",
-            firstName: "Sample",
-            lastName: "Text"
-        });
-        expect(mockedUserCredentialsRepository.createUserCredentials).toHaveBeenCalledWith({
-            userId: "421",
-            email: "test@example.com",
-            password: "encryptedPassword"
-        });
-    });
-
-    test("should throw if user credentials repository fails", async () => {
-        const userToRegister: Omit<User, "id"> = {
-            firstName: "Lorem",
-            lastName: "Ipsum"
-        };
-
-        (mockedUserCredentialsRepository.getUserCredentialsByEmail as jest.Mock<() => Promise<UserCredentials | null>>).mockRejectedValue(new FailedToFetchDataError());
-
-        const service = new EmailAndPasswordAuthenticationProvider(
-            mockedUserRepository,
-            mockedUserCredentialsRepository,
-            mockedPasswordEncryptionProvider,
-            mockedUserIdProvider
-        );
-
-        await expect(() => service.registerUser(userToRegister, "test@example.com", "sampleText")).rejects.toThrow(new FailedToFetchDataError());
-    });
-
-    test("should throw if user repository fails", async () => {
-        const userToRegister: Omit<User, "id"> = {
-            firstName: "Lorem",
-            lastName: "Ipsum"
-        };
-
-        (mockedUserCredentialsRepository.getUserCredentialsByEmail as jest.Mock<() => Promise<UserCredentials | null>>).mockResolvedValue(null);
-        (mockedUserIdProvider.generate as jest.Mock<() => string>).mockReturnValue("420");
-        (mockedUserRepository.createUser as jest.Mock<() => Promise<void>>).mockRejectedValue(new FailedToFetchDataError());
-
-        const service = new EmailAndPasswordAuthenticationProvider(
-            mockedUserRepository,
-            mockedUserCredentialsRepository,
-            mockedPasswordEncryptionProvider,
-            mockedUserIdProvider
-        );
-
-        await expect(() => service.registerUser(userToRegister, "test@example.com", "sampleText")).rejects.toThrow(new FailedToFetchDataError());
-    });
 });

@@ -1,71 +1,18 @@
-import { User } from "@/models/user";
+import { AuthenticatedUser } from "@/models/user";
 import type { UserCredentialsRepository } from "@/repositories/user_credentials_repository";
-import type { UserRepository } from "@/repositories/user_repository";
 import type { PasswordEncryptionProvider } from "@/providers/password_encryption";
 import type { UserIdProvider } from "@/providers/user_id";
 
 import validator from 'validator';
-import { EmailAlreadyInUseError, InvalidAuthenticationMethodError, InvalidEmailFormat, MissingEmailError, MissingPasswordError, WrongLoginCredentialsError } from "@/errors/email_password_authentication";
-import { InconsistentInternalStateError } from "@/errors/internal_errors";
+import { InvalidAuthenticationMethodError, WrongLoginCredentialsError } from "@/errors/email_password_authentication";
 
 /**
  * A service that implements email-and-password authentication.
  **/
 export class EmailAndPasswordAuthenticationProvider {
-    private userRepository: UserRepository;
     private userEmailCredentialsRepository: UserCredentialsRepository
     private passwordEncryptionProvider: PasswordEncryptionProvider;
     private userIdProvider: UserIdProvider
-
-    /**
-     * Registers a user via email-and-password authentication.
-     * 
-     * @param user The user to register.
-     * @param email The email to attach to the user.
-     * @param password The password that the user will use for authentication. Must be unencrypted when passed to the
-     *                 function.
-     * 
-     * @returns A promise that contains the registered user when resolved, or an error when rejected.
-     */
-    async registerUser(user: Omit<User, "id">, email: string, password: string): Promise<User> {
-        if (validator.isEmpty(email)) {
-            throw new MissingEmailError();
-        }
-
-        if (validator.isEmpty(password)) {
-            throw new MissingPasswordError();
-        }
-
-        if (!validator.isEmail(email)) {
-            throw new InvalidEmailFormat();
-        }
-
-        const existingUserCredentials = await this.userEmailCredentialsRepository.getUserCredentialsByEmail(email);
-        if (existingUserCredentials !== null) {
-            throw new EmailAlreadyInUseError();
-        }
-
-        const encryptedPassword = this.passwordEncryptionProvider.encrypt(password);
-
-        const userToRegister: User = {
-            ...user,
-            id: this.userIdProvider.generate()
-        };
-        while (await this.userRepository.getUserById(userToRegister.id) !== null) {
-            userToRegister.id = this.userIdProvider.generate();
-        }
-
-        await Promise.all([
-            this.userEmailCredentialsRepository.createUserCredentials({
-                userId: userToRegister.id,
-                email: email,
-                password: encryptedPassword
-            }),
-            this.userRepository.createUser(userToRegister)
-        ]);
-
-        return userToRegister;
-    }
 
     /**
      * Logs a user in via email-and-password authentication.
@@ -75,7 +22,7 @@ export class EmailAndPasswordAuthenticationProvider {
      * 
      * @returns A promise that contains the authenticated user's data when resolved, or an error when rejected.
      */
-    async loginUser(email: string, password: string): Promise<User> {
+    async loginUser(email: string, password: string): Promise<AuthenticatedUser> {
         if (validator.isEmpty(email) || validator.isEmpty(password)) {
             throw new WrongLoginCredentialsError();
         }
@@ -94,15 +41,9 @@ export class EmailAndPasswordAuthenticationProvider {
             throw new WrongLoginCredentialsError();
         }
 
-        const user = await this.userRepository.getUserById(credentials.userId);
-        if (user === null) {
-            // If, somehow, the user credentials repository and user repository have inconsistent states on
-            // which users are registered, throw an error.
-            // This, ideally, should never happen, which is why this branch is not being tested.
-            throw new InconsistentInternalStateError("User with valid credentials not in user repository");
-        }
-
-        return user;
+        return {
+            id: credentials.userId
+        };
     }
 
     /**
@@ -114,13 +55,11 @@ export class EmailAndPasswordAuthenticationProvider {
      * @param userIdProvider The user id provider to use for the service.
      */
     constructor(
-        userRepository: UserRepository,
         userEmailCredentialsRepository: UserCredentialsRepository,
         passwordEncryptionProvider: PasswordEncryptionProvider,
         userIdProvider: UserIdProvider
     )
     {
-        this.userRepository = userRepository;
         this.userEmailCredentialsRepository = userEmailCredentialsRepository;
         this.passwordEncryptionProvider = passwordEncryptionProvider;
         this.userIdProvider = userIdProvider;
