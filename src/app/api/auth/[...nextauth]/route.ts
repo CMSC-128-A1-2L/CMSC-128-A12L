@@ -7,7 +7,7 @@ import GoogleProvider from "next-auth/providers/google";
 import Credentials from 'next-auth/providers/credentials';
 
 import { EmailAndPasswordAuthenticationProvider } from '@/providers/email_and_password_authentication';
-import { getUserCredentialRepository } from "@/repositories/user_email_credentials_repository";
+import { getUserCredentialRepository } from "@/repositories/user_credentials_repository";
 import { getUserRepository } from "@/repositories/user_repository";
 import { getPasswordEncryptionProvider } from "@/providers/password_encryption";
 import { getUserIdProvider } from "@/providers/user_id";

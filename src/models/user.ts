@@ -28,7 +28,7 @@ export type User = {
 /**
  * The internal data structure for user credentials. These are used by the user for authentication.
  **/
-export type UserEmailCredentials = {
+export type UserCredentials = {
     /**
      * The id of the user who owns the credentials.
      **/
@@ -40,7 +40,14 @@ export type UserEmailCredentials = {
     email: string;
 
     /**
-     * The password of the user. MUST BE ENCRYPTED.
+     * The password of the user. If `undefined`, the user has not set a password.
+     * 
+     * MUST BE ENCRYPTED.
      **/
-    password: string;
+    password?: string;
+
+    /**
+     * The refresh token of a user authenticated via Google OAuth. If `undefined`, the user has not linked a Google account.
+     **/
+    googleRefreshToken?: string;
 }

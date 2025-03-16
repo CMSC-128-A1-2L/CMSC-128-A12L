@@ -1,11 +1,11 @@
 import { User } from "@/models/user";
-import type { UserEmailCredentialsRepository } from "@/repositories/user_email_credentials_repository";
+import type { UserCredentialsRepository } from "@/repositories/user_credentials_repository";
 import type { UserRepository } from "@/repositories/user_repository";
 import type { PasswordEncryptionProvider } from "@/providers/password_encryption";
 import type { UserIdProvider } from "@/providers/user_id";
 
 import validator from 'validator';
-import { EmailAlreadyInUseError, InvalidEmailFormat, MissingEmailError, MissingPasswordError, UserRegistrationError, WrongLoginCredentialsError } from "@/errors/email_password_authentication";
+import { EmailAlreadyInUseError, InvalidAuthenticationMethodError, InvalidEmailFormat, MissingEmailError, MissingPasswordError, UserRegistrationError, WrongLoginCredentialsError } from "@/errors/email_password_authentication";
 import { InconsistentInternalStateError } from "@/errors/internal_errors";
 
 /**
@@ -13,7 +13,7 @@ import { InconsistentInternalStateError } from "@/errors/internal_errors";
  **/
 export class EmailAndPasswordAuthenticationProvider {
     private userRepository: UserRepository;
-    private userEmailCredentialsRepository: UserEmailCredentialsRepository
+    private userEmailCredentialsRepository: UserCredentialsRepository
     private passwordEncryptionProvider: PasswordEncryptionProvider;
     private userIdProvider: UserIdProvider
 
@@ -87,6 +87,11 @@ export class EmailAndPasswordAuthenticationProvider {
             throw new WrongLoginCredentialsError();
         }
 
+        // Cannot authenticate via email-and-password if the user has not set a password.
+        if (credentials.password === undefined) {
+            throw new InvalidAuthenticationMethodError();
+        }
+
         if (!this.passwordEncryptionProvider.validate(password, credentials.password)) {
             throw new WrongLoginCredentialsError();
         }
@@ -112,7 +117,7 @@ export class EmailAndPasswordAuthenticationProvider {
      */
     constructor(
         userRepository: UserRepository,
-        userEmailCredentialsRepository: UserEmailCredentialsRepository,
+        userEmailCredentialsRepository: UserCredentialsRepository,
         passwordEncryptionProvider: PasswordEncryptionProvider,
         userIdProvider: UserIdProvider
     )
