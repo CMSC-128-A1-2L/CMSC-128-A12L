@@ -113,7 +113,10 @@ userCredentialsRepository.createUserCredentials({
     id: "test",
     email: "test@example.com",
     emailVerified: null,
-    password: "Sample Text"
+    password: {
+        id: "samplePassword",
+        encryptedValue: "Sample Text"
+    }
 });
 
 export function getUserCredentialRepository(): UserCredentialsRepository {

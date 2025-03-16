@@ -28,7 +28,10 @@ describe("EmailAndPasswordAuthenticationProvider", () => {
             id: "test",
             email: "test@example.com",
             emailVerified: null,
-            password: "encryptedPassword"
+            password: {
+                id: "samplePassword",
+                encryptedValue: "encryptedPassword"
+            }
         });
 
         const service = new EmailAndPasswordAuthenticationProvider(
@@ -39,7 +42,7 @@ describe("EmailAndPasswordAuthenticationProvider", () => {
         (mockedPasswordEncryptionProvider.validate as jest.Mock<() => boolean>).mockReturnValue(true);
 
         const expectedReturn: AdapterUser = {
-            id: "test",
+            id: "samplePassword",
             email: "test@example.com",
             emailVerified: null
         };
@@ -72,7 +75,10 @@ describe("EmailAndPasswordAuthenticationProvider", () => {
             id: "test",
             email: "test@example.com",
             emailVerified: null,
-            password: "encryptedPassword"
+            password: {
+                id: "samplePassword",
+                encryptedValue: "encryptedPassword"
+            }
         });
 
         (mockedPasswordEncryptionProvider.validate as jest.Mock<() => boolean>).mockReturnValue(false);

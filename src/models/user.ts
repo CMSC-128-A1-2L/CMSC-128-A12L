@@ -26,14 +26,34 @@ export type User = AdapterUser & {
  **/
 export type UserCredentials = AdapterUser & {
     /**
-     * The password of the user. If `undefined`, the user has not set a password.
-     * 
-     * MUST BE ENCRYPTED.
+     * The credentials of the user for password authentication. If `undefined`, the user does not have password
+     * authentication enabled.
      **/
-    password?: string;
+    password?: {
+        /**
+         * The account ID of the user's password auth account.
+         **/
+        id: string;
+
+        /**
+         * The user's password, in encrypted form.
+         **/
+        encryptedValue: string;
+    };
 
     /**
-     * The refresh token of a user authenticated via Google OAuth. If `undefined`, the user has not linked a Google account.
+     * The credentials of the user for Google OAuth. If `undefined`, the user does not have Google authentication
+     * enabled.
      **/
-    googleRefreshToken?: string;
+    google?: {
+        /**
+         * The account ID of the user's Google OAuth account.
+         **/
+        id: string;
+
+        /**
+         * The refresh token assigned by Google for the user's account.
+         **/
+        refreshToken: string;
+    }
 }

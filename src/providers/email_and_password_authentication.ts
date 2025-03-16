@@ -35,12 +35,12 @@ export class EmailAndPasswordAuthenticationProvider {
             throw new InvalidAuthenticationMethodError();
         }
 
-        if (!this.passwordEncryptionProvider.validate(password, credentials.password)) {
+        if (!this.passwordEncryptionProvider.validate(password, credentials.password.encryptedValue)) {
             throw new WrongLoginCredentialsError();
         }
 
         return {
-            id: credentials.id,
+            id: credentials.password.id,
             email: credentials.email,
             emailVerified: credentials.emailVerified
         };
