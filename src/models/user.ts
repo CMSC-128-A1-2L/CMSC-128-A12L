@@ -2,14 +2,9 @@
  * The internal data structure for a user.
  */
 
-export type AuthenticatedUser = {
-    /**
-     * The id of the user.
-     **/
-    id: string;
-}
+import { AdapterUser } from "next-auth/adapters";
 
-export type User = AuthenticatedUser & {
+export type User = AdapterUser & {
     /**
      * The first name of the user.
      **/
@@ -29,17 +24,7 @@ export type User = AuthenticatedUser & {
 /**
  * The internal data structure for user credentials. These are used by the user for authentication.
  **/
-export type UserCredentials = {
-    /**
-     * The id of the user who owns the credentials.
-     **/
-    userId: string;
-
-    /**
-     * The email address of the user.
-     **/
-    email: string;
-
+export type UserCredentials = AdapterUser & {
     /**
      * The password of the user. If `undefined`, the user has not set a password.
      * 

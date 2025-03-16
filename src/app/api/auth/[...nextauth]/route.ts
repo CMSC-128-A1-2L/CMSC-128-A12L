@@ -8,9 +8,7 @@ import Credentials from 'next-auth/providers/credentials';
 
 import { EmailAndPasswordAuthenticationProvider } from '@/providers/email_and_password_authentication';
 import { getUserCredentialRepository } from "@/repositories/user_credentials_repository";
-import { getUserRepository } from "@/repositories/user_repository";
 import { getPasswordEncryptionProvider } from "@/providers/password_encryption";
-import { getUserIdProvider } from "@/providers/user_id";
 import { WrongLoginCredentialsError } from "@/errors/email_password_authentication";
 
 // Define the google id and secret 
@@ -59,25 +57,14 @@ const authOptions: NextAuthOptions = {
 
         const userCredentialsRepository = getUserCredentialRepository();
         const passwordEncryptionProvider = getPasswordEncryptionProvider();
-        const userIdProvider = getUserIdProvider();
 
         const provider = new EmailAndPasswordAuthenticationProvider(
           userCredentialsRepository,
-          passwordEncryptionProvider,
-          userIdProvider
+          passwordEncryptionProvider
         );
 
         try {
-          const user = await provider.loginUser(credentials.email, credentials.password);
-          if (user.id === undefined) {
-            console.error("Validated user has no ID!");
-            return null;
-          }
-
-          return {
-            id: user.id,
-            email: credentials.email
-          };
+          return await provider.loginUser(credentials.email, credentials.password);
         }
         catch (error) {
           if (error instanceof WrongLoginCredentialsError) {

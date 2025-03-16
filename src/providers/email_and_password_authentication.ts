@@ -1,10 +1,9 @@
-import { AuthenticatedUser } from "@/models/user";
 import type { UserCredentialsRepository } from "@/repositories/user_credentials_repository";
 import type { PasswordEncryptionProvider } from "@/providers/password_encryption";
-import type { UserIdProvider } from "@/providers/user_id";
 
 import validator from 'validator';
 import { InvalidAuthenticationMethodError, WrongLoginCredentialsError } from "@/errors/email_password_authentication";
+import { AdapterUser } from "next-auth/adapters";
 
 /**
  * A service that implements email-and-password authentication.
@@ -12,7 +11,6 @@ import { InvalidAuthenticationMethodError, WrongLoginCredentialsError } from "@/
 export class EmailAndPasswordAuthenticationProvider {
     private userEmailCredentialsRepository: UserCredentialsRepository
     private passwordEncryptionProvider: PasswordEncryptionProvider;
-    private userIdProvider: UserIdProvider
 
     /**
      * Logs a user in via email-and-password authentication.
@@ -22,7 +20,7 @@ export class EmailAndPasswordAuthenticationProvider {
      * 
      * @returns A promise that contains the authenticated user's data when resolved, or an error when rejected.
      */
-    async loginUser(email: string, password: string): Promise<AuthenticatedUser> {
+    async loginUser(email: string, password: string): Promise<AdapterUser> {
         if (validator.isEmpty(email) || validator.isEmpty(password)) {
             throw new WrongLoginCredentialsError();
         }
@@ -42,26 +40,24 @@ export class EmailAndPasswordAuthenticationProvider {
         }
 
         return {
-            id: credentials.userId
+            id: credentials.id,
+            email: credentials.email,
+            emailVerified: credentials.emailVerified
         };
     }
 
     /**
      * Initializes the service
      * 
-     * @param userRepository The user repository to use for the service.
      * @param userEmailCredentialsRepository The user credentials repository to use for the service.
      * @param passwordEncryptionProvider The password encryption provider to use for the service.
-     * @param userIdProvider The user id provider to use for the service.
      */
     constructor(
         userEmailCredentialsRepository: UserCredentialsRepository,
-        passwordEncryptionProvider: PasswordEncryptionProvider,
-        userIdProvider: UserIdProvider
+        passwordEncryptionProvider: PasswordEncryptionProvider
     )
     {
         this.userEmailCredentialsRepository = userEmailCredentialsRepository;
         this.passwordEncryptionProvider = passwordEncryptionProvider;
-        this.userIdProvider = userIdProvider;
     }
 }

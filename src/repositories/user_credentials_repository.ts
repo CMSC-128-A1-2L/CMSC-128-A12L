@@ -24,11 +24,11 @@ export interface UserCredentialsRepository {
     /**
      * Gets user credentials based on their id.
      * 
-     * @param userId The user id to fetch.
+     * @param id The user id to fetch.
      * @return A promise that resolves to either the fetched user credentials, or `null` if the credentials could not be
      *         found.
      **/
-    getUserCredentialsById(userId: string): Promise<UserCredentials | null>;
+    getUserCredentialsById(id: string): Promise<UserCredentials | null>;
 
     /**
      * Updates user credentials on the repository. This will use the user id in the credentials to determine which entry
@@ -42,10 +42,10 @@ export interface UserCredentialsRepository {
     /**
      * Deletes user credentials on the repository.
      * 
-     * @param email The id of the user whose credentials are to be deleted.
+     * @param id The id of the user whose credentials are to be deleted.
      * @return A promise that resolves when the credentials are deleted successfully.
      */
-    deleteUserCredentials(userId: string): Promise<void>;
+    deleteUserCredentials(id: string): Promise<void>;
 }
 
 class InMemoryUserCredentialsRepository implements UserCredentialsRepository {
@@ -53,7 +53,7 @@ class InMemoryUserCredentialsRepository implements UserCredentialsRepository {
 
     createUserCredentials(userCredentials: UserCredentials): Promise<void> {
         for (const user of this.credentials) {
-            if (user.email === userCredentials.email || user.userId === userCredentials.userId) {
+            if (user.email === userCredentials.email || user.id === userCredentials.id) {
                 return Promise.reject(new Error("The user already exists."));
             }
         }
@@ -73,9 +73,9 @@ class InMemoryUserCredentialsRepository implements UserCredentialsRepository {
         return Promise.resolve(null);
     }
 
-    getUserCredentialsById(userId: string): Promise<UserCredentials | null> {
+    getUserCredentialsById(id: string): Promise<UserCredentials | null> {
         for (const user of this.credentials) {
-            if (user.userId === userId) {
+            if (user.id === id) {
                 return Promise.resolve(user);
             }
         }
@@ -84,7 +84,7 @@ class InMemoryUserCredentialsRepository implements UserCredentialsRepository {
     }
 
     updateUserCredentials(userCredentials: UserCredentials): Promise<void> {
-        const index = this.credentials.findIndex(user => user.userId === userCredentials.userId);
+        const index = this.credentials.findIndex(user => user.id === userCredentials.id);
         if (index === -1) {
             return Promise.reject(new Error("The user does not exist."));
         }
@@ -93,8 +93,8 @@ class InMemoryUserCredentialsRepository implements UserCredentialsRepository {
         return Promise.resolve();
     }
 
-    deleteUserCredentials(userId: string): Promise<void> {
-        const index = this.credentials.findIndex(credentials => credentials.userId === userId);
+    deleteUserCredentials(id: string): Promise<void> {
+        const index = this.credentials.findIndex(credentials => credentials.id === id);
         if (index === -1) {
             return Promise.reject(new Error("The user does not exist."));
         }
@@ -109,6 +109,12 @@ class InMemoryUserCredentialsRepository implements UserCredentialsRepository {
 }
 
 const userCredentialsRepository = new InMemoryUserCredentialsRepository();
+userCredentialsRepository.createUserCredentials({
+    id: "test",
+    email: "test@example.com",
+    emailVerified: null,
+    password: "Sample Text"
+});
 
 export function getUserCredentialRepository(): UserCredentialsRepository {
     return userCredentialsRepository;
