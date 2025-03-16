@@ -3,12 +3,9 @@
  */
 export type User = {
     /**
-     * A unique identifier for a user.
-     * 
-     * @todo Check if we need a better id data type like UUID.
-     */
-    id?: string;
-
+     * The id of the user.
+     **/
+    id: string;
     /**
      * The first name of the user.
      **/

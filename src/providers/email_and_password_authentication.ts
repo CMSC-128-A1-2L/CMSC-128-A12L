@@ -5,7 +5,7 @@ import type { PasswordEncryptionProvider } from "@/providers/password_encryption
 import type { UserIdProvider } from "@/providers/user_id";
 
 import validator from 'validator';
-import { EmailAlreadyInUseError, InvalidAuthenticationMethodError, InvalidEmailFormat, MissingEmailError, MissingPasswordError, UserRegistrationError, WrongLoginCredentialsError } from "@/errors/email_password_authentication";
+import { EmailAlreadyInUseError, InvalidAuthenticationMethodError, InvalidEmailFormat, MissingEmailError, MissingPasswordError, WrongLoginCredentialsError } from "@/errors/email_password_authentication";
 import { InconsistentInternalStateError } from "@/errors/internal_errors";
 
 /**
@@ -27,7 +27,7 @@ export class EmailAndPasswordAuthenticationProvider {
      * 
      * @returns A promise that contains the registered user when resolved, or an error when rejected.
      */
-    async registerUser(user: User, email: string, password: string): Promise<User> {
+    async registerUser(user: Omit<User, "id">, email: string, password: string): Promise<User> {
         if (validator.isEmpty(email)) {
             throw new MissingEmailError();
         }
@@ -40,10 +40,6 @@ export class EmailAndPasswordAuthenticationProvider {
             throw new InvalidEmailFormat();
         }
 
-        if (user.id !== undefined) {
-            throw new UserRegistrationError("User already has id");
-        }
-
         const existingUserCredentials = await this.userEmailCredentialsRepository.getUserCredentialsByEmail(email);
         if (existingUserCredentials !== null) {
             throw new EmailAlreadyInUseError();
@@ -51,8 +47,10 @@ export class EmailAndPasswordAuthenticationProvider {
 
         const encryptedPassword = this.passwordEncryptionProvider.encrypt(password);
 
-        const userToRegister = user;
-        userToRegister.id = this.userIdProvider.generate();
+        const userToRegister: User = {
+            ...user,
+            id: this.userIdProvider.generate()
+        };
         while (await this.userRepository.getUserById(userToRegister.id) !== null) {
             userToRegister.id = this.userIdProvider.generate();
         }

@@ -7,7 +7,7 @@ import { PasswordEncryptionProvider } from "@/providers/password_encryption";
 
 import { describe, expect, test, jest } from "@jest/globals";
 import { UserIdProvider } from '@/providers/user_id';
-import { EmailAlreadyInUseError, InvalidAuthenticationMethodError, InvalidEmailFormat, MissingEmailError, MissingPasswordError, UserRegistrationError, WrongLoginCredentialsError } from '@/errors/email_password_authentication';
+import { EmailAlreadyInUseError, InvalidAuthenticationMethodError, InvalidEmailFormat, MissingEmailError, MissingPasswordError, WrongLoginCredentialsError } from '@/errors/email_password_authentication';
 import { FailedToFetchDataError } from '@/errors/internal_errors';
 
 const mockedUserRepository: UserRepository = {
@@ -180,7 +180,7 @@ describe("EmailAndPasswordAuthenticationProvider login", () => {
 
 describe("EmailAndPasswordAuthenticationProvider register", () => {
     test("should pass with valid data", async () => {
-        const userToRegister: User = {
+        const userToRegister: Omit<User, "id"> = {
             firstName: "Lorem",
             lastName: "Ipsum"
         };
@@ -219,7 +219,7 @@ describe("EmailAndPasswordAuthenticationProvider register", () => {
     });
 
     test("should fail with invalid email format", async () => {
-        const userToRegister: User = {
+        const userToRegister: Omit<User, "id"> = {
             firstName: "Lorem",
             lastName: "Ipsum"
         };
@@ -235,7 +235,7 @@ describe("EmailAndPasswordAuthenticationProvider register", () => {
     });
 
     test("should fail with no email passed", async () => {
-        const userToRegister: User = {
+        const userToRegister: Omit<User, "id"> = {
             firstName: "Lorem",
             lastName: "Ipsum"
         };
@@ -251,7 +251,7 @@ describe("EmailAndPasswordAuthenticationProvider register", () => {
     });
 
     test("should fail with no password passed", async () => {
-        const userToRegister: User = {
+        const userToRegister: Omit<User, "id"> = {
             firstName: "Lorem",
             lastName: "Ipsum"
         };
@@ -267,7 +267,7 @@ describe("EmailAndPasswordAuthenticationProvider register", () => {
     });
 
     test("should fail if email already in use", async () => {
-        const userToRegister: User = {
+        const userToRegister: Omit<User, "id"> = {
             firstName: "Lorem",
             lastName: "Ipsum"
         };
@@ -288,25 +288,8 @@ describe("EmailAndPasswordAuthenticationProvider register", () => {
         await expect(() => service.registerUser(userToRegister, "test@example.com", "sampleText")).rejects.toThrow(new EmailAlreadyInUseError());
     });
 
-    test("should fail if user already has id", async () => {
-        const userToRegister: User = {
-            id: "420",
-            firstName: "Lorem",
-            lastName: "Ipsum"
-        };
-
-        const service = new EmailAndPasswordAuthenticationProvider(
-            mockedUserRepository,
-            mockedUserCredentialsRepository,
-            mockedPasswordEncryptionProvider,
-            mockedUserIdProvider
-        );
-
-        await expect(() => service.registerUser(userToRegister, "test@example.com", "sampleText")).rejects.toThrow(new UserRegistrationError("User already has id"));
-    });
-
     test("should not register with repeated id", async () => {
-        const userToRegister: User = {
+        const userToRegister: Omit<User, "id"> = {
             firstName: "Sample",
             lastName: "Text"
         };
@@ -356,7 +339,7 @@ describe("EmailAndPasswordAuthenticationProvider register", () => {
     });
 
     test("should throw if user credentials repository fails", async () => {
-        const userToRegister: User = {
+        const userToRegister: Omit<User, "id"> = {
             firstName: "Lorem",
             lastName: "Ipsum"
         };
@@ -374,7 +357,7 @@ describe("EmailAndPasswordAuthenticationProvider register", () => {
     });
 
     test("should throw if user repository fails", async () => {
-        const userToRegister: User = {
+        const userToRegister: Omit<User, "id"> = {
             firstName: "Lorem",
             lastName: "Ipsum"
         };
