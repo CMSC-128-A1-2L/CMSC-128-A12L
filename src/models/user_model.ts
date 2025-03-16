@@ -109,6 +109,7 @@ const UserModel: Model<IUser> = mongoose.models.Users || mongoose.model<IUser>("
 
 export {
   UserModel,
+  UserRole,
   SortBy
 };
 
