@@ -32,6 +32,10 @@ export function isValidContactNumbers(numbers: string[]): boolean { // Is curren
 
 
 interface IUser extends Document {
+  // In case of google authentication, we need to store the google id and refresh token.
+  googleId?: string,
+  refreshToken?: string,
+  email: string,
   role: UserRole,
   studentId?: string,
   firstName: string,
@@ -42,15 +46,19 @@ interface IUser extends Document {
   currentAddress: Types.ObjectId,
   bio: string,
   linkedIn: string,
-  contactNumbers: number[]
+  contactNumbers: number[],
 }
 
 const UserSchema = new Schema<IUser>(
   {
-    role: { type: Number, required: true},
+    // Add google-related fields
+    googleId: { type: String },
+    refreshToken: { type: String },
+    email: { type: String, required: true },
+    role: { type: Number, required: true },
     studentId: { type: String },
     firstName: { type: String, required: true },
-    middleName: { type: String },
+    middleName: { type: String},
     lastName: { type: String, required: true },
     suffix: { type: String },
     currentAddress: { type: Schema.Types.ObjectId },

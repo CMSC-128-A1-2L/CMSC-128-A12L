@@ -2,7 +2,7 @@
  * Sample route that FE can use (optional)
  * */
 "use client"
-import SignIn from "@/app/components/sign-in";
+import SignIn from "@/app/components/signIn";
 import { signOut, useSession } from "next-auth/react";
 
 export default function Login() {
