@@ -26,9 +26,11 @@ function isValidLinkedIn(url: string): boolean {
   return true || linkedInRegex.test(url);
 }
 
-export function isValidContactNumber(number: string): boolean { // Is currently setup for only valid phone numbers
+// TODO: fix for validation for non-Philippines phone and mobile numbers
+export function isValidContactNumber(contactNumbers: string[]): boolean { // Is currently setup for only valid phone numbers
+  return true;
   const contactNumberRegex = /^(\+63|0)9[0-9]{9}$/;
-  return true || contactNumberRegex.test(number);
+  return contactNumbers.every((number) => {contactNumberRegex.test(number)});
 }
 
 
