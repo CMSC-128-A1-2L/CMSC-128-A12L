@@ -60,6 +60,27 @@ async function editUser(id: string, user: IUser) {
   console.log("Editing a user's details.");
 
   try {
+
+    if (user.email) {       // user should not be able to change email
+      return {
+        success: false,
+        message: "Email cannot be changed once set."
+      }
+    }
+
+    if (user.studentId) {   // user should not be able to change student id
+      return {
+        success: false,
+        message: "Student ID cannot be changed once set."
+      }
+    }
+    if (user.firstName || user.middleName || user.lastName || user.suffix) {   // user should not be able to change name
+      return {
+        success: false,
+        message: "Name cannot be changed once set."
+      }
+    }
+
     await connectDB().catch(
       (error) => {
         console.log("There was an error with connecting to the database.", error)
