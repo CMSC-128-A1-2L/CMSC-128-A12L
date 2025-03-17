@@ -42,7 +42,7 @@ export default function AlumniLanding() {
   return (
     <div className="min-h-screen flex flex-col bg-white">
       {/* Blue Topbar */}
-      <header style={{ backgroundColor: "#1D44AB" }} className="text-white py-4">
+      <header style={{ backgroundColor: "#0C0051" }} className="text-white py-4">
         <div className="container mx-auto px-4 flex justify-between items-center">
           <div className="flex items-center">
             <button
@@ -54,7 +54,7 @@ export default function AlumniLanding() {
               <Menu size={24} />
             </button>
             <Link href="/alumni-landing">
-              <h1 className="text-xl font-bold cursor-pointer">ARES |</h1>
+              <h1 className="text-xl font-bold cursor-pointer">AEGIS |</h1>
             </Link>
           </div>
           <div className="flex items-center space-x-4">
