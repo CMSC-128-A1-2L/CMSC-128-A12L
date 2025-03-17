@@ -78,7 +78,7 @@ export default function AlumniLanding() {
         } transition-transform duration-300 ease-in-out`}
       >
         <div className="p-4 flex justify-between items-center border-b">
-          <h2 className="text-lg font-bold text-gray-800">ARES Menu</h2>
+          <h2 className="text-lg font-bold text-gray-800">AEGIS Menu</h2>
           <button
             onClick={() => setSidebarOpen(false)}
             className="focus:outline-none cursor-pointer"
@@ -108,7 +108,7 @@ export default function AlumniLanding() {
       <main className="flex-grow container mx-auto px-4 py-8 flex items-center justify-center">
         <div className="bg-white shadow-lg rounded-3xl p-8 max-w-2xl w-full">
           <h2 className="text-3xl font-bold text-center text-gray-800 mb-6" style={{ fontFamily: "Montserrat, sans-serif" }}>
-            Welcome to ARES!
+            Welcome to AEGIS!
           </h2>
           <p className="text-gray-600" style={{ fontFamily: "Montserrat, sans-serif" }}>
             Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam pulvinar risus non risus hendrerit venenatis. 
