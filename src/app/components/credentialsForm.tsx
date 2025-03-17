@@ -6,7 +6,7 @@ export function CredentialsForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: any) => {
     e.preventDefault();
     console.log("Email:", email, "Password:", password);
     // Implement authentication logic here

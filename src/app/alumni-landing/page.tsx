@@ -3,9 +3,16 @@ import { signOut, useSession } from "next-auth/react";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { Menu, X, LogOut, User, Briefcase, Calendar, DollarSign, Bell, Users } from "lucide-react";
+import { redirect } from "next/navigation";
 
 export default function AlumniLanding() {
-  const { data: session } = useSession();
+  const { data: session } = useSession({
+    required: true,
+    onUnauthenticated() {
+      redirect("/login");
+    }
+  }
+  );
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
@@ -15,7 +22,7 @@ export default function AlumniLanding() {
     function handleClickOutside(event: MouseEvent) {
       if (
         sidebarOpen &&
-        sidebarRef.current && 
+        sidebarRef.current &&
         !sidebarRef.current.contains(event.target as Node) &&
         menuButtonRef.current &&
         !menuButtonRef.current.contains(event.target as Node)
@@ -58,14 +65,13 @@ export default function AlumniLanding() {
             </Link>
           </div>
           <div className="flex items-center space-x-4">
-            <Link href="/">
-              <button
-                className="focus:outline-none cursor-pointer"
-                aria-label="Sign Out"
-              >
-                <LogOut size={20} />
-              </button>
-            </Link>
+            <button
+              onClick={() => signOut()}
+              className="focus:outline-none cursor-pointer"
+              aria-label="Sign Out"
+            >
+              <LogOut size={20} />
+            </button>
           </div>
         </div>
       </header>
@@ -73,9 +79,8 @@ export default function AlumniLanding() {
       {/* Sidebar */}
       <div
         ref={sidebarRef}
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        } transition-transform duration-300 ease-in-out`}
+        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
+          } transition-transform duration-300 ease-in-out`}
       >
         <div className="p-4 flex justify-between items-center border-b">
           <h2 className="text-lg font-bold text-gray-800">AEGIS Menu</h2>
@@ -111,13 +116,13 @@ export default function AlumniLanding() {
             Welcome to AEGIS!
           </h2>
           <p className="text-gray-600" style={{ fontFamily: "Montserrat, sans-serif" }}>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam pulvinar risus non risus hendrerit venenatis. 
-            Pellentesque sit amet hendrerit risus, sed porttitor quam. Magna etiam tempor orci eu lobortis elementum nibh. 
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam pulvinar risus non risus hendrerit venenatis.
+            Pellentesque sit amet hendrerit risus, sed porttitor quam. Magna etiam tempor orci eu lobortis elementum nibh.
             Amet est placerat in egestas erat imperdiet. Tempus urna et pharetra pharetra massa massa ultricies mi quis.
           </p>
         </div>
       </main>
-      
+
     </div>
   );
 }

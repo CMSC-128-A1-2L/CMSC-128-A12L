@@ -4,6 +4,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { redirect } from "next/navigation";
 import SignInButton from "@/app/components/sign-in"; 
 import { CredentialsForm } from "../components/credentialsForm";
+import EmailSignUp from "../components/emailSignUp";
 export default function AdminLogin() {
 	return (
 	  <div
