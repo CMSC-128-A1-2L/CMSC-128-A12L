@@ -1,6 +1,10 @@
 @import "tailwindcss";
 @plugin "daisyui";
 
+@theme {
+  --color-icscolor: #0C0051; /* added ics color to be reused*/
+}
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
