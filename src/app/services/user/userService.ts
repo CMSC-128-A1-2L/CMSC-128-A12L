@@ -1,5 +1,6 @@
 import { connectDB } from "@/app/services/database/database";
 import { UserModel, IUser, IUserRequest, SortBy } from "@/models/user_model";
+import { Admin, ObjectId } from "mongodb";
 import { SortOrder } from "mongoose";
 
 async function getAllUsers(filter: IUserRequest) {
@@ -111,7 +112,14 @@ async function deleteUser(id: string) {
         console.log("There was an error with connecting to the database.", error)
       }
     );
+    let user = await UserModel.findOne({_id: id});
+    if (user?.role == "admin"){
+      return {
+        success: false,
+        message: "Admins cannot delete themselves."
+      }
 
+    }
     let edited_user = await UserModel.deleteOne({_id: id});
     return {
       success: true,
