@@ -6,7 +6,7 @@ import Link from "next/link";
 
 export default function AdminLanding() {
   const { data: session } = useSession();
-  const adminName = session?.user?.name ? `Admin ${session.user.name}` : "Admin TempName";
+  const adminName = session?.user?.name ? `Admin ${session.user.name}` : "Admin <TempName>";
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
@@ -85,7 +85,7 @@ export default function AdminLanding() {
 
   // Dummy data for recent alerts section
   const recentAlerts = [
-    { title: "Reunion Batch '69", message: "On February 31, 2025 and 134 are interested", time: "2 hours ago" },
+    { title: "Reunion Batch '69", message: "On February 31, 2025", time: "2 hours ago" },
     { title: "Area 51 Raid", message: "Ongoing with 1,291 participants", time: "5 hours ago" },
     { title: "Mars Terraformation", message: "On December 31, 4786 with 7,909 are interested", time: "1 day ago" },
   ];
