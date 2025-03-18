@@ -22,6 +22,6 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
   let {id} = await params;
   console.log(id);
 
-  let deleted_user = await deleteUser(id);
+  let deleted_user = await deleteUser(id, req);
   return NextResponse.json(deleted_user);
 }

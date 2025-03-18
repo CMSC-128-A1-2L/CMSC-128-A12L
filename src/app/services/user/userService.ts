@@ -2,6 +2,7 @@ import { connectDB } from "@/app/services/database/database";
 import { UserModel, IUser, IUserRequest, SortBy } from "@/models/user_model";
 import { Admin, ObjectId } from "mongodb";
 import { SortOrder } from "mongoose";
+import { getToken } from "next-auth/jwt"
 
 async function getAllUsers(filter: IUserRequest) {
   console.log("Fetching all users.");
@@ -103,7 +104,7 @@ async function editUser(id: string, user: IUser) {
   }
 }
 
-async function deleteUser(id: string) {
+async function deleteUser(id: string, req: any) {
   console.log("Delete a user details.");
 
   try {
@@ -112,8 +113,22 @@ async function deleteUser(id: string) {
         console.log("There was an error with connecting to the database.", error)
       }
     );
+
+    // Get token from delete request
+    const token = await getToken({ req });
+    if (!token) {
+      return {
+        success: false,
+        message: "Unauthorized access detected: No token."
+      };
+    }
+
+    // Extract user id from token associated with the request
+    const authUserId = token.sub;
+
+
     let user = await UserModel.findOne({_id: id});
-    if (user?.role == "admin"){
+    if (user?.role == "admin" && user.id.toString() === authUserId){      // Compare user id from token with id of user to delete; check if admin 
       return {
         success: false,
         message: "Admins cannot delete themselves."
