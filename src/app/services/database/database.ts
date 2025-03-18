@@ -6,9 +6,8 @@ import { error } from "console";
 dotenv.config();
 
 
-const MONGODB_URI = process.env.MONGODB_URI ?? (() => {
-  throw new Error("Invalid MONGODB URI in .env file");
-})();
+const MONGODB_URI = "fake-mongodb-uri"; // Temporary mock
+
 
 
 // Instantiates a global cache so that we can reuse the connection for each function call we do to the database

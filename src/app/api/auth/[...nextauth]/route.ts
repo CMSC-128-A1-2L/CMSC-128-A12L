@@ -1,7 +1,9 @@
+
 /*
  * This file handles incoming authentication requests in authentication (auth/[...nextauth]/route.ts)
  * any routes that goes here, goes to route.ts
  * */
+/*
 import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
 import Credentials from 'next-auth/providers/credentials';
@@ -140,7 +142,7 @@ const authOptions: NextAuthOptions = {
     2. jwt callback is then triggered after signing in
     3. session callback is triggered
   */
-
+/*
     // For more information, visit: https://next-auth.js.org/configuration/callbacks
   callbacks: {
     // Callback to handle the sign-in process
@@ -171,6 +173,7 @@ const authOptions: NextAuthOptions = {
             /* take note that we can add a return field here that redirects the user to a certain page before signing up 
               for e.g: return "/goToAnotherSignUpPageBeforeAccessingTheApp?addParametersHere=example"  
             */
+           /*
           })
         }
       } catch (error){
@@ -203,7 +206,7 @@ const authOptions: NextAuthOptions = {
 
     // Callback for storing any non-sensitive information that persists in all sessions
     async session({ session, token, user }){
-      /* DO NOT STORE ANY SENSITIVE INFORMATION IN THE SESSION! */
+      /* DO NOT STORE ANY SENSITIVE INFORMATION IN THE SESSION! *//*
       console.log("Session callback has been triggered.");
       return session;
     }
@@ -214,3 +217,10 @@ const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST };
 
+*/
+
+import { NextResponse } from "next/server";
+
+export async function GET() {
+  return NextResponse.json({ message: "Authentication is temporarily disabled." });
+}
