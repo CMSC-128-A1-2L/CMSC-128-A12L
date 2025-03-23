@@ -1,4 +1,8 @@
+import { connectDB } from "@/databases/mongodb";
 import { User } from "@/entities/user";
+import { mapUserDtoToUser, mapUserToUserDto } from "@/mappers/user";
+import { UserDto, UserSchema } from "@/models/user";
+import { Connection, Model } from "mongoose";
 
 /**
  * A repository for managing data of registered users.
@@ -109,12 +113,61 @@ class InMemoryUserRepository implements UserRepository {
 
 class MongoDBUserRepository implements UserRepository {
     private connection: Connection;
-    private model: Model<UserDTO>;   
+    private model: Model<UserDto>;
+
+    async createUser(user: User): Promise<void> {
+        const userDto = mapUserToUserDto(user);
+        
+        await this.model.create(userDto);
+    }
+
+    async getUserById(id: string): Promise<User | null> {
+        const userDto = await this.model.findById(id);
+        
+        if (userDto === null) {
+            return null;
+        }
+        
+        return mapUserDtoToUser(userDto);
+    }
+
+    async getUserByEmail(email: string): Promise<User | null> {
+        const userDto = await this.model.findOne({
+            email: email
+        });
+        
+        if (userDto === null) {
+            return null;
+        }
+        
+        return mapUserDtoToUser(userDto);
+    }
+
+    async updateUser(user: User): Promise<void> {
+        const userDto = mapUserToUserDto(user);
+        
+        await this.model.findByIdAndUpdate(user.id, userDto);
+    }
+
+    async deleteUser(id: string): Promise<void> {
+        await this.model.findByIdAndDelete(id);
+    }
+
+    constructor(connection: Connection) {
+        this.connection = connection;
+        this.model = connection.models["User"] ?? connection.model("User", UserSchema);
+    }
 }
 
-const userRepository = new InMemoryUserRepository();
+let userRepository: UserRepository | null = null;
 
 export function getUserRepository(): UserRepository {
+    if (userRepository !== null) {
+        return userRepository;
+    }
+
+    const connection = connectDB();
+    userRepository = new MongoDBUserRepository(connection);
     return userRepository;
 }
 

@@ -5,7 +5,7 @@ dotenv.config();
 
 let existingConnection: Connection | undefined = undefined;
 
-export async function connectDB(): Promise<Connection> {
+export function connectDB(): Connection {
     if (existingConnection !== undefined) {
         return existingConnection;
     }
