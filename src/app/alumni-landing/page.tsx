@@ -6,10 +6,17 @@ import { Menu, X, LogOut, User, Briefcase, Calendar, DollarSign, Bell, Users } f
 import { redirect } from "next/navigation";
 
 export default function AlumniLanding() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+        console.log("You've been logged out due to inactivity");
+        signOut();
+    }
+}, [status])
 
   // Handle clicks outside the sidebar to close it
   useEffect(() => {
