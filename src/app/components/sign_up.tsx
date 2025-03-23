@@ -63,10 +63,14 @@ export default function SignUp() {
         }))
     }
     return (
-        <div className="h-screen flex items-center justify-center">
-            <div className="card bg-base-300 w-110">
+        <div className="h-screen flex items-center justify-center" style={{
+            backgroundImage: "url('/assets/bg.jpg')",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+          }}>
+            <div className="card w-110" style={{ backgroundColor: "rgba(255, 255, 255, 0.5)" }}>
                 <div className="card-body items-center">
-                    <h2 className="card-title">Create Alumni Account</h2>
+                    <h2 className="text-info-content text-xl md:text-2xl font-extrabold" style={{ fontFamily: "Montserrat, sans-serif" }}>Create Alumni Account</h2>
                     <form onSubmit={validateInput}>
                         <div className="card-body">
                             <div className="join mb-2 gap-2 w-84">
@@ -84,11 +88,11 @@ export default function SignUp() {
 
                         </div>
                         <div className="card-actions justify-center">
-                            <button className="btn btn-wide btn-neutral-content">Sign Up</button>
+                            <button className="btn btn-wide bg-[#0C0051] text-white" style={{ fontFamily: "Montserrat, sans-serif", fontSize: "15px", cursor: "pointer"}}>Sign Up</button>
                         </div>
                     </form>
                 </div>
-                <button onClick={() => redirect("/login")} className="btn btn-neutral-content btn-block">Cancel</button>
+                <button onClick={() => redirect("/login")} className="btn bg-[#0C0051] text-white btn-block" style={{ fontFamily: "Montserrat, sans-serif", fontSize: "15px", cursor: "pointer" }}>Cancel</button>
             </div>
         </div>
     );
