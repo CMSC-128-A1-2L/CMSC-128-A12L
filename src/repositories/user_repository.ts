@@ -155,7 +155,7 @@ class MongoDBUserRepository implements UserRepository {
 
     constructor(connection: Connection) {
         this.connection = connection;
-        this.model = connection.models["User"] ?? connection.model("User", UserSchema);
+        this.model = connection.models["User"] ?? connection.model("User", UserSchema, "users");
     }
 }
 
