@@ -11,7 +11,7 @@ import { getUserCredentialRepository } from "@/repositories/user_credentials_rep
 import { getPasswordEncryptionProvider } from "@/providers/password_encryption";
 import { WrongLoginCredentialsError } from "@/errors/email_password_authentication";
 import { connectDB } from "@/app/services/database/database";
-import { UserModel, UserRole } from "@/models/user_model";
+import { UserModel, UserRole } from "@/models/user";
 import { Types } from "mongoose";
 
 import { Adapter, AdapterAccount, AdapterUser } from "next-auth/adapters";

@@ -18,8 +18,7 @@ export async function connectDB(): Promise<Connection> {
 
     existingConnection = mongoose.createConnection(mongoDbUri, {
         dbName: "DEV_ARTMS",
-        bufferCommands: true,
-        forceServerObjectId: false,
+        bufferCommands: true
     });
 
     return existingConnection;

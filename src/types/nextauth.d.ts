@@ -1,8 +1,9 @@
 import NextAuth from 'next-auth'
-import { UserRole } from '../models/user_model';
+import { UserRole } from '../models/user';
 
 declare module "next-auth" {
     interface User {
+        name: string;
         email: string;
         role: UserRole[];
     }

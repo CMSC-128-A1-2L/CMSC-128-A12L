@@ -1,7 +1,7 @@
 import { connectDB } from "@/app/services/database/database";
 import { NextRequest, NextResponse } from "next/server";
 import { createUser, getAllUsers, editUser} from "@/app/services/user/userService";
-import { IUser, IUserRequest } from "@/models/user_model";
+import { IUser, IUserRequest } from "@/models/user";
 
 // Create user endpoint
 export async function POST(req: NextRequest) {

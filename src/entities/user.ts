@@ -6,7 +6,8 @@ import { AdapterUser } from "next-auth/adapters";
 
 export enum UserRole {
     ALUMNI = "alumni",
-    ADMIN = "admin"
+    ADMIN = "admin",
+    FACULTY = "faculty"
 };
 
 /**
@@ -14,24 +15,9 @@ export enum UserRole {
  **/
 export interface User extends AdapterUser {
     /**
-     * The user's bio.
-     **/
-    bio: string;
-
-    /**
-     * The user's gender.
-     **/
-    gender: string;
-
-    /**
      * The user's role.
      **/
     role: UserRole[];
-
-    /**
-     * The user's contact numbers.
-     **/
-    contactNumbers: string[];
 };
 
 /**

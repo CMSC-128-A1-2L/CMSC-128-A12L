@@ -1,7 +1,7 @@
 import { connectDB } from "@/app/services/database/database";
 import { NextRequest, NextResponse } from "next/server";
 import { createUser, deleteUser, editUser } from "@/app/services/user/userService";
-import { IUser } from "@/models/user_model";
+import { IUser } from "@/models/user";
 
 // Edit user endpoint
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {

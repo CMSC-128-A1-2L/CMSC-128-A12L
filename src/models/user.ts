@@ -1,26 +1,5 @@
 import mongoose, { Schema, Document, Model, Types} from "mongoose";
 
-
-enum UserRole {
-  ADMIN = "admin",
-  ALUMNI = "alumni",
-  ALUMNIADMIN = "alumniadmin",
-  STUDENT = "student"
-}
-
-enum NameSuffixes {
-  JR = "Jr.",
-  SR = "Sr.",
-  THIRD = "III",
-  FOURTH = "IV",
-}
-
-enum Gender {
-  MALE = "Male",
-  FEMALE = "Female",
-  NONBINARY = "Non-binary"
-}
-
 enum SortBy {
   NAME = "lastName",
   STUDENT_ID = "studentId",
@@ -28,14 +7,6 @@ enum SortBy {
   LAST_ACTIVE = "last_active",
   ADDRESS = "currentAddress"
 }
-
-interface IUserRequest extends Partial<IUser>{
-  page: number,
-  amountPerPage: number,
-  sortBy: SortBy,
-  sortOrder: ["asc", "desc"]
-}
-
 
 function isValidLinkedIn(url: string): boolean {
   const linkedInRegex = /^https:\/\/www\.linkedin\.com\/in\/[A-Za-z0-9-]+\/?$/
@@ -50,21 +21,23 @@ export function isValidContactNumber(contactNumbers: string[]): boolean { // Is 
   return contactNumbers.every((number) => true);
 }
 
-export enum UserRoleDTO {
+export enum UserRoleDto {
+  NONE = 0,
   ADMIN = 1 << 1,
-  ALUMNI = 1 << 2
+  ALUMNI = 1 << 2,
+  FACULTY = 1 << 3
 };
 
-export interface UserDTO {
+export interface UserDto {
   // In case of google authentication, we need to store the google id and refresh token.
   // googleId?: string,
   // refreshToken?: string,
+  _id: Types.ObjectId,
   email: string,
+  emailVerified?: Date,
   role: number,
   studentId?: string,
-  firstName: string,
-  middleName: string,
-  lastName: string,
+  name: string,
   suffix?: string,
   // gender: string,
   // currentAddress: string,
@@ -74,17 +47,16 @@ export interface UserDTO {
   // adviser: Types.ObjectId,
 }
 
-export const UserSchema = new Schema<UserDTO>(
+export const UserSchema = new Schema<UserDto>(
   {
     // Add google-related fields
     role: { type: Number, required: true },
     // googleId: { type: String },
     // refreshToken: { type: String },
     email: { type: String, required: true },
-    studentId: { type: String, required: true, unique: true },
-    firstName: { type: String, required: true },
-    middleName: { type: String},
-    lastName: { type: String, required: true },
+    emailVerified: { type: Date },
+    studentId: { type: String },
+    name: { type: String, required: true },
     suffix: { type: String },
     // currentAddress: { type: String, default: "" },
     // bio : { type: String, default: "" },

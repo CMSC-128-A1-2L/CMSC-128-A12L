@@ -1,7 +1,7 @@
 import { connectDB } from "@/app/services/database/database";
 import { NextRequest, NextResponse } from "next/server";
 import { createUser, editUser } from "@/app/services/user/userService";
-import { IUser, UserModel } from "@/models/user_model";
+import { IUser, UserModel } from "@/models/user";
 import data from "@/dummy_data/user.json"
 import { Types } from "mongoose";
 
