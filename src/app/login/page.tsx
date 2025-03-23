@@ -1,11 +1,7 @@
 
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { redirect } from "next/navigation";
-import SignInButton from "@/app/components/sign-in"; 
-import { CredentialsForm } from "../components/credentialsForm";
-import EmailSignUp from "../components/emailSignUp";
-export default function AdminLogin() {
+import SignInButton from "@/app/components/sign_in"; 
+import EmailSignUp from "../components/email_signup";
+export default function Login() {
 	return (
 	  <div
 		className="min-h-screen flex items-center justify-center bg-gray-100 px-4"
@@ -71,6 +67,7 @@ export default function AdminLogin() {
 				Sign in with Google
 			  </button> */}
 			{/* </div> */}
+			<EmailSignUp/>
   
   
 			{/* Support Text */}
