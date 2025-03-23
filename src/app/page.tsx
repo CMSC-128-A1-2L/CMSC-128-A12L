@@ -1,7 +1,4 @@
-import { redirect } from "next/navigation";
-import EmailSignUp from "./components/emailSignUp";
-import SignIn from "./components/sign-in"
-export default function AdminLogin() {
+export default function Homepage() {
 
   return (
     <div
@@ -47,20 +44,11 @@ export default function AdminLogin() {
 
           {/* Description */}
           <p
-            className="mt-4 text-xs md:text-sm text-center md:text-left w-full md:w-5/5 mt-[-10px] md:mt-[-1px] ml-4 md:ml-10 "
+            className="text-xs md:text-sm text-center md:text-left w-full md:w-5/5 mt-[-10px] md:mt-[-1px] ml-4 md:ml-10 "
             style={{ fontFamily: "Montserrat, sans-serif", fontWeight: "400", color: "#0C0051", fontSize: "12px" }}
           >
-            Sign in with your Google account to connect with fellow alumni, explore career opportunities, and stay engaged with the ICS community.
+            This is the homepage. To login, go to /login. For testing purposes.
           </p>
-
-          {/* Google Login Button */}
-          <div className="flex justify-center md:justify-start">
-            <SignIn />
-          </div>
-
-          <div className="flex justify-center md:justify-start">
-            <EmailSignUp />
-          </div>
 
           {/* Support Text */}
           <p

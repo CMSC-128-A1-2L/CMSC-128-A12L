@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import {Providers} from "./providers/providers";
+import {SessionProviderComponent} from "./providers/session_provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,9 +29,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {/* Created a provider here since SessionProvider can only be used in client components, and layout is a server component (or it can be, but revisions are needed)*/}
-        <Providers>
+        <SessionProviderComponent>
           {children}
-        </Providers>
+        </SessionProviderComponent>
         </body>
     </html>
   );
