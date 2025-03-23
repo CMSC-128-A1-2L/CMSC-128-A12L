@@ -50,30 +50,34 @@ export function isValidContactNumber(contactNumbers: string[]): boolean { // Is 
   return contactNumbers.every((number) => true);
 }
 
+export enum UserRoleDTO {
+  ADMIN = 1 << 1,
+  ALUMNI = 1 << 2
+};
 
 interface IUser extends Document {
   // In case of google authentication, we need to store the google id and refresh token.
   googleId?: string,
   refreshToken?: string,
   email: string,
-  role: UserRole,
+  role: number,
   studentId?: string,
   firstName: string,
   middleName: string,
   lastName: string,
-  suffix?: NameSuffixes,
-  gender: Gender,
-  currentAddress: Types.ObjectId,
+  suffix?: string,
+  gender: string,
+  currentAddress: string,
   bio: string,
-  linkedIn: string,
+  // linkedIn: string,
   contactNumbers: number[],
-  adviser: Types.ObjectId,
+  // adviser: Types.ObjectId,
 }
 
-const UserSchema = new Schema<IUser>(
+export const UserSchema = new Schema<IUser>(
   {
     // Add google-related fields
-    role: { type: String, enum: Object.values(UserRole), required: true },
+    role: { type: Number, required: true },
     googleId: { type: String },
     refreshToken: { type: String },
     email: { type: String, required: true },
@@ -82,19 +86,21 @@ const UserSchema = new Schema<IUser>(
     middleName: { type: String},
     lastName: { type: String, required: true },
     suffix: { type: String },
-    currentAddress: { type: Schema.Types.ObjectId },
-    bio : { type: String },
-    linkedIn: { type: String, validate: {
-        validator: isValidLinkedIn,
-        message: "Invalid LinkedIn contact number."
+    currentAddress: { type: String, default: "" },
+    bio : { type: String, default: "" },
+    // linkedIn: { type: String, validate: {
+    //     validator: isValidLinkedIn,
+    //     message: "Invalid LinkedIn contact number."
+    //   } 
+    // },
+    contactNumbers : {
+      type: [String],
+      validate: {
+        validator: isValidContactNumber,
+        message: "Invalid contact number."
       } 
     },
-    contactNumbers : { type: [String], validate: {
-      validator: isValidContactNumber,
-      message: "Invalid contact number."
-    } 
-    },
-    adviser: { type: Schema.Types.ObjectId}
+    // adviser: { type: Schema.Types.ObjectId }
   },
   {
     timestamps: true
@@ -106,12 +112,12 @@ Source: https://stackoverflow.com/questions/76724544/overwritemodelerror-cannot-
 Sometimes, the server sends an error saying "Cannot overwrite 'indicated' model once compiled".
 By adding this line 'mongoose.models.'indicated_model', we can avoid this error as sometimes it instantiates another mongoose model when Next.js is 'hot-reloading'
 */
-const UserModel: Model<IUser> = mongoose.models.Users || mongoose.model<IUser>("Users", UserSchema);
+// const UserModel: Model<IUser> = mongoose.models.Users || mongoose.model<IUser>("Users", UserSchema);
 
-export {
-  UserModel,
-  UserRole,
-  SortBy
-};
+// export {
+//   UserModel,
+//   UserRole,
+//   SortBy
+// };
 
-export type { IUser, IUserRequest };
+// export type { IUser, IUserRequest };

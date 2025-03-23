@@ -3,7 +3,11 @@
  */
 
 import { AdapterUser } from "next-auth/adapters";
-import { UserRole } from "./user_model";
+
+export enum UserRole {
+    ALUMNI = "alumni",
+    ADMIN = "admin"
+};
 
 /**
  * The internal data structure for a user.
@@ -22,7 +26,7 @@ export interface User extends AdapterUser {
     /**
      * The user's role.
      **/
-    role: UserRole;
+    role: UserRole[];
 
     /**
      * The user's contact numbers.
