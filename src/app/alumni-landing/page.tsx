@@ -6,13 +6,7 @@ import { Menu, X, LogOut, User, Briefcase, Calendar, DollarSign, Bell, Users } f
 import { redirect } from "next/navigation";
 
 export default function AlumniLanding() {
-  const { data: session } = useSession({
-    required: true,
-    onUnauthenticated() {
-      redirect("/login");
-    }
-  }
-  );
+  const { data: session } = useSession();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
@@ -46,6 +40,7 @@ export default function AlumniLanding() {
     { name: "Alumni", icon: <Users size={20} /> },
   ];
 
+  // added this since a user can still see for a split-second the webpage when trying to access the resource
   if (!session) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
