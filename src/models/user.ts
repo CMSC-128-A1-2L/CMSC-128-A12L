@@ -4,7 +4,17 @@
 
 import { AdapterUser } from "next-auth/adapters";
 
-export type User = AdapterUser & {};
+export enum UserRole {
+    ALUMNI = 1 << 1,
+    ADMIN = 1 << 2
+};
+
+export type User = AdapterUser & {
+    bio: string;
+    gender: string;
+    role: UserRole;
+    contactNumbers: string[];
+};
 
 /**
  * The internal data structure for user credentials. These are used by the user for authentication.

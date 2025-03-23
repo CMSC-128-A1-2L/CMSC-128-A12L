@@ -108,12 +108,6 @@ class InMemoryUserRepository implements UserRepository {
 }
 
 const userRepository = new InMemoryUserRepository();
-userRepository.createUser({
-    id: "test",
-    name: "Sample User",
-    email: "test@example.com",
-    emailVerified: null
-});
 
 export function getUserRepository(): UserRepository {
     return userRepository;
