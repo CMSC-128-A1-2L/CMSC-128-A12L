@@ -73,7 +73,11 @@ const adapter: Adapter = (() => {
     console.log("Adapter.createUser() called");
     const userToRegister: User = {
       ...user,
-      id: userIdProvider.generate()
+      id: userIdProvider.generate(),
+      role: UserRole.STUDENT,
+      bio: "",
+      gender: "Non-binary",
+      contactNumbers: []
     };
 
     while ((await userRepository.getUserById(userToRegister.id)) !== null) {
@@ -110,7 +114,9 @@ const adapter: Adapter = (() => {
 
     const updatedUser: User = {
       ...userToUpdate,
-      ...user
+      ...user,
+      // I don't know what is up with the role property, but TS throws an error without this.
+      role: userToUpdate.role
     };
 
     await userRepository.updateUser(updatedUser);

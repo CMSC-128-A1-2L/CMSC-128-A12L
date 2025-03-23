@@ -3,13 +3,9 @@
  */
 
 import { AdapterUser } from "next-auth/adapters";
+import { UserRole } from "./user_model";
 
-export enum UserRole {
-    ALUMNI = 1 << 1,
-    ADMIN = 1 << 2
-};
-
-export type User = AdapterUser & {
+export interface User extends AdapterUser {
     bio: string;
     gender: string;
     role: UserRole;
@@ -19,7 +15,7 @@ export type User = AdapterUser & {
 /**
  * The internal data structure for user credentials. These are used by the user for authentication.
  **/
-export type UserCredentials = AdapterUser & {
+export interface UserCredentials extends AdapterUser {
     /**
      * The credentials of the user for password authentication. If `undefined`, the user does not have password
      * authentication enabled.
