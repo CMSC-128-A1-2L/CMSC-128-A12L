@@ -5,10 +5,28 @@
 import { AdapterUser } from "next-auth/adapters";
 import { UserRole } from "./user_model";
 
+/**
+ * The internal data structure for a user.
+ **/
 export interface User extends AdapterUser {
+    /**
+     * The user's bio.
+     **/
     bio: string;
+
+    /**
+     * The user's gender.
+     **/
     gender: string;
+
+    /**
+     * The user's role.
+     **/
     role: UserRole;
+
+    /**
+     * The user's contact numbers.
+     **/
     contactNumbers: string[];
 };
 
@@ -30,6 +48,11 @@ export interface UserCredentials extends AdapterUser {
          * The user's password, in encrypted form.
          **/
         encryptedValue: string;
+
+        /**
+         * The refresh token assigned to the user's password auth account.
+         **/
+        refreshToken?: string;
     };
 
     /**
