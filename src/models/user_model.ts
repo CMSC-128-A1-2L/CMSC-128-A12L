@@ -73,6 +73,7 @@ interface IUser extends Document {
 const UserSchema = new Schema<IUser>(
   {
     // Add google-related fields
+    role: { type: String, enum: Object.values(UserRole), required: true },
     googleId: { type: String },
     refreshToken: { type: String },
     email: { type: String, required: true },

@@ -1,7 +1,3 @@
-
-/* 
- * Sample component that FE can use (optional)
- * */
 "use client";
 
 import { signIn } from "next-auth/react";
@@ -11,7 +7,7 @@ export default function SignIn() {
     <button
       onClick={() => signIn("google",
         {
-          callbackUrl: "http://localhost:3000/alumni-landing",
+          callbackUrl: `${process.env.NEXT_PUBLIC_CALLBACK_URL}/redirect`,
         }
       )}
       className="w-3/4 md:w-2/5 bg-[#0C0051] text-white py-3 px-2 rounded-full flex items-center justify-center shadow-md hover:bg-[#0A0041] transition md:text-left ml-4 md:ml-10 mt-10 md:mt-25 "
