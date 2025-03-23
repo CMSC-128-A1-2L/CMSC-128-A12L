@@ -15,6 +15,9 @@ import { WrongLoginCredentialsError } from "@/errors/email_password_authenticati
 import { connectDB } from "@/app/services/database/database";
 import { UserModel, UserRole } from "@/models/user_model";
 import { Types } from "mongoose";
+import { getSession } from "next-auth/react";
+import { getToken } from "next-auth/jwt";
+import { userAgent } from "next/server";
 
 // Define the google id and secret 
 const googleClientId = process.env.CLIENT_ID ?? (() => {
@@ -53,12 +56,13 @@ async function refreshAccessToken(token: any) {
     };
   } catch (error) {
     console.error("Error refreshing access token:", error);
-    return { ...token, error: "RefreshAccessTokenError" };
+    return { error: "RefreshAccessTokenError" };
   }
 }
 
 // Introducing NextAuthOptions type-safety reduces the need to include types in parameters in callbacks
 export const authOptions: NextAuthOptions = {
+  secret: process.env.NEXTAUTH_SECRET,
   providers: [
     GoogleProvider({
       clientId: googleClientId,
@@ -67,8 +71,7 @@ export const authOptions: NextAuthOptions = {
       authorization: {
         params: {
           prompt: "consent",
-          access_type: "offline",
-          response_type: "code"
+          access_type: "offline", // Request refresh token
         },
       },
     }),
@@ -144,6 +147,8 @@ export const authOptions: NextAuthOptions = {
     // For more information, visit: https://next-auth.js.org/configuration/callbacks
   callbacks: {
     // Callback to handle the sign-in process
+    // Account is the user's account information from the provider
+    // User is the user's information from the provider
     async signIn({ user, account }){
       try{
 
@@ -156,7 +161,7 @@ export const authOptions: NextAuthOptions = {
           const newUser = await UserModel.create({
             googleId: user.id,
             refreshToken: account?.refresh_token,
-            role: UserRole.ALUMNI,
+            role: UserRole.ADMIN,
             studentId: "2023-12345",
             currentAddress: new Types.ObjectId("65fa3b2e9b3f3c5a6d7e4f12"),
             gender: "Male",
@@ -167,31 +172,38 @@ export const authOptions: NextAuthOptions = {
             email: user.email,
             firstName: user.name?.split(" ")[0] ?? "",
             lastName: "user" // to avoid conflicts, since sometimes the user does not have a last name
-
-            /* take note that we can add a return field here that redirects the user to a certain page before signing up 
-              for e.g: return "/goToAnotherSignUpPageBeforeAccessingTheApp?addParametersHere=example"  
-            */
           })
+          user.role = newUser.role;
+        } else{
+          user.role = exists.role;
+          if(account){
+            // put the refresh token from the database into the account
+            account.refresh_token = exists.refreshToken;
+          }
         }
+
+        
       } catch (error){
         console.error("Error occurred while the user is signing in: ", error);
         return false;
       }
       return true;
     },
-
     // Callback for storing information (mostly tokens) in JWT
-    async jwt({ token, account, profile }) {
+    async jwt({ token, account, profile, user }) {
       console.log("JWT callback has been triggered.");
-      console.log("The token details are: ", token);
-    
-      // Token is initialized when the user has a first sign-in
-      if (account && profile) {
-        token.accessToken = account.access_token;
-        token.refreshToken = account.refresh_token;
-        token.expiresAt = Date.now() + (Number(account.expires_in) ?? 3600) * 1000; // Set expiration time
+      if(user) {
+        token.role = user.role;
       }
-      
+      // Token is initialized when the user first signs in
+      if (account && profile) {
+        // Store the refresh token in the token
+        token.refreshToken = account.refresh_token;
+        token.accessToken = account.access_token;
+        token.expiresAt = Date.now() + (Number(account.expires_in) ?? 3600) * 1000; // Set expiration time
+        console.log(token);
+      }
+
       // Check if access token has expired
       if (token.expiresAt && Date.now() < Number(token.expiresAt)) {
         return token;
@@ -202,9 +214,13 @@ export const authOptions: NextAuthOptions = {
     },
 
     // Callback for storing any non-sensitive information that persists in all sessions
-    async session({ session, token, user }){
+    async session({ session, token }){
       /* DO NOT STORE ANY SENSITIVE INFORMATION IN THE SESSION! */
-      console.log("Session callback has been triggered.");
+      if(token){
+        session.user.role = token.role as string;
+        session.user.accessToken = token.accessToken as string;
+        console.log(session);
+      }
       return session;
     }
   }
