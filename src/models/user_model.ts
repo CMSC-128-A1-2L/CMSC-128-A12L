@@ -55,10 +55,10 @@ export enum UserRoleDTO {
   ALUMNI = 1 << 2
 };
 
-interface IUser extends Document {
+export interface UserDTO {
   // In case of google authentication, we need to store the google id and refresh token.
-  googleId?: string,
-  refreshToken?: string,
+  // googleId?: string,
+  // refreshToken?: string,
   email: string,
   role: number,
   studentId?: string,
@@ -66,40 +66,40 @@ interface IUser extends Document {
   middleName: string,
   lastName: string,
   suffix?: string,
-  gender: string,
-  currentAddress: string,
-  bio: string,
+  // gender: string,
+  // currentAddress: string,
+  // bio: string,
   // linkedIn: string,
-  contactNumbers: number[],
+  // contactNumbers: number[],
   // adviser: Types.ObjectId,
 }
 
-export const UserSchema = new Schema<IUser>(
+export const UserSchema = new Schema<UserDTO>(
   {
     // Add google-related fields
     role: { type: Number, required: true },
-    googleId: { type: String },
-    refreshToken: { type: String },
+    // googleId: { type: String },
+    // refreshToken: { type: String },
     email: { type: String, required: true },
-    studentId: { type: String },
+    studentId: { type: String, required: true, unique: true },
     firstName: { type: String, required: true },
     middleName: { type: String},
     lastName: { type: String, required: true },
     suffix: { type: String },
-    currentAddress: { type: String, default: "" },
-    bio : { type: String, default: "" },
+    // currentAddress: { type: String, default: "" },
+    // bio : { type: String, default: "" },
     // linkedIn: { type: String, validate: {
     //     validator: isValidLinkedIn,
     //     message: "Invalid LinkedIn contact number."
     //   } 
     // },
-    contactNumbers : {
-      type: [String],
-      validate: {
-        validator: isValidContactNumber,
-        message: "Invalid contact number."
-      } 
-    },
+    // contactNumbers : {
+    //   type: [String],
+    //   validate: {
+    //     validator: isValidContactNumber,
+    //     message: "Invalid contact number."
+    //   } 
+    // },
     // adviser: { type: Schema.Types.ObjectId }
   },
   {

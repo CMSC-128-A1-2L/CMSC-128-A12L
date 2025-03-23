@@ -17,7 +17,7 @@ import { Types } from "mongoose";
 import { Adapter, AdapterAccount, AdapterUser } from "next-auth/adapters";
 import { getUserIdProvider } from "@/providers/user_id";
 import { getUserRepository } from "@/repositories/user_repository";
-import { User, UserCredentials } from "@/models/user";
+import { User, UserCredentials } from "@/entities/user";
 
 import { getSession } from "next-auth/react";
 import { getToken } from "next-auth/jwt";

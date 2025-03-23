@@ -1,6 +1,6 @@
 import { EmailAndPasswordAuthenticationProvider } from "@/providers/email_and_password_authentication";
 
-import { UserCredentials } from "@/models/user";
+import { UserCredentials } from "@/entities/user";
 import { UserCredentialsRepository } from "@/repositories/user_credentials_repository";
 import { PasswordEncryptionProvider } from "@/providers/password_encryption";
 

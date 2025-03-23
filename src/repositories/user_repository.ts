@@ -1,4 +1,4 @@
-import { User } from "@/models/user";
+import { User } from "@/entities/user";
 
 /**
  * A repository for managing data of registered users.
@@ -105,6 +105,11 @@ class InMemoryUserRepository implements UserRepository {
     constructor() {
         this.users = {};
     }
+}
+
+class MongoDBUserRepository implements UserRepository {
+    private connection: Connection;
+    private model: Model<UserDTO>;   
 }
 
 const userRepository = new InMemoryUserRepository();

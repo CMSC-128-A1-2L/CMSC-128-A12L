@@ -1,4 +1,4 @@
-import { UserCredentials } from "@/models/user";
+import { UserCredentials } from "@/entities/user";
 
 /**
  * The interface for a repository containing user credentials.
