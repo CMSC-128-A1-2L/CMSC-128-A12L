@@ -1,4 +1,8 @@
+import { connectDB } from "@/databases/mongodb";
 import { UserCredentials } from "@/entities/user_credentials";
+import { mapUserCredentialsDtoToUserCredentials, mapUserCredentialsToUserCredentialsDto } from "@/mappers/user_credentials";
+import { UserCredentialsDto, UserCredentialsSchema } from "@/models/user_credentials";
+import { Connection, Model } from "mongoose";
 
 /**
  * The interface for a repository containing user credentials.
@@ -137,17 +141,53 @@ class InMemoryUserCredentialsRepository implements UserCredentialsRepository {
     }
 }
 
-const userCredentialsRepository = new InMemoryUserCredentialsRepository();
-userCredentialsRepository.createUserCredentials({
-    id: "test",
-    email: "test@example.com",
-    emailVerified: null,
-    password: {
-        id: "samplePassword",
-        encryptedValue: "Sample Text"
+class MongoDbUserCredentialsRepository implements UserCredentialsRepository {
+    private connection: Connection;
+    private model: Model<UserCredentialsDto>;
+
+    async createUserCredentials(userCredentials: UserCredentials): Promise<void> {
+        const userCredentialsDto = mapUserCredentialsToUserCredentialsDto(userCredentials);
+        await this.model.create(userCredentialsDto);
     }
-});
+
+    async getUserCredentialsByEmail(email: string): Promise<UserCredentials | null> {
+        const userCredentialsDto = await this.model.findOne({ email: email });
+        return userCredentialsDto ? mapUserCredentialsDtoToUserCredentials(userCredentialsDto) : null;
+    }
+
+    async getUserCredentialsById(id: string): Promise<UserCredentials | null> {
+        const userCredentialsDto = await this.model.findById(id);
+        return userCredentialsDto ? mapUserCredentialsDtoToUserCredentials(userCredentialsDto) : null;
+    }
+
+    async getUserCredentialsByProvider(provider: string, providerAccountId: string): Promise<UserCredentials | null> {
+        const userCredentialsDto = await this.model.findOne({ [`${provider}.id`]: providerAccountId });
+        return userCredentialsDto ? mapUserCredentialsDtoToUserCredentials(userCredentialsDto) : null;
+    }
+
+    async updateUserCredentials(userCredentials: UserCredentials): Promise<void> {
+        const userCredentialsDto = mapUserCredentialsToUserCredentialsDto(userCredentials);
+        await this.model.updateOne({ id: userCredentials.id }, userCredentialsDto);
+    }
+
+    async deleteUserCredentials(id: string): Promise<void> {
+        await this.model.deleteOne({ id: id });
+    }
+
+    constructor(connection: Connection) {
+        this.connection = connection;
+        this.model = connection.models["UserCredentials"] ?? connection.model("UserCredentials", UserCredentialsSchema, "user_credentials");
+    }
+}
+
+let userCredentialsRepository: UserCredentialsRepository | null = null;
 
 export function getUserCredentialRepository(): UserCredentialsRepository {
+    if (userCredentialsRepository !== null) {
+        return userCredentialsRepository;
+    }
+
+    const connection: Connection = connectDB();
+    userCredentialsRepository = new MongoDbUserCredentialsRepository(connection);
     return userCredentialsRepository;
 }
