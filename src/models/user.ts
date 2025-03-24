@@ -1,25 +1,17 @@
 import mongoose, { Schema, Document, Model, Types} from "mongoose";
 
-enum SortBy {
-  NAME = "lastName",
-  STUDENT_ID = "studentId",
-  DATE_CREATED = "createdAt",
-  LAST_ACTIVE = "last_active",
-  ADDRESS = "currentAddress"
-}
-
-function isValidLinkedIn(url: string): boolean {
-  const linkedInRegex = /^https:\/\/www\.linkedin\.com\/in\/[A-Za-z0-9-]+\/?$/
-  return true || linkedInRegex.test(url);
-}
+// function isValidLinkedIn(url: string): boolean {
+//   const linkedInRegex = /^https:\/\/www\.linkedin\.com\/in\/[A-Za-z0-9-]+\/?$/
+//   return true || linkedInRegex.test(url);
+// }
 
 // TODO: fix for validation for non-Philippines phone and mobile numbers
-export function isValidContactNumber(contactNumbers: string[]): boolean { // Is currently setup for only valid phone numbers
-  const contactNumberRegex = /^(\+63|0)9[0-9]{9}$/;
-  // return contactNumbers.every((number) => {contactNumberRegex.test(number)});
-  // temporarily return all numbers as validated, will be fixed later by @erjoyrobles
-  return contactNumbers.every((number) => true);
-}
+// export function isValidContactNumber(contactNumbers: string[]): boolean { // Is currently setup for only valid phone numbers
+//   const contactNumberRegex = /^(\+63|0)9[0-9]{9}$/;
+//   // return contactNumbers.every((number) => {contactNumberRegex.test(number)});
+//   // temporarily return all numbers as validated, will be fixed later by @erjoyrobles
+//   return contactNumbers.every((number) => true);
+// }
 
 export enum UserRoleDto {
   NONE = 0,
@@ -75,7 +67,7 @@ export const UserSchema = new Schema<UserDto>(
     // adviser: { type: Schema.Types.ObjectId }
   },
   {
-    timestamps: true
+    timestamps: true,
   },
 )
 

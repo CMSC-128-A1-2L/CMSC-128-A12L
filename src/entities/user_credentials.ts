@@ -3,7 +3,17 @@ import { AdapterUser } from "next-auth/adapters";
 /**
  * The internal data structure for user credentials. These are used by the user for authentication.
  **/
-export interface UserCredentials extends AdapterUser {
+export interface UserCredentials {
+    /**
+     * The id of the user who owns the credentials.
+     **/
+    id: string;
+
+    /**
+     * The email of the user who owns the credentials.
+     **/
+    email: string;
+
     /**
      * The credentials of the user for password authentication. If `undefined`, the user does not have password
      * authentication enabled.
