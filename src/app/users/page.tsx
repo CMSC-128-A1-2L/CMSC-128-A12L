@@ -1,24 +1,40 @@
+"use client"
 import userData from "@/dummy_data/user.json";
+import PromoteUser from "../components/promoteUser";
+import DeleteUser from "../components/deleteUser";
+import { signOut, useSession } from "next-auth/react";
+import { Menu, X, LogOut, User, Briefcase, Calendar, DollarSign, Bell, Users } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import { text } from "stream/consumers";
 
 export default function UsersManagement(){
-
+   
     const alumniUsers = userData.filter(user => user.role === "alumni");
    return(
     <div className="min-h-screen flex flex-col bg-white">
-        <div className="navbar bg-[#0C0051] shadow-sm mb-4">
-        <div className="flex-1">
+        <header style={{ backgroundColor: "#0C0051" }} className="text-white py-4">
+        <div className="container mx-auto px-4 flex justify-between items-center">
+          <div className="flex items-center">
+            <h1 className="text-xl font-bold cursor-pointer">AEGIS |</h1>
+          </div>
+          <div className="flex items-center space-x-4">
+            <button className="focus:outline-none cursor-pointer"baria-label="Sign Out">
+              <LogOut size={20} />
+            </button>
+          </div>
+        </div>
+      </header>
+
+        <div className="flex pt-4 px-20">
             <a className="btn btn-ghost text-xl">User Management</a>
         </div>
         <div className="flex-none">
         <button className="btn btn-square btn-ghost">
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="w-6 h-6 stroke-current">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2h4a2 2 0 012 2v1"></path>
-        </svg>
         </button>
 
         </div>
-        </div>
+        
         <div className="flex px-15 justify-end">
         <label className="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">Search</label>
         <div className="relative">
@@ -48,8 +64,7 @@ export default function UsersManagement(){
                     <tr key={index}>
                         <td className="text-black">{user.firstName} {user.lastName}</td>
                         <td> Email </td>
-                        <td><button className="mr-3 btn bg-[#0C0051] text-white hover:bg-[#12006A]" style={{ fontFamily: "Montserrat, sans-serif", fontSize: "15px", cursor: "pointer"}}>Promote</button>
-                        <button className="btn bg-[#0C0051] text-white hover:bg-[#12006A]" style={{ fontFamily: "Montserrat, sans-serif", fontSize: "15px", cursor: "pointer"}}>Delete</button></td>
+                        <td> <PromoteUser name={{ firstName: user.firstName, lastName: user.lastName}} /> <DeleteUser name={{ firstName: user.firstName, lastName: user.lastName}} /> </td>
                     </tr>
                     )}
                 </tbody>
