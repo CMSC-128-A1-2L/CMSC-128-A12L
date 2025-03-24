@@ -1,13 +1,19 @@
 "use client"
 
 import { redirect } from "next/navigation"
+import { motion } from "framer-motion"
 
 export default function EmailSignUp() {
   return (
-    <button onClick={() => redirect("/register")}
-      className="w-3/4 md:w-2/5 bg-[#0C0051] text-white py-3 px-2 rounded-full flex items-center justify-center shadow-md hover:bg-[#0A0041] transition md:text-left ml-4 md:ml-10 mt-10 md:mt-6"
-      style={{ fontFamily: "Montserrat, sans-serif", fontSize: "12px", cursor: "pointer" }}>
-      Sign up with Email
-    </button>
+    <motion.button 
+      onClick={() => redirect("/register")}
+      className="w-full bg-[#0C0051] text-white py-3 px-4 rounded-lg flex items-center justify-center gap-3 shadow-md hover:shadow-lg border border-[#0C0051] transition-all duration-200 hover:bg-[#0A0041] mt-4"
+      style={{ fontFamily: "Montserrat, sans-serif", cursor: "pointer" }}
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+    >
+      <img src="/assets/email_logo_but_white.png" alt="Email Icon" className="w-5 h-5" />
+      <span className="text-sm font-medium">Sign up with Email</span>
+    </motion.button>
   )
 }

@@ -15,9 +15,6 @@ import { WrongLoginCredentialsError } from "@/errors/email_password_authenticati
 import { connectDB } from "@/app/services/database/database";
 import { UserModel, UserRole } from "@/models/user_model";
 import { Types } from "mongoose";
-import { getSession } from "next-auth/react";
-import { getToken } from "next-auth/jwt";
-import { userAgent } from "next/server";
 
 // Define the google id and secret 
 const googleClientId = process.env.CLIENT_ID ?? (() => {
@@ -132,7 +129,7 @@ export const authOptions: NextAuthOptions = {
       }
     })
   ],
-  // This part indicates the maximum time before the session is removed
+  // This part indicates the maximum time before the session is removed. (The session is only removed if the user is inactive and by inactive, the user is outside the website)
   session: {
     strategy: "jwt",
     maxAge: 60,
