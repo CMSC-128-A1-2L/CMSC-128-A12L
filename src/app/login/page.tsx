@@ -4,20 +4,6 @@ import EmailSignUp from "@/app/components/email_signup";
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 
-// Letter animation variants
-const letterVariants = {
-	hidden: { opacity: 0, y: 50 },
-	visible: (i: number) => ({
-		opacity: 1,
-		y: 0,
-		transition: {
-			delay: 0.5 + i * 0.1,
-			duration: 0.5,
-			ease: [0.2, 0.65, 0.3, 0.9],
-		},
-	}),
-};
-
 export default function Login() {
 	return (
 		<div className="min-h-screen flex items-center justify-center bg-gray-100 px-4 relative overflow-hidden">

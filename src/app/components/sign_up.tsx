@@ -2,9 +2,9 @@
 import { useState, useEffect } from 'react';
 import { redirect } from 'next/navigation';
 import { motion } from 'framer-motion';
-import EmailSignUp from './email_signup';
 import SignIn from './sign_in';
 
+// Used motion components here, install motion from npm, u can probably use framer-motion for this, but I think that motion can also do this
 // Constellation background component
 const ConstellationBackground = () => {
   useEffect(() => {
@@ -14,9 +14,9 @@ const ConstellationBackground = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
-    // Set canvas size
+    // only use the canvas for the left panel
     const resizeCanvas = () => {
-      canvas.width = window.innerWidth / 2; // Half width for left panel
+      canvas.width = window.innerWidth / 2; 
       canvas.height = window.innerHeight;
     };
     resizeCanvas();
@@ -28,7 +28,7 @@ const ConstellationBackground = () => {
     const connectionDistance = 100;
     const particleSpeed = 0.5;
 
-    // Create particles
+    // Create particles (this loop adds random particles to the canvas)
     for (let i = 0; i < particleCount; i++) {
       particles.push({
         x: Math.random() * canvas.width,
@@ -40,6 +40,7 @@ const ConstellationBackground = () => {
 
     // Animation loop
     const animate = () => {
+      // ctx is the rendering component for the canvas
       if (!ctx) return;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -142,6 +143,7 @@ export default function SignUp() {
     return Object.keys(newErrors).length === 0;
   };
 
+  // this function is used to handle the change of the input fields
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -181,6 +183,7 @@ export default function SignUp() {
           className="text-center relative z-10"
         >
           {/* Logo */}
+          {/* This logo uses the SVG logo from the assets folder, I just used the d attribute to create the shape of the logo (which is also the same SVG contents if you view @AEGIS.svg) */}
           <div className="w-32 h-32 lg:w-64 lg:h-32 mx-auto">
             <svg viewBox="0 14.3 135.35 32.5" className="w-full h-full text-white">
               <motion.path
