@@ -1,4 +1,4 @@
-import NextAuth from 'next-auth'
+import NextAuth, { Session, User } from 'next-auth'
 import { UserRole } from '../models/user';
 
 declare module "next-auth" {
@@ -7,14 +7,18 @@ declare module "next-auth" {
         email: string;
         role: UserRole[];
     }
-    interface JWT {
-        role: UserRole[];
-    }
     interface Session {
         user: {
             role: UserRole[];
             email: string;
             accessToken: string;
         }
+    }
+}
+declare module "next-auth/jwt" {
+    interface JWT {
+        provider?: string;
+        accessToken?: string;
+        role?: UserRole[];
     }
 }
