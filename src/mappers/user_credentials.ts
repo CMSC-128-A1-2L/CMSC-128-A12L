@@ -9,7 +9,7 @@ export function mapUserCredentialsDtoToUserCredentials(userCredentialsDto: UserC
         password: userCredentialsDto.password !== undefined ? {
             id: userCredentialsDto.password.id,
             encryptedValue: userCredentialsDto.password.encryptedValue,
-            refreshToken: userCredentialsDto.password.refreshToken
+            sessionExpiry: userCredentialsDto.password.sessionExpiry
         } : undefined,
         google: userCredentialsDto.google !== undefined ? {
             id: userCredentialsDto.google.id,
@@ -25,7 +25,7 @@ export function mapUserCredentialsToUserCredentialsDto(userCredentials: UserCred
         password: userCredentials.password !== undefined ? {
             id: userCredentials.password.id,
             encryptedValue: userCredentials.password.encryptedValue,
-            refreshToken: userCredentials.password.refreshToken
+            sessionExpiry: userCredentials.password.sessionExpiry
         } : undefined,
         google: userCredentials.google !== undefined ? {
             id: userCredentials.google.id,

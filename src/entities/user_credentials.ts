@@ -32,7 +32,7 @@ export interface UserCredentials {
         /**
          * The refresh token assigned to the user's password auth account.
          **/
-        refreshToken?: string;
+        sessionExpiry: Date;
     };
 
     /**

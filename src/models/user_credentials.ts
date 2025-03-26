@@ -1,9 +1,9 @@
-import { Schema, Types } from "mongoose";
+import { Schema } from "mongoose";
 
 export interface UserPasswordCredentialsDto {
     id: string;
     encryptedValue: string;
-    refreshToken?: string;
+    sessionExpiry: Date;
 }
 
 export interface UserGoogleCredentialsDto {
@@ -22,7 +22,7 @@ export const UserPasswordCredentialsSchema = new Schema<UserPasswordCredentialsD
     {
         id: { type: String, required: true },
         encryptedValue: { type: String, required: true },
-        refreshToken: { type: String },
+        sessionExpiry: { type: Date, required: true },
     }
 )
 
