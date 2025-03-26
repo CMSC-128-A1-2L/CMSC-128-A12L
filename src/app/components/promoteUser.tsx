@@ -18,7 +18,7 @@ export default function PromoteUser({ name }) {
 
     return(
         <>
-        <button onClick={handleModal} disabled={disable} className="mr-3 btn disabled:bg-gray-100 bg-[#0C0051] text-white hover:bg-[#12006A]" style={{ fontFamily: "Montserrat, sans-serif", fontSize: "15px", cursor: "pointer"}}>{promote}</button>
+        <button onClick={handleModal} disabled={disable} className="mr-3 btn disabled:bg-black disabled:text-gray-500 bg-[#0C0051] text-white hover:bg-[#12006A]" style={{ fontFamily: "Montserrat, sans-serif", fontSize: "15px", cursor: "pointer"}}>{promote}</button>
         {openModal &&
            <div className="fixed top-0 left-0 visible bg-black/20 w-full h-full flex justify-center items-center">
            <div className="max-w-[460px] bg-white shadow-lg py-2 rounded-md">
