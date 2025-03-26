@@ -12,7 +12,7 @@ export function mapUserDtoToUser(userDto: UserDto): User {
     }
 
     return {
-        id: userDto._id.toString(),
+        id: userDto.id,
         email: userDto.email,
         emailVerified: userDto.emailVerified ?? null,
         name: userDto.name,
@@ -33,7 +33,7 @@ export function mapUserToUserDto(user: User): UserDto {
     }
 
     const userDto: UserDto = {
-        _id: new Types.ObjectId(user.id),
+        id: user.id,
         email: user.email,
         name: user.name,
         role: role

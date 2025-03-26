@@ -4,15 +4,15 @@ import { Types } from "mongoose"
 
 export function mapUserCredentialsDtoToUserCredentials(userCredentialsDto: UserCredentialsDto): UserCredentials {
     return {
-        id: userCredentialsDto._id.toString(),
+        id: userCredentialsDto.id,
         email: userCredentialsDto.email,
         password: userCredentialsDto.password !== undefined ? {
-            id: userCredentialsDto.password._id.toString(),
+            id: userCredentialsDto.password.id,
             encryptedValue: userCredentialsDto.password.encryptedValue,
             refreshToken: userCredentialsDto.password.refreshToken
         } : undefined,
         google: userCredentialsDto.google !== undefined ? {
-            id: userCredentialsDto.google._id.toString(),
+            id: userCredentialsDto.google.id,
             refreshToken: userCredentialsDto.google.refreshToken
         } : undefined
     }
@@ -20,15 +20,15 @@ export function mapUserCredentialsDtoToUserCredentials(userCredentialsDto: UserC
 
 export function mapUserCredentialsToUserCredentialsDto(userCredentials: UserCredentials): UserCredentialsDto {
     return {
-        _id: new Types.ObjectId(userCredentials.id),
+        id: userCredentials.id,
         email: userCredentials.email,
         password: userCredentials.password !== undefined ? {
-            _id: new Types.ObjectId(userCredentials.password.id),
+            id: userCredentials.password.id,
             encryptedValue: userCredentials.password.encryptedValue,
             refreshToken: userCredentials.password.refreshToken
         } : undefined,
         google: userCredentials.google !== undefined ? {
-            _id: new Types.ObjectId(userCredentials.google.id),
+            id: userCredentials.google.id,
             refreshToken: userCredentials.google.refreshToken
         } : undefined
     }

@@ -24,7 +24,7 @@ export interface UserDto {
   // In case of google authentication, we need to store the google id and refresh token.
   // googleId?: string,
   // refreshToken?: string,
-  _id: Types.ObjectId,
+  id: string,
   email: string,
   emailVerified?: Date,
   role: number,
@@ -41,7 +41,7 @@ export interface UserDto {
 
 export const UserSchema = new Schema<UserDto>(
   {
-    // Add google-related fields
+    id: { type: String, required: true },
     role: { type: Number, required: true },
     // googleId: { type: String },
     // refreshToken: { type: String },

@@ -156,7 +156,7 @@ class MongoDbUserCredentialsRepository implements UserCredentialsRepository {
     }
 
     async getUserCredentialsById(id: string): Promise<UserCredentials | null> {
-        const userCredentialsDto = await this.model.findById(id);
+        const userCredentialsDto = await this.model.findOne({ id: id });
         return userCredentialsDto ? mapUserCredentialsDtoToUserCredentials(userCredentialsDto) : null;
     }
 

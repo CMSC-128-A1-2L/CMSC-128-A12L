@@ -1,18 +1,18 @@
 import { Schema, Types } from "mongoose";
 
 export interface UserPasswordCredentialsDto {
-    _id: Types.ObjectId;
+    id: string;
     encryptedValue: string;
     refreshToken?: string;
 }
 
 export interface UserGoogleCredentialsDto {
-    _id: Types.ObjectId;
+    id: string;
     refreshToken: string;
 }
 
 export interface UserCredentialsDto {
-    _id: Types.ObjectId;
+    id: string;
     email: string;
     password?: UserPasswordCredentialsDto;
     google?: UserGoogleCredentialsDto;
@@ -20,6 +20,7 @@ export interface UserCredentialsDto {
 
 export const UserPasswordCredentialsSchema = new Schema<UserPasswordCredentialsDto>(
     {
+        id: { type: String, required: true },
         encryptedValue: { type: String, required: true },
         refreshToken: { type: String },
     }
@@ -27,12 +28,14 @@ export const UserPasswordCredentialsSchema = new Schema<UserPasswordCredentialsD
 
 export const UserGoogleCredentialsSchema = new Schema<UserGoogleCredentialsDto>(
     {
+        id: { type: String, required: true },
         refreshToken: { type: String, required: true }
     }
 )
 
 export const UserCredentialsSchema = new Schema<UserCredentialsDto>(
     {
+        id: { type: String, required: true },
         email: { type: String, required: true },
         password: { type: UserPasswordCredentialsSchema },
         google: { type: UserGoogleCredentialsSchema }

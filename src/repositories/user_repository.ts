@@ -122,7 +122,7 @@ class MongoDBUserRepository implements UserRepository {
     }
 
     async getUserById(id: string): Promise<User | null> {
-        const userDto = await this.model.findById(id);
+        const userDto = await this.model.findOne({ id: id });
         
         if (userDto === null) {
             return null;
