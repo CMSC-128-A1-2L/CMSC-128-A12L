@@ -10,6 +10,9 @@ export function mapUserDtoToUser(userDto: UserDto): User {
     if (userDto.role & UserRoleDto.ALUMNI) {
         role.push(UserRole.ALUMNI);
     }
+    if (userDto.role & UserRoleDto.FACULTY) {
+        role.push(UserRole.FACULTY);
+    }
 
     return {
         id: userDto.id,
@@ -22,20 +25,20 @@ export function mapUserDtoToUser(userDto: UserDto): User {
 
 export function mapUserToUserDto(user: User): UserDto {
     let role: UserRoleDto = UserRoleDto.NONE;
-    if (user.role.includes(UserRole.ADMIN)) {
+    if (user.role?.includes(UserRole.ADMIN)) {
         role |= UserRoleDto.ADMIN;
     }
-    if (user.role.includes(UserRole.ALUMNI)) {
+    if (user.role?.includes(UserRole.ALUMNI)) {
         role |= UserRoleDto.ALUMNI;
     }
-    if (user.role.includes(UserRole.FACULTY)) {
+    if (user.role?.includes(UserRole.FACULTY)) {
         role |= UserRoleDto.FACULTY;
     }
 
     const userDto: UserDto = {
         id: user.id,
         email: user.email,
-        name: user.name,
+        name: user.name!,
         role: role
     };
 
