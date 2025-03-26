@@ -111,7 +111,7 @@ export default function UsersManagement(){
                         <td className="text-black text-left" >{user.firstName} {user.lastName}</td>
                         <td className="text-black text-left" >{user.role}</td>
                         <td className="text-black text-left"> Email </td>
-                        <td className="text-center"> <PromoteUser name={{ firstName: user.firstName, lastName: user.lastName}} /> <DeleteUser name={{ firstName: user.firstName, lastName: user.lastName}} /> </td>
+                        <td className="text-center"> <PromoteUser name={{ firstName: user.firstName, lastName: user.lastName}} /> <DeleteUser person={{ firstName: user.firstName, lastName: user.lastName}} /> </td>
                     </tr>
                     )}
                 </tbody>
