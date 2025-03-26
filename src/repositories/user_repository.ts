@@ -49,68 +49,6 @@ export interface UserRepository {
     deleteUser(id: string): Promise<void>;
 }
 
-/**
- * A repository that stores user data in memory.
- **/
-class InMemoryUserRepository implements UserRepository {
-    /**
-     * The users stored in memory. Even though the `User` type already contains the id of the user, they are still
-     * stored in a dictionary for faster access and updating.
-     **/
-    private users: { [id: string]: User } = {};
-
-    createUser(user: User): Promise<void> {
-        if (user.id === undefined) {
-            return Promise.reject(new Error("Cannot add user with no id"));
-        }
-        this.users[user.id] = user;
-
-        return Promise.resolve();
-    }
-
-    getUserById(id: string): Promise<User | null> {
-        const user = this.users[id];
-
-        if (user === undefined) {
-            return Promise.resolve(null);
-        }
-
-        return Promise.resolve(user);
-    }
-
-    getUserByEmail(email: string): Promise<User | null> {
-        for (const user of Object.values(this.users)) {
-            if (user.email === email) {
-                return Promise.resolve(user);
-            }
-        }
-
-        return Promise.resolve(null);
-    }
-
-    updateUser(user: User): Promise<void> {
-        if (user.id === undefined || this.users[user.id] === undefined) {
-            return Promise.reject(new Error("User not found"));
-        }
-
-        this.users[user.id] = user;
-        return Promise.resolve();
-    }
-
-    deleteUser(id: string): Promise<void> {
-        if (this.users[id] === undefined) {
-            return Promise.reject(new Error("User not found"));
-        }
-
-        delete this.users[id];
-        return Promise.resolve();
-    }
-
-    constructor() {
-        this.users = {};
-    }
-}
-
 class MongoDBUserRepository implements UserRepository {
     private connection: Connection;
     private model: Model<UserDto>;
