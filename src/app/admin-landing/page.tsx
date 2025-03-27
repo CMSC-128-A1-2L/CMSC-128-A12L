@@ -1,9 +1,19 @@
 "use client"
 
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
+import { redirect } from "next/navigation";
+import { useEffect } from "react";
 
 const AdminLanding = () => {
-    const { data: session } = useSession();
+    const { data: session, status } = useSession();
+
+    useEffect(() => {
+        if (status === "unauthenticated") {
+            console.log("You've been logged out due to inactivity");
+            signOut();
+        }
+    }, [status])
+    
     if (!session) {
         return (
           <div className="min-h-screen flex items-center justify-center bg-white">

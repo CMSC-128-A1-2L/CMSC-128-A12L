@@ -17,10 +17,9 @@ export async function middleware(req: NextRequest) {
       }
     
     // we check if the access token is valid in google
-    const googleResponse = await fetch(`https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${token.accessToken}`);
-
+    const googleResponse = await fetch(`https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=${token.accessToken}`);
     if (!googleResponse.ok) {
-        console.log("Google response is not ok");
+        console.log("Access token is not ok");
         return NextResponse.redirect(new URL("/login", req.url));
     }
 
