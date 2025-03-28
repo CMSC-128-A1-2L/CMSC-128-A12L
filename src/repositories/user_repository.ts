@@ -33,6 +33,13 @@ export interface UserRepository {
     getUserByEmail(email: string): Promise<User | null>;
 
     /**
+     * Gets all users from the repository.
+     * 
+     * @returns A promise that resolves to an array of users.
+     */
+    getAllUsers(): Promise<User[]>;
+
+    /**
      * Updates an existing user in the repository.
      * 
      * @param user The user to update.
@@ -81,14 +88,19 @@ class MongoDBUserRepository implements UserRepository {
         return mapUserDtoToUser(userDto);
     }
 
+    async getAllUsers(): Promise<User[]> {
+        const userDtos = await this.model.find();
+        return userDtos.map(mapUserDtoToUser);
+    }
+
     async updateUser(user: User): Promise<void> {
         const userDto = mapUserToUserDto(user);
         
-        await this.model.findByIdAndUpdate(user.id, userDto);
+        await this.model.findOneAndUpdate({ id: user.id }, userDto);
     }
 
     async deleteUser(id: string): Promise<void> {
-        await this.model.findByIdAndDelete(id);
+        await this.model.findOneAndDelete({ id: id });
     }
 
     constructor(connection: Connection) {
