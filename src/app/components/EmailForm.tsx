@@ -1,24 +1,30 @@
-'use client';
+/* Sample form for testing blast emails. 
+   Add the ff to your .env file before testing:
+   
+   NEXT_PUBLIC_EMAIL=cmsc128a12l@gmail.com
+   APP_PASSWORD=tbjjgnwtcbxavzvo
+*/
+
+"use client"
 import { getSession } from "next-auth/react";
 import React, { useState } from "react";
 
 export default function EmailForm() {
+  const [recipientList, setRecipients] = useState<string>("");
   const [subject, setSubject] = useState<string>("");
   const [message, setMessage] = useState<string>("");
   const [status, setStatus] = useState<string>("");
 
   const sendBulkEmails = async (e: React.FormEvent) => {
     e.preventDefault();
-    const session = await getSession();
-
-    const recipients = [
-      "katkat030703@gmail.com",
-      "juliakthborja@outlook.com",
-      "jbborja@up.edu.ph"
-    ];
-
-    e.preventDefault();
     setStatus("Sending...");
+
+    const recipients = recipientList.split(",");
+
+    const session = await getSession();
+    const userEmail = session?.user?.email || process.env.NEXT_PUBLIC_EMAIL; // Currently defaults to the latter
+    const domain = userEmail?.split("@")[1];
+    const provider = (domain==="gmail.com" || domain==="up.edu.ph")? 'google' : 'other';
 
     const response = await fetch("/api/admin/feed", {
       method: "POST",
@@ -27,8 +33,8 @@ export default function EmailForm() {
         recipients,
         subject: subject,
         htmlBody: `<p>${message}</p>`,
-        userEmail:session?.user?.email || process.env.SMTP_EMAIL,
-        provider: "google",
+        userEmail: userEmail,
+        provider: provider,
       })
     });
 
@@ -48,6 +54,15 @@ export default function EmailForm() {
       <h1>SEND EMAILS</h1>
       <br/>
       <form onSubmit={sendBulkEmails}>
+      <input
+          type="text"
+          placeholder="Recipients(comma separated)"
+          value={recipientList}
+          onChange={(e) => setRecipients(e.target.value)}
+          name = "recipientsField"
+          required
+        />
+        <br/>
         <input
           type="text"
           placeholder="Subject"
@@ -65,7 +80,7 @@ export default function EmailForm() {
           required
         />
         <br/>
-        <button type="submit">Send Email</button>
+        <button type="submit">Send Emails</button>
       </form>
       <p>{status}</p>
     </div>
