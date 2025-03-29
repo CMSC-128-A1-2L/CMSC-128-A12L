@@ -1,5 +1,5 @@
 import { connectDB } from "@/app/services/database/database";
-import { UserModel, IUser, IUserRequest, SortBy } from "@/models/user_model";
+import { UserModel, IUser, IUserRequest, SortBy } from "@/models/user";
 import { SortOrder } from "mongoose";
 
 async function getAllUsers(filter: IUserRequest) {

@@ -1,4 +1,5 @@
 "use client"
+import { UserRole } from '@/entities/user';
 import { useSession } from 'next-auth/react';
 import { redirect } from 'next/navigation';
 
@@ -9,10 +10,10 @@ const Redirect = () => {
   }
 
   if (session) {
-    if(session.user.role === "alumni"){
+    if(session.user.role.includes(UserRole.ALUMNI)){
         redirect("/alumni-landing");
     }
-    else if (session.user.role === "admin"){
+    else if (session.user.role.includes(UserRole.ADMIN)){
         redirect("/admin-landing");
     }
     else{

@@ -163,12 +163,26 @@ export default function SignUp() {
     setIsSubmitting(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 1000)); 
-      redirect('/login');
+      const response = await fetch("../api/auth/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          firstname: formData.firstName,
+          lastname: formData.lastName,
+          email: formData.email,
+          password: formData.password,
+        }),
+      })
+      console.log("Register response: ", response);
     } catch (error) {
       console.error('Sign up failed:', error);
+      return;
     } finally {
       setIsSubmitting(false);
     }
+    redirect('/login');
   };
 
   return (
