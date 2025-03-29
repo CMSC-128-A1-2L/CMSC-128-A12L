@@ -4,6 +4,12 @@ export class WrongLoginCredentialsError extends Error {
     }
 }
 
+export class InvalidAuthenticationMethodError extends Error {
+    constructor() {
+        super("The user exists but cannot be authenticated with the selected method.")
+    }
+}
+
 export class UserRegistrationError extends Error {
     constructor(reason: string) {
         super(`User could not be registered: ${reason}`)

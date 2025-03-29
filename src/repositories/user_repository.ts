@@ -1,4 +1,8 @@
-import { User } from "@/models/user";
+import { connectDB } from "@/databases/mongodb";
+import { User } from "@/entities/user";
+import { mapUserDtoToUser, mapUserToUserDto } from "@/mappers/user";
+import { UserDto, UserSchema } from "@/models/user";
+import { Connection, Model } from "mongoose";
 
 /**
  * A repository for managing data of registered users.
@@ -21,6 +25,21 @@ export interface UserRepository {
     getUserById(id: string): Promise<User | null>;
 
     /**
+     * Gets a user from the repository.
+     * 
+     * @param email The email of the user to fetch.
+     * @returns A promise that resolves to either the fetched user or `null` if the user does not exist.
+     */
+    getUserByEmail(email: string): Promise<User | null>;
+
+    /**
+     * Gets all users from the repository.
+     * 
+     * @returns A promise that resolves to an array of users.
+     */
+    getAllUsers(): Promise<User[]>;
+
+    /**
      * Updates an existing user in the repository.
      * 
      * @param user The user to update.
@@ -37,66 +56,68 @@ export interface UserRepository {
     deleteUser(id: string): Promise<void>;
 }
 
-/**
- * A repository that stores user data in memory.
- **/
-class InMemoryUserRepository implements UserRepository {
-    /**
-     * The users stored in memory. Even though the `User` type already contains the id of the user, they are still
-     * stored in a dictionary for faster access and updating.
-     **/
-    private users: { [id: string]: User } = {};
+class MongoDBUserRepository implements UserRepository {
+    private connection: Connection;
+    private model: Model<UserDto>;
 
-    createUser(user: User): Promise<void> {
-        if (user.id === undefined) {
-            return Promise.reject(new Error("Cannot add user with no id"));
-        }
-        this.users[user.id] = user;
-
-        return Promise.resolve();
+    async createUser(user: User): Promise<void> {
+        const userDto = mapUserToUserDto(user);
+        
+        await this.model.create(userDto);
     }
 
-    getUserById(id: string): Promise<User | null> {
-        const user = this.users[id];
-
-        if (user === undefined) {
-            return Promise.resolve(null);
+    async getUserById(id: string): Promise<User | null> {
+        const userDto = await this.model.findOne({ id: id });
+        
+        if (userDto === null) {
+            return null;
         }
-
-        return Promise.resolve(user);
+        
+        return mapUserDtoToUser(userDto);
     }
 
-    updateUser(user: User): Promise<void> {
-        if (user.id === undefined || this.users[user.id] === undefined) {
-            return Promise.reject(new Error("User not found"));
+    async getUserByEmail(email: string): Promise<User | null> {
+        const userDto = await this.model.findOne({
+            email: email
+        });
+        
+        if (userDto === null) {
+            return null;
         }
-
-        this.users[user.id] = user;
-        return Promise.resolve();
+        
+        return mapUserDtoToUser(userDto);
     }
 
-    deleteUser(id: string): Promise<void> {
-        if (this.users[id] === undefined) {
-            return Promise.reject(new Error("User not found"));
-        }
-
-        delete this.users[id];
-        return Promise.resolve();
+    async getAllUsers(): Promise<User[]> {
+        const userDtos = await this.model.find();
+        return userDtos.map(mapUserDtoToUser);
     }
 
-    constructor() {
-        this.users = {};
+    async updateUser(user: User): Promise<void> {
+        const userDto = mapUserToUserDto(user);
+        
+        await this.model.findOneAndUpdate({ id: user.id }, userDto);
+    }
+
+    async deleteUser(id: string): Promise<void> {
+        await this.model.findOneAndDelete({ id: id });
+    }
+
+    constructor(connection: Connection) {
+        this.connection = connection;
+        this.model = connection.models["User"] ?? connection.model("User", UserSchema, "users");
     }
 }
 
-const userRepository = new InMemoryUserRepository();
-userRepository.createUser({
-    id: "test",
-    firstName: "Test",
-    lastName: "User"
-});
+let userRepository: UserRepository | null = null;
 
 export function getUserRepository(): UserRepository {
+    if (userRepository !== null) {
+        return userRepository;
+    }
+
+    const connection = connectDB();
+    userRepository = new MongoDBUserRepository(connection);
     return userRepository;
 }
 
