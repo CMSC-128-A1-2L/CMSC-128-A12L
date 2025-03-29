@@ -59,6 +59,6 @@ class NoEncryptionPasswordEncryptionProvider implements PasswordEncryptionProvid
 }
 
 export function getPasswordEncryptionProvider(): PasswordEncryptionProvider {
-    return new BcryptPasswordEncryptionProvider();
+    return new NoEncryptionPasswordEncryptionProvider();
 }
 
