@@ -15,9 +15,9 @@ import mongoose, { Schema, Document, Model, Types} from "mongoose";
 
 export enum UserRoleDto {
   NONE = 0,
-  ADMIN = 1 << 1,
-  ALUMNI = 1 << 2,
-  FACULTY = 1 << 3
+  ADMIN = 1 << 0,
+  ALUMNI = 1 << 1,
+  FACULTY = 1 << 2
 };
 
 export interface UserDto {
