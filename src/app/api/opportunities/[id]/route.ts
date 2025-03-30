@@ -1,45 +1,40 @@
-import { type NextRequest } from "next/server";
-import { MongoClient, ObjectId } from "mongodb";
+import { NextRequest, NextResponse } from "next/server";
+import { createOpportunity, updateOpportunity , deleteOpportunity, getSpecificOpportunity} from "../../../../app/services-opportunities/opportunities-CRUD";
 
-const uri = process.env.MONGODB_URI as string;
-const client = new MongoClient(uri);
-
-async function GetOpportunityById(id: string) { // connect to db and find opportunity using a specific id
-  await client.connect();
-  const db = client.db("DEV_ARTMS"); // db name
-  const collection = db.collection("opportunities"); //collection name
-
-  try {
-    const opportunity = await collection.findOne({ _id: new ObjectId(id) });
-    return opportunity;
-  } finally {
-    await client.close();
+export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+    console.log("Create opportunity.");
+    
+    let adminId = params.id;
+    let requestBody = await req.json();
+    
+    let result = await createOpportunity(adminId, requestBody);
+    return NextResponse.json(result);
   }
-}
-
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {   // get function to return the specific opportunity
-  try {
-    const { id } = params;
-
-    if (!ObjectId.isValid(id)) {
-      return new Response(JSON.stringify({ error: "Invalid ID format" }), { status: 400 });
-    }
-
-    const opportunity = await GetOpportunityById(id);
-
-    if (!opportunity) {
-      return new Response(JSON.stringify({ error: " Opportunity not found" }), { status: 404 });
-    }
-
-    return new Response(JSON.stringify(opportunity), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
-
-  } catch (error) {
-    return new Response(JSON.stringify({ error: "Failed to fetch" }), {
-      status: 500,
-      headers: { "Content-Type": "application/json" },
-    });
+  
+  export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+    console.log("Update opportunity.");
+    
+    let addressId = params.id;
+    let requestBody = await req.json();
+    
+    let result = await updateOpportunity(addressId, requestBody);
+    return NextResponse.json(result);
   }
-}
+
+  export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+    console.log("Delete opportunity.");
+    
+    let foreignId = params.id;
+    
+    let result = await deleteOpportunity(foreignId);
+    return NextResponse.json(result);
+  }
+
+  export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+    console.log("Get opportunity by opportunityID.");
+    
+    let foreignId = params.id;
+    
+    let result = await getSpecificOpportunity(foreignId);
+    return NextResponse.json(result);
+  }
