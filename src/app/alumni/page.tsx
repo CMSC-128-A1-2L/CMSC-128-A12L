@@ -5,6 +5,9 @@ import { FiFilter } from "react-icons/fi";
 import { IoIosArrowForward, IoIosArrowBack } from "react-icons/io";
 import userData from "@/dummy_data/user.json";
 
+import CreateJL from "@/pages/createJL";
+
+
 type Alumni = {
   role: string;
   studentId: string;
@@ -27,6 +30,7 @@ export default function AlumniPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [showFilter, setShowFilter] = useState(false); // for filter
   const itemsPerPage = 12;
+  const [showModal, setShowModal] = useState(false);
 
   // filters based on role and gender
   const filteredAlumni = userData.filter((alumni) => {
@@ -46,7 +50,6 @@ export default function AlumniPage() {
     setSearch("");
   };
 
-  // for the pages
   const totalPages = Math.ceil(filteredAlumni.length / itemsPerPage);
   const displayedAlumni = filteredAlumni.slice(
     (currentPage - 1) * itemsPerPage,
@@ -54,10 +57,11 @@ export default function AlumniPage() {
   );
 
   return (
+    
     <div className="min-h-screen bg-gray-100 text-gray-900 flex flex-col items-center p-6">
+
       {/* Navbar */}
       <div className="w-full bg-[#0c0051] text-white flex items-center justify-between px-4 py-3 rounded-lg">
-
         <button className="text-white text-xl">☰</button>
         <h1 className="text-lg font-bold">ARES |</h1>
         <button className="text-white text-xl">⤴</button>
@@ -91,7 +95,7 @@ export default function AlumniPage() {
                   onClick={() => setSelectedFilter({ ...selectedFilter, role: "" })}
                   className="block w-full text-left px-4 py-2 hover:bg-gray-200"
                 >
-                  All
+                  All {selectedFilter.role === "all" && "✓"}
                 </button>
               </li>
               <li>
@@ -101,7 +105,7 @@ export default function AlumniPage() {
                   }
                   className="block w-full text-left px-4 py-2 hover:bg-gray-200"
                 >
-                  Alumni
+                  Alumni {selectedFilter.role === "alumni" && "✓"}
                 </button>
               </li>
 
@@ -114,7 +118,7 @@ export default function AlumniPage() {
                   }
                   className="block w-full text-left px-4 py-2 hover:bg-gray-200"
                 >
-                  All
+                  All {selectedFilter.gender === "" && "✓"}
                 </button>
               </li>
               <li>
@@ -124,7 +128,7 @@ export default function AlumniPage() {
                   }
                   className="block w-full text-left px-4 py-2 hover:bg-gray-200"
                 >
-                  Male
+                  Male {selectedFilter.gender === "Male" && "✓"}
                 </button>
               </li>
               <li>
@@ -134,7 +138,7 @@ export default function AlumniPage() {
                   }
                   className="block w-full text-left px-4 py-2 hover:bg-gray-200"
                 >
-                  Female
+                  Female {selectedFilter.gender === "Female" && "✓"}
                 </button>
               </li>
 
@@ -153,8 +157,7 @@ export default function AlumniPage() {
       </div>
 
       {/* Alumni List with Hover */}
-      <div className="grid grid-cols-6 gap-4 w-full max-w-7xl">
-
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 w-full max-w-7xl">
         {displayedAlumni.length > 0 ? (
           displayedAlumni.map((alumni, index) => (
             <div
@@ -221,6 +224,16 @@ export default function AlumniPage() {
           </button>
         </div>
       )}
+      {/* This is not included in this page, wala palang page for job listing */} 
+      {/* Button for creating a job listing */} 
+      <button
+              onClick={() => setShowModal(true)}
+              className="bg-gray-700 text-white px-4 py-2 rounded"
+            >
+              Post a job
+            </button>
+
+            {showModal && <CreateJL onClose={() => setShowModal(false)} />}
     </div>
   );
 }
