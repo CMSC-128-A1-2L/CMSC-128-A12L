@@ -1,65 +1,75 @@
-export default function Homepage() {
+import React from "react";
+import Image from "next/image";
+import Link from "next/link";
 
+export default function LandingPage() {
   return (
-    <div
-      className="min-h-screen flex items-center justify-center bg-gray-100 px-4"
-      style={{
-        backgroundImage: "url('/assets/bg.jpg')",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}
-    >
-      <div className="w-full max-w-4xl flex flex-col md:flex-row shadow-lg overflow-hidden">
-
-        {/* Left Section */}
-        <div
-          className="flex flex-col items-center justify-center p-6 w-full md:w-[50%] h-[510px] relative"
-          style={{ backgroundColor: "rgba(11, 1, 67, 0.8)" }}
-        >
-          <img
-			  src="/assets/LOGO_NAME.svg"
-			  alt="Logo"
-			  className="w-[90%] md:w-[110%] h-auto mb-6 md:mb-8"
-			/>
-          <h2
-            className="text-lg md:text-xl font-bold text-center mt-4 md:mt-6 md:w-4/5 "
-            style={{ fontFamily: "Montserrat, sans-serif", fontSize: "25px" }}
-          >
-            Lorem Ipsum Dolor Sit Amet
-          </h2>
+    <div className="w-full min-h-screen overflow-auto font-[Montserrat]">
+      {/* Navbar */}
+      <nav className="fixed top-0 left-0 w-full bg-[#0c0151] text-white flex justify-between p-4 z-10">
+        <Link href="/">
+          <h1 className="text-3xl font-bold cursor-pointer">AEGIS</h1>
+        </Link>
+        <div className="space-x-20 pt-2">
+          <Link href="#home" className="hover:underline">HOME</Link>
+          <Link href="/about" className="hover:underline">ABOUT</Link>  
+          <Link href="/login" className="hover:underline">LOG IN</Link>
         </div>
-
-        {/* Right Section */}
-        <div
-          className="w-full md:w-[65%] p-10 text-[#0C0051] flex flex-col justify-center pt-10 md:pt-20"
-          style={{ backgroundColor: "rgba(255, 255, 255, 0.5)" }}
+      </nav>
+      
+      {/* Oble Pic */}
+      <section
+        id="home"
+        className="relative h-screen w-full flex items-center justify-center text-center bg-cover bg-center"
+        style={{ backgroundImage: "url('/assets/oble.png')" }}
         >
-          {/* Welcome Heading */}
-          <h2
-            className="text-xl md:text-3xl font-extrabold text-center md:text-left mt-[-10px] md:mt-[-50px] ml-4 md:ml-10 mb-4 md:mb-8"
-            style={{ fontFamily: "Montserrat, sans-serif" }}
-          >
-            Welcome to the ICS Alumni Tracker!
-          </h2>
-
-          {/* Description */}
-          <p
-            className="text-xs md:text-sm text-center md:text-left w-full md:w-5/5 mt-[-10px] md:mt-[-1px] ml-4 md:ml-10 "
-            style={{ fontFamily: "Montserrat, sans-serif", fontWeight: "400", color: "#0C0051", fontSize: "12px" }}
-          >
-            This is the homepage. To login, go to /login. For testing purposes.
-          </p>
-
-          {/* Support Text */}
-          <p
-            className="mt-20 md:mt-16 text-xs md:text-sm text-center md:text-left text-gray-500 md:w-4.5/5 ml-4 md:ml-10"
-            style={{ fontFamily: "Montserrat, sans-serif", color: "#0C0051", fontSize: "10px" }}
-          >
-            If you are unable to log in using your Google account, please fill out this support form to notify us: [Insert Support Form Link].
-          </p>
-
+        <h2 className="text-4xl font-bold text-[#0C0151] font-montserrat leading-relaxed absolute top-[20%]">
+            ALUMNI ENGAGEMENT GATEWAY <br /> AND INFORMATION SYSTEM
+        </h2>
+        </section>
+      
+   {/* News and Updates */}
+    <section className="p-16 bg-[#0C0151] text-white min-h-[90vh] flex flex-col justify-center">
+      <h3 className="text-2xl font-montserrat font-semibold mb-8">News and Updates</h3>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="h-80 bg-gray-300 rounded-lg"></div>
+        <div className="space-y-4">
+          <div className="h-24 bg-gray-300 rounded-lg"></div>
+          <div className="h-24 bg-gray-300 rounded-lg"></div>
+          <div className="h-24 bg-gray-300 rounded-lg"></div>
         </div>
       </div>
+    </section>
+
+          
+    {/* Events */}
+    <section className="bg-white text-[#0C0151] p-16 min-h-[90vh] flex flex-col justify-center">
+      <h3 className="text-2xl font-semibold mb-4">Events</h3>
+      <p className="text-sm opacity-80">Secret muna</p>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+        <div className="h-80 bg-gray-600 rounded-lg"></div>
+        <div className="h-80 bg-gray-600 rounded-lg"></div>
+        <div className="h-80 bg-gray-600 rounded-lg"></div>
+      </div>
+    </section>
+
+
+      
+      {/* Footer */}
+      <footer className="bg-[#0C0151] p-4 text-center text-sm text-white flex flex-col items-center space-y-4">
+        {/* CAS & UPLB Logos */}
+        <div className="flex space-x-4">
+          <Image src="/assets/cas.png" alt="CAS Logo" width={50} height={50} />
+          <Image src="/assets/uplb.png" alt="UPLB Logo" width={50} height={50} />
+        </div>
+      
+        {/* Contact Info */}
+        <div className="text-center">
+          <p className="font-bold">College of Arts and Sciences, UPLB, Laguna, Philippines 4031</p>
+          <p>(049) 536-2021 | +63-49-536-2322</p>
+          <p>ics.uplb@up.edu.ph</p>
+        </div>
+      </footer>
     </div>
-  );
+  ); 
 }
