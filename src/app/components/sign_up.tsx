@@ -3,97 +3,7 @@ import { useState, useEffect } from 'react';
 import { redirect } from 'next/navigation';
 import { motion } from 'framer-motion';
 import SignIn from './sign_in';
-
-// Used motion components here, install motion from npm, u can probably use framer-motion for this, but I think that motion can also do this
-// Constellation background component
-const ConstellationBackground = () => {
-  useEffect(() => {
-    const canvas = document.getElementById('constellation-canvas') as HTMLCanvasElement;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-
-    // only use the canvas for the left panel
-    const resizeCanvas = () => {
-      canvas.width = window.innerWidth / 2; 
-      canvas.height = window.innerHeight;
-    };
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-
-    // Particle configuration
-    const particles: Array<{ x: number; y: number; vx: number; vy: number }> = [];
-    const particleCount = 50;
-    const connectionDistance = 100;
-    const particleSpeed = 0.5;
-
-    // Create particles (this loop adds random particles to the canvas)
-    for (let i = 0; i < particleCount; i++) {
-      particles.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        vx: (Math.random() - 0.5) * particleSpeed,
-        vy: (Math.random() - 0.5) * particleSpeed,
-      });
-    }
-
-    // Animation loop
-    const animate = () => {
-      // ctx is the rendering component for the canvas
-      if (!ctx) return;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Update and draw particles
-      particles.forEach(particle => {
-        // Update position
-        particle.x += particle.vx;
-        particle.y += particle.vy;
-
-        // Bounce off walls
-        if (particle.x < 0 || particle.x > canvas.width) particle.vx *= -1;
-        if (particle.y < 0 || particle.y > canvas.height) particle.vy *= -1;
-
-        // Draw particle
-        ctx.beginPath();
-        ctx.arc(particle.x, particle.y, 2, 0, Math.PI * 2);
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-        ctx.fill();
-
-        // Connect nearby particles
-        particles.forEach(otherParticle => {
-          const dx = particle.x - otherParticle.x;
-          const dy = particle.y - otherParticle.y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-
-          if (distance < connectionDistance) {
-            ctx.beginPath();
-            ctx.moveTo(particle.x, particle.y);
-            ctx.lineTo(otherParticle.x, otherParticle.y);
-            ctx.strokeStyle = `rgba(255, 255, 255, ${0.2 * (1 - distance / connectionDistance)})`;
-            ctx.stroke();
-          }
-        });
-      });
-
-      requestAnimationFrame(animate);
-    };
-
-    animate();
-
-    return () => {
-      window.removeEventListener('resize', resizeCanvas);
-    };
-  }, []);
-
-  return (
-    <canvas
-      id="constellation-canvas"
-      className="absolute inset-0 pointer-events-none"
-      style={{ opacity: 0.3 }}
-    />
-  );
-};
+import ConstellationBackground from './constellation_background';
 
 export default function SignUp() {
   const [formData, setFormData] = useState({
@@ -189,7 +99,9 @@ export default function SignUp() {
     <div className="min-h-screen flex flex-col lg:flex-row">
       {/* Left Panel - Dark Blue */}
       <div className="w-full lg:w-1/2 bg-[#1a1f4d] flex flex-col items-center justify-center p-6 lg:p-12 relative overflow-hidden min-h-[300px] lg:min-h-screen">
-        <ConstellationBackground />
+        <div className="absolute inset-0 w-full h-full overflow-hidden">
+          <ConstellationBackground customWidth={true} />
+        </div>
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
