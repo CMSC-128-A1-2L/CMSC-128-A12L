@@ -1,5 +1,8 @@
 "use client";
 import userData from "@/dummy_data/user.json";
+import Navbar from "@/app/components/navBar";
+import AlumniSidebar from "@/app/components/alumniSideBar";
+
 import PromoteUser from "../components/promoteUser";
 import DeleteUser from "../components/deleteUser";
 import FilterModal from "../components/filterModal";
@@ -78,9 +81,9 @@ export default function AlumniLanding() {
   }
 
   
-  return (
+  return (  
     <div className="min-h-screen flex flex-col bg-white">
-      {/* Blue Topbar */}
+      {/* Navbar - Update to use component */}
       <header style={{ backgroundColor: "#0C0051" }} className="text-white py-4">
         <div className="container mx-auto px-4 flex justify-between items-center">
           <div className="flex items-center">
@@ -92,7 +95,7 @@ export default function AlumniLanding() {
             >
               <Menu size={24} />
             </button>
-            <Link href="/alumni-landing">
+            <Link href="/jobs">
               <h1 className="text-xl font-bold cursor-pointer">AEGIS | <span className="text-lg font-normal">Jobs</span></h1>
             </Link>
           </div>
@@ -108,7 +111,7 @@ export default function AlumniLanding() {
         </div>
       </header>
 
-      {/* Sidebar */}
+      {/* Sidebar - Update to use component */}
       <div
         ref={sidebarRef}
         className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
@@ -143,19 +146,8 @@ export default function AlumniLanding() {
 
       {/* Main Content */}
       <main className="flex-grow container mx-auto px-4 py-8 flex items-center justify-center">
-        <div className="bg-white shadow-lg rounded-3xl p-8 max-w-2xl w-full">
-          <h2 className="text-3xl font-bold text-center text-gray-800 mb-6" style={{ fontFamily: "Montserrat, sans-serif" }}>
-            Welcome to AEGIS!
-          </h2>
-          <p className="text-gray-600" style={{ fontFamily: "Montserrat, sans-serif" }}>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam pulvinar risus non risus hendrerit venenatis.
-            Pellentesque sit amet hendrerit risus, sed porttitor quam. Magna etiam tempor orci eu lobortis elementum nibh.
-            Amet est placerat in egestas erat imperdiet. Tempus urna et pharetra pharetra massa massa ultricies mi quis.
-          </p>
-        </div>
 
         {/* TEST */}
-
 
         <div className="p-6">
             <h1 className="text-3xl font-bold">Test</h1>
