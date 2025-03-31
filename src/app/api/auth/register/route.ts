@@ -18,7 +18,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     const id: string = userIdProvider.generate();
     const encryptedPassword: string = passwordEncryptionProvider.encrypt(password);
-
+    
     const userRepository = getUserRepository();
     const userCredentialsRepository = getUserCredentialRepository();
 
