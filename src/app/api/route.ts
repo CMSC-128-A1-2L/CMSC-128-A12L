@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  return NextResponse.json({ message: "Verify checks." });
+  return NextResponse.json({ message: "Authentication is temporarily disabled." });
 }
