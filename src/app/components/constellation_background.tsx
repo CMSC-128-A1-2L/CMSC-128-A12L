@@ -165,7 +165,7 @@ const ConstellationBackground = ({ customWidth = false }: ConstellationBackgroun
   return (
     <canvas
       ref={canvasRef}
-      className="absolute inset-0 w-full h-full opacity-40 pointer-events-none"
+      className={`absolute inset-0 ${customWidth ? 'w-full' : ''}`}
       style={{ zIndex: 0 }}
     />
   );

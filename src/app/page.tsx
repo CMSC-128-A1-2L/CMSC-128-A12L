@@ -13,14 +13,13 @@ export default function LandingPage() {
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.8 }}
-        className="fixed top-0 left-0 w-full bg-[#1a1f4d] backdrop-blur-sm text-white flex justify-between p-4 z-10"
+        className="fixed top-0 left-0 w-full bg-[#1a1f4d] backdrop-blur-sm text-white flex justify-between p-4 z-50"
       >
-        <Link href="/">
           <motion.div 
             whileHover={{ scale: 1.05 }}
             className="flex items-center space-x-2"
           >
-            <div className="w-24 h-24 ml-4">
+            <div className="w-24 h-24 ml-4 cursor-pointer" onClick={() => window.location.href = '/'}>
               <svg viewBox="0 14.3 135.35 32.5" className="w-full h-full text-white">
                 <motion.path
                   initial={{ pathLength: 0 }}
@@ -34,25 +33,24 @@ export default function LandingPage() {
               </svg>
             </div>
           </motion.div>
-        </Link>
         <div className="flex items-center space-x-8">
-          <motion.div whileHover={{ scale: 1.05 }}>
-            <Link href="#home" className="text-sm font-medium hover:text-gray-200 transition-colors relative group">
+        <motion.div whileHover={{ scale: 1.05 }}>
+            <div onClick={() => window.location.href = '/'} className="text-sm font-medium hover:text-gray-200 transition-colors relative group cursor-pointer">
               HOME
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-white transition-all group-hover:w-full"></span>
-            </Link>
+            </div>
           </motion.div>
           <motion.div whileHover={{ scale: 1.05 }}>
-            <Link href="/about" className="text-sm font-medium hover:text-gray-200 transition-colors relative group">
+            <div onClick={() => window.location.href = '/about'} className="text-sm font-medium hover:text-gray-200 transition-colors relative group cursor-pointer">
               ABOUT
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-white transition-all group-hover:w-full"></span>
-            </Link>
+            </div>
           </motion.div>
           <motion.div whileHover={{ scale: 1.05 }}>
-            <Link href="/login" className="text-sm font-medium hover:text-gray-200 transition-colors relative group">
+            <div onClick={() => window.location.href = '/login'} className="text-sm font-medium hover:text-gray-200 transition-colors relative group cursor-pointer">
               LOG IN
               <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-white transition-all group-hover:w-full"></span>
-            </Link>
+            </div>
           </motion.div>
         </div>
       </motion.nav>
@@ -123,36 +121,69 @@ export default function LandingPage() {
         whileInView={{ opacity: 1 }}
         transition={{ duration: 1 }}
         viewport={{ once: true }}
-        className="p-16 bg-gradient-to-br from-gray-50 to-white text-[#1a237e] min-h-[90vh] flex flex-col justify-center"
+        className="relative p-16 min-h-[90vh] flex flex-col justify-center overflow-hidden"
       >
-        <motion.h2 
-          initial={{ y: 20, opacity: 0 }}
-          whileInView={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-          className="text-3xl font-bold mb-8"
+        {/* Background Image with Overlay */}
+        <motion.div 
+          className="absolute inset-0 z-0"
+          initial={{ scale: 1.1 }}
+          whileInView={{ scale: 1 }}
+          transition={{ duration: 1.5 }}
         >
-          News and Updates
-        </motion.h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <motion.div 
-            whileHover={{ scale: 1.02 }}
-            className="h-80 bg-gray-100 rounded-lg overflow-hidden shadow-lg"
+          <Image
+            src="/assets/oble.png"
+            alt="Oblation Background"
+            fill
+            className="object-cover"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-br from-[#1a237e]/70 to-[#0d47a1]/60 backdrop-blur-[2px]" />
+        </motion.div>
+
+        {/* Content */}
+        <motion.div className="relative z-10">
+          <motion.h2 
+            initial={{ y: 20, opacity: 0 }}
+            whileInView={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+            className="text-3xl font-bold mb-8 text-white"
           >
-            <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 animate-pulse"></div>
-          </motion.div>
-          <div className="space-y-6">
-            {[1, 2, 3].map((i) => (
-              <motion.div
-                key={i}
-                whileHover={{ scale: 1.02 }}
-                className="h-24 bg-gray-100 rounded-lg overflow-hidden shadow-lg"
-              >
-                <div className="w-full h-full bg-gradient-to-br from-gray-200 to-gray-300 animate-pulse"></div>
-              </motion.div>
-            ))}
+            News and Updates
+          </motion.h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <motion.div 
+              whileHover={{ scale: 1.02 }}
+              className="h-80 bg-white/5 backdrop-blur-sm rounded-lg overflow-hidden shadow-lg border border-white/10"
+            >
+              <div className="w-full h-full bg-gradient-to-br from-white/5 to-white/10 animate-pulse" />
+            </motion.div>
+            <div className="space-y-6">
+              {[1, 2, 3].map((i) => (
+                <motion.div
+                  key={i}
+                  initial={{ x: 50, opacity: 0 }}
+                  whileInView={{ x: 0, opacity: 1 }}
+                  transition={{ duration: 0.8, delay: i * 0.2 }}
+                  whileHover={{ scale: 1.02, backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
+                  className="h-24 bg-white/5 backdrop-blur-sm rounded-lg overflow-hidden shadow-lg border border-white/10 transition-colors duration-300"
+                >
+                  <div className="w-full h-full bg-gradient-to-br from-white/5 to-white/10 animate-pulse" />
+                </motion.div>
+              ))}
+            </div>
           </div>
-        </div>
+        </motion.div>
+
+        {/* Animated particles overlay */}
+        <motion.div 
+          className="absolute inset-0 z-[1]"
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          transition={{ duration: 1.5 }}
+        >
+          <div className="absolute w-full h-full bg-[radial-gradient(circle_at_center,_rgba(255,255,255,0.1)_0%,_transparent_50%)] animate-pulse" />
+        </motion.div>
       </motion.section>
 
       {/* Events */}
