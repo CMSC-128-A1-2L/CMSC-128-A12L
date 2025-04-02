@@ -1,9 +1,4 @@
-/* Sample form for testing blast emails. 
-   Add the ff to your .env file before testing:
-   
-   NEXT_PUBLIC_EMAIL=cmsc128a12l@gmail.com
-   APP_PASSWORD=tbjjgnwtcbxavzvo
-*/
+/* Sample form for testing blast emails.*/
 
 "use client"
 import { getSession } from "next-auth/react";
@@ -13,9 +8,10 @@ export default function EmailForm() {
   const [recipientList, setRecipients] = useState<string>("");
   const [subject, setSubject] = useState<string>("");
   const [message, setMessage] = useState<string>("");
+  const [scheduledTime, setTime] = useState<string>("");
   const [status, setStatus] = useState<string>("");
 
-  const sendBulkEmails = async (e: React.FormEvent) => {
+  const sendBlastEmail = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus("Sending...");
 
@@ -35,6 +31,7 @@ export default function EmailForm() {
         htmlBody: `<p>${message}</p>`,
         userEmail: userEmail,
         provider: provider,
+        scheduledTime: scheduledTime
       })
     });
 
@@ -53,7 +50,7 @@ export default function EmailForm() {
     <div>
       <h1>SEND EMAILS</h1>
       <br/>
-      <form onSubmit={sendBulkEmails}>
+      <form onSubmit={sendBlastEmail}>
       <input
           type="text"
           placeholder="Recipients(comma separated)"
@@ -77,6 +74,14 @@ export default function EmailForm() {
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           name="messageField"
+          required
+        />
+        <br/>
+        <input
+          type="datetime-local"
+          value={scheduledTime}
+          onChange={(e) => setTime(e.target.value)}
+          name="scheduleField"
           required
         />
         <br/>
