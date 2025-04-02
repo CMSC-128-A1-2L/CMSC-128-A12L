@@ -10,6 +10,7 @@ const MONGODB_URI = process.env.MONGODB_URI ?? (() => {
   throw new Error("Invalid MONGODB URI in .env file");
 })();
 
+const DB_NAME=process.env.DB_NAME;
 
 // Instantiates a global cache so that we can reuse the connection for each function call we do to the database
 let cached = (global as any).mongoose || { conn: null, promise: null };
