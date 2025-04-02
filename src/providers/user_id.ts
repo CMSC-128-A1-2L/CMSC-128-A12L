@@ -1,3 +1,5 @@
+import { Types } from "mongoose";
+
 /**
  * A service which handles user id generation.
  * 
@@ -13,6 +15,12 @@ class CryptoUserIdProvider implements UserIdProvider {
     }
 }
 
+class OIDUserIdProvider implements UserIdProvider {
+    generate(): string {
+        return new Types.ObjectId().toString();
+    }
+}
+
 export function getUserIdProvider(): UserIdProvider {
-    return new CryptoUserIdProvider();
+    return new OIDUserIdProvider();
 }
