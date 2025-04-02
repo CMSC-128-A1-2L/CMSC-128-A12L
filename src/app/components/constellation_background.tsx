@@ -22,25 +22,16 @@ const ConstellationBackground = ({ customWidth = false }: ConstellationBackgroun
     // Calculate optimal number of particles based on screen size
     const calculateParticleCount = (width: number, height: number) => {
       const area = width * height;
-      // Base density: 1 particle per 8000 pixels
       const baseDensity = area / 8000;
-      
-      // Minimum and maximum particles based on screen size
       const minParticles = Math.min(35, Math.floor(baseDensity));
       const maxParticles = Math.min(90, Math.floor(baseDensity * 1.5));
-      
       return Math.max(minParticles, Math.min(maxParticles, Math.floor(baseDensity)));
     };
 
-    // Create particles with better distribution
-    const createParticles = () => {
-      const width = canvas.width;
-      const height = canvas.height;
+    const createParticles = (width: number, height: number) => {
       const particleCount = calculateParticleCount(width, height);
-      
       particlesRef.current = [];
       
-      // Create grid for even distribution
       const cols = Math.ceil(Math.sqrt(particleCount));
       const rows = Math.ceil(particleCount / cols);
       const cellWidth = width / cols;
@@ -50,11 +41,9 @@ const ConstellationBackground = ({ customWidth = false }: ConstellationBackgroun
         const col = i % cols;
         const row = Math.floor(i / cols);
         
-        // Add some randomness within each cell
         const x = (col * cellWidth) + (Math.random() * cellWidth);
         const y = (row * cellHeight) + (Math.random() * cellHeight);
         
-        // Scale velocity based on screen size
         const speedFactor = Math.min(width, height) / 1000;
         const velocity = 0.4 * speedFactor;
 
@@ -63,68 +52,70 @@ const ConstellationBackground = ({ customWidth = false }: ConstellationBackgroun
           y: Math.min(Math.max(y, 0), height),
           vx: (Math.random() - 0.5) * velocity,
           vy: (Math.random() - 0.5) * velocity,
-          size: Math.random() * 2 + 1, // Smaller particles for better resolution
-          opacity: Math.random() * 0.3 + 0.2 // Adjusted opacity range
+          size: Math.random() * 2 + 1,
+          opacity: Math.random() * 0.3 + 0.2
         });
       }
     };
 
-    // Improved resize handler with debouncing
-    let resizeTimeout: NodeJS.Timeout;
-    const handleResize = () => {
-      if (resizeTimeout) {
-        clearTimeout(resizeTimeout);
-      }
+    const updateCanvasSize = () => {
+      const dpr = window.devicePixelRatio || 1;
+      const displayWidth = customWidth ? window.innerWidth / 2 : window.innerWidth;
+      const displayHeight = window.innerHeight;
 
-      resizeTimeout = setTimeout(() => {
-        const dpr = window.devicePixelRatio || 1;
-        const displayWidth = customWidth ? window.innerWidth / 2 : window.innerWidth;
-        const displayHeight = window.innerHeight;
+      // Set the canvas size in pixels
+      canvas.width = displayWidth * dpr;
+      canvas.height = displayHeight * dpr;
 
-        // Set canvas size with device pixel ratio for better resolution
-        canvas.width = displayWidth * dpr;
-        canvas.height = displayHeight * dpr;
-        canvas.style.width = `${displayWidth}px`;
-        canvas.style.height = `${displayHeight}px`;
+      // Set the display size
+      canvas.style.width = `${displayWidth}px`;
+      canvas.style.height = `${displayHeight}px`;
 
-        // Scale context for retina displays
-        ctx.scale(dpr, dpr);
-        
-        createParticles();
-      }, 250);
+      // Scale the context
+      ctx.scale(dpr, dpr);
+
+      // Recreate particles with the new dimensions
+      createParticles(displayWidth, displayHeight);
     };
 
-    // Animation loop with improved performance
+    let resizeTimeout: NodeJS.Timeout;
+    const handleResize = () => {
+      if (resizeTimeout) clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(updateCanvasSize, 250);
+    };
+
     const animate = () => {
       if (!ctx || !canvas) return;
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const dpr = window.devicePixelRatio || 1;
+      const displayWidth = canvas.width / dpr;
+      const displayHeight = canvas.height / dpr;
 
-      // Calculate connection distance based on canvas size
-      const connectionDistance = Math.min(150, canvas.width / 8);
+      ctx.clearRect(0, 0, displayWidth, displayHeight);
+      const connectionDistance = Math.min(150, displayWidth / 8);
 
       particlesRef.current.forEach(particle => {
         // Update position
         particle.x += particle.vx;
         particle.y += particle.vy;
 
-        // Improved edge handling
-        if (particle.x <= 0 || particle.x >= canvas.width) {
+        // Boundary checking with the scaled dimensions
+        if (particle.x <= 0 || particle.x >= displayWidth) {
           particle.vx *= -0.8;
-          particle.x = Math.max(0, Math.min(canvas.width, particle.x));
+          particle.x = Math.max(0, Math.min(displayWidth, particle.x));
         }
-        if (particle.y <= 0 || particle.y >= canvas.height) {
+        if (particle.y <= 0 || particle.y >= displayHeight) {
           particle.vy *= -0.8;
-          particle.y = Math.max(0, Math.min(canvas.height, particle.y));
+          particle.y = Math.max(0, Math.min(displayHeight, particle.y));
         }
 
-        // Draw particle with anti-aliasing
+        // Draw particle
         ctx.beginPath();
         ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(255, 255, 255, ${particle.opacity})`;
         ctx.fill();
 
-        // Draw connections with improved performance
+        // Draw connections
         for (let j = particlesRef.current.indexOf(particle) + 1; j < particlesRef.current.length; j++) {
           const otherParticle = particlesRef.current[j];
           const dx = particle.x - otherParticle.x;
@@ -145,20 +136,21 @@ const ConstellationBackground = ({ customWidth = false }: ConstellationBackgroun
       animationFrameRef.current = requestAnimationFrame(animate);
     };
 
-    // Initial setup (probably when fullscreen or when the page is loaded)
-    handleResize();
+    // Add zoom change detection
+    const mediaQuery = window.matchMedia('(resolution)');
+    mediaQuery.addListener(handleResize);
+
+    // Initial setup
+    updateCanvasSize();
     window.addEventListener('resize', handleResize);
     animate();
 
-    // Cleanup (whenever nodejs is resized, the animation is stopped and adjusts based on the new size)
+    // Cleanup
     return () => {
+      mediaQuery.removeListener(handleResize);
       window.removeEventListener('resize', handleResize);
-      if (resizeTimeout) {
-        clearTimeout(resizeTimeout);
-      }
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current);
-      }
+      if (resizeTimeout) clearTimeout(resizeTimeout);
+      if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current);
     };
   }, [customWidth]);
 

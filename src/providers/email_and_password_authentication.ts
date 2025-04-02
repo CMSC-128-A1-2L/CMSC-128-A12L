@@ -35,6 +35,7 @@ export class EmailAndPasswordAuthenticationProvider {
             throw new InvalidAuthenticationMethodError();
         }
 
+        // Scenario where the user inputs an invalid password.
         if (!this.passwordEncryptionProvider.validate(password, credentials.password.encryptedValue)) {
             throw new WrongLoginCredentialsError();
         }
