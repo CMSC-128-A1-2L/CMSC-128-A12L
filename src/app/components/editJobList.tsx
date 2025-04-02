@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 
-export default function Home() {
+export default function EditJobListComponent() {
   const [isOpen, setIsOpen] = useState(true);
   const [jobTitle, setJobTitle] = useState("");
   const [location, setLocation] = useState("");
@@ -33,9 +33,9 @@ export default function Home() {
       type: jobType,
       specifications: jobSpecs,
     };
-
     console.log("Saved Job Data:", jobData);
     setIsOpen(false);
+
   };
 
   return (
