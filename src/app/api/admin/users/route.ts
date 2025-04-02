@@ -1,35 +1,34 @@
-import { connectDB } from "@/app/services/database/database";
 import { NextRequest, NextResponse } from "next/server";
-import { createUser, getAllUsers, editUser} from "@/app/services/user/userService";
-import { IUser, IUserRequest } from "@/models/user_model";
+import { getUserRepository } from "@/repositories/user_repository";
+import { User } from "@/entities/user";
+import { getUserIdProvider } from "@/providers/user_id";
 
 // Create user endpoint
 export async function POST(req: NextRequest) {
   console.log("Create user endpoint has been triggered.");
 
-  let request = await req.json();
-  // console.log(request);
+  const body = await req.json();
 
-  let created_user = await createUser(request as unknown as IUser);
-  return NextResponse.json(created_user);
+  const userIdProvider = getUserIdProvider();
+  const user: User = {
+    role: body.role,
+    id: userIdProvider.generate(),
+    email: body.email,
+    emailVerified: null,
+    name: body.name
+  };
+
+  const userRepository = getUserRepository();
+  return await userRepository.createUser(user)
+    .then(() => new NextResponse(JSON.stringify(user), { status: 200 }))
+    .catch((err) => new NextResponse(JSON.stringify(err), { status: 500 }));
 }
 
 // Get all users endpoint
-export async function GET(req: NextRequest,  { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest) {
   console.log("Get all users endpoint has been triggered.");
-  
-  let searchParams = convertUserRequestToJSON(req.nextUrl.searchParams);
-  console.log(searchParams);
 
-  // let body = await req.json();
-
-  // let {filters} = body;
-
-  let result = await getAllUsers(searchParams);
-  return NextResponse.json(result);
-}
-
-function convertUserRequestToJSON(params: URLSearchParams): IUserRequest {
-  let parameters = Object.fromEntries(params.entries()) as unknown as IUserRequest;
-  return parameters;
+  const userRepository = getUserRepository();
+  const users = await userRepository.getAllUsers();
+  return NextResponse.json(users);
 }
