@@ -286,11 +286,24 @@ export const authOptions: NextAuthOptions = {
         // Callback for storing any non-sensitive information that persists in all sessions
         async session({ session, token }) {
             /* DO NOT STORE ANY SENSITIVE INFORMATION IN THE SESSION! */
-            if (token) {
-                session.user.role = token.role as UserRole[];
-                session.user.accessToken = token.accessToken as string;
-                console.log(session);
+            try{
+                if (token) {
+                    
+                    // create user repository instance
+                    const userRepository = getUserRepository();
+                    const currentUser = await userRepository.getUserByEmail(session.user.email!);
+
+                    // set session user properties
+                    session.user.role = token.role as UserRole[];
+                    session.user.accessToken = token.accessToken as string;
+                    session.user.id = currentUser!.id;
+                    
+                    console.log("The session is: ", session);
+                }
+            } catch (error){
+                console.error(error);
             }
+            
             return session;
         }
     }
