@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 // metadata that contains the
 export const metadata: Metadata = {
-  title: "ARES",
+  title: "AEGIS",
 };
 
 export default function RootLayout({
