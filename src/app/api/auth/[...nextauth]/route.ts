@@ -75,6 +75,8 @@ const adapter: Adapter = (() => {
         console.log("Adapter.createUser() called");
         const userToRegister: User = {
             ...user,
+            // TODO: remove if validation is already handled (to check whether the user is a real alumni)
+            role: [UserRole.ALUMNI],
             id: userIdProvider.generate()
         };
 
