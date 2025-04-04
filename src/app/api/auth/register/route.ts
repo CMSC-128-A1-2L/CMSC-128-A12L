@@ -27,7 +27,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         name,
         email,
         emailVerified: null,
-        // uncomment if validation is already handled (to check whether the user is a real alumni)
+        // TODO: uncomment if validation is already handled (to check whether the user is a real alumni)
         role: [UserRole.ALUMNI]
         // role: []
     };
