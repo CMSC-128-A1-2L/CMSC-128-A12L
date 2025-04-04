@@ -3,7 +3,7 @@ import { signOut, useSession } from "next-auth/react";
 import { useState, useEffect, useRef } from "react";
 import { redirect } from "next/navigation";
 import Navbar from "@/app/components/navBar";
-import AdminSidebar from "@/app/components/alumniSideBar";
+import AlumniSidebar from "@/app/components/alumniSideBar";
 
 export default function AlumniLanding() {
   const { data: session, status } = useSession();
@@ -56,7 +56,7 @@ export default function AlumniLanding() {
         homePath="/alumni-landing"
       />
 
-      <AdminSidebar
+      <AlumniSidebar
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
         sidebarRef={sidebarRef}
