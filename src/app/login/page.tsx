@@ -7,15 +7,21 @@ import ConstellationBackground from '../components/constellation_background';
 import { useState } from 'react';
 import { signIn } from "next-auth/react";
 import { redirect } from "next/navigation";
+import { Eye, EyeOff } from "lucide-react";
 
 export default function Login() {
 	const [isFlipped, setIsFlipped] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState("");
+	const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
 	const handleEmailClick = () => {
 		setIsFlipped(true);
 	};
+
+	const togglePasswordVisibility = () => {
+		setIsPasswordVisible(!isPasswordVisible);
+	  };
 
 	const handleBackClick = () => {
 		setIsFlipped(false);
@@ -351,29 +357,42 @@ export default function Login() {
 												<label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
 													Password
 												</label>
-												<input
-													type="password"
+												<div className="relative">
+													<input
+													type={isPasswordVisible ? "text" : "password"} // Toggles between text and password
 													id="password"
 													name="password"
 													className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-[#0C0051] focus:border-transparent transition-all duration-200"
 													placeholder="Enter your password"
 													required
 													disabled={isLoading}
-												/>
+													/>
+													<button
+													type="button"
+													onClick={togglePasswordVisibility}
+													className="absolute inset-y-0 right-2 flex items-center text-gray-500"
+													>
+													{isPasswordVisible ? (
+														<Eye className="h-5 w-5" /> // Lucide Eye icon for visible password
+													) : (
+														<EyeOff className="h-5 w-5" /> // Lucide EyeOff icon for hidden password
+													)}
+													</button>
+												</div>
 											</div>
 											<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-2 sm:space-y-0">
-												<div className="flex items-center">
-													<input
-														id="remember-me"
-														name="remember-me"
-														type="checkbox"
-														className="h-4 w-4 text-[#0C0051] focus:ring-[#0C0051] border-gray-300 rounded"
-														disabled={isLoading}
-													/>
-													<label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
-														Remember me
-													</label>
-												</div>
+											<div className="flex items-center">
+												<input
+													id="remember-me"
+													name="remember-me"
+													type="checkbox"
+													className="h-4 w-4 text-gray-400 focus:ring-[#0C0051] border-gray-300 rounded" // Updated text-gray-400 for light gray color
+													disabled={isLoading}
+												/>
+												<label htmlFor="remember-me" className="ml-2 block text-sm text-gray-700">
+													Remember me
+												</label>
+											</div>
 												<div className="text-sm">
 													<a href="#" className="font-medium text-[#0C0051] hover:text-[#0A0041]">
 														Forgot password?

@@ -70,7 +70,7 @@ export default function AlumniPage() {
           placeholder="Search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="input input-bordered w-96"
+          className="input input-bordered w-96 bg-white"
         />
 
         {/* Filter Dropdown */}
