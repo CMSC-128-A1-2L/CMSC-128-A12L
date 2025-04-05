@@ -14,7 +14,7 @@ const Redirect = () => {
         redirect("/alumni-landing");
     }
     else if (session.user.role.includes(UserRole.ADMIN)){
-        redirect("/admin-landing");
+        redirect("/admin");
     }
     else{
         console.log("Invalid role");

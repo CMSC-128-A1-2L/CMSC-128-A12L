@@ -79,7 +79,7 @@ export default function AlumniSidebar({
 
         {role === "admin" && ( //alumniadmin palitan mo mamaya
           <Link
-            href="/admin-landing"
+            href="/admin"
             className="mt-auto border-t pt-2"
             onClick={() => setSidebarOpen(false)}
           >
