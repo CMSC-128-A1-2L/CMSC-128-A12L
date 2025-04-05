@@ -9,11 +9,16 @@ import { Logs } from "./entities/logs";
 export async function middleware(req: NextRequest) {
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
     console.log(token);
-    // if no toekn
+    // if no token
     if(!token){
-        console.log("user has not token")
-        return NextResponse.redirect(new URL("/login", req.url)); 
+        console.log("user has no token");
+        // Create a response that redirects to login
+        const response = NextResponse.redirect(new URL("/login", req.url));
+        // Clear the next-auth.session-token cookie (similar to clearing the session)
+        response.cookies.delete("next-auth.session-token");
+        return response;
     }
+    
     //TODO: IF ACCOUNTS ARE ALREADY LINKED.
     // check if there is access token
     // if (!token.accessToken) {
@@ -30,8 +35,11 @@ export async function middleware(req: NextRequest) {
 
     // Check if the user is an admin (if the user is not an admin and the user tries to access the admin page, redirect to login)
     if ((!token.role?.find(role => role === UserRole.ADMIN) && req.nextUrl.pathname.includes("/admin"))) {
-        return NextResponse.redirect(new URL("/login", req.url));
-      }
+        const response = NextResponse.redirect(new URL("/login", req.url));
+        // Clear the next-auth.session-token cookie
+        response.cookies.delete("next-auth.session-token");
+        return response;
+    }
     
     // log the user's activity
     if (req.nextUrl.pathname.startsWith('/api')) {
@@ -72,5 +80,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-    matcher: ["/alumni-landing/:path*", "/admin-landing/:path*", "/api/admin/:path*"], 
+    matcher: ["/alumni/:path*", "/admin/:path*", "/api/admin/:path*"], 
 };

@@ -3,49 +3,19 @@
 import userData from "@/dummy_data/user.json";
 import PromoteUser from "../../components/promoteUser";
 import DeleteUser from "../../components/deleteUser";
-import { signOut, useSession } from "next-auth/react";
-import { Menu, X, LogOut, User, Briefcase, Calendar, DollarSign, Bell, Users } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
-import Link from "next/link";
-import { text } from "stream/consumers";
+import { useSession } from "next-auth/react";
+import { Search } from "lucide-react";
+import { useState, useEffect } from "react";
 import FilterModal from "../../components/filterModal";
-import Navbar from "@/app/components/navBar";
-import AdminSidebar from "@/app/components/adminSideBar";
+import { motion } from 'framer-motion';
 
 export default function UsersManagement(){
-    const { data: session, status } = useSession();
-    const [sidebarOpen, setSidebarOpen] = useState(false);
-    const sidebarRef = useRef<HTMLDivElement>(null);
-    const menuButtonRef = useRef<HTMLButtonElement>(null);
+    const { data: session } = useSession();
     const [tempQuery, setTempQuery] = useState("");
     const [searchQuery, setSearchQuery] = useState("");
     const [sortOrder, setSortOrder] = useState<"asc" | "desc" | null>(null);
     const [roleFilter, setRoleFilter] = useState("All");
     const [isModalOpen, setIsModalOpen] = useState(false);
-
-    useEffect(() => {
-        if (status === "unauthenticated") {
-            console.log("You've been logged out due to inactivity");
-            signOut();
-        }
-    }, [status]);
-
-    useEffect(() => {
-        function handleClickOutside(event: MouseEvent) {
-            if (
-                sidebarOpen &&
-                sidebarRef.current &&
-                !sidebarRef.current.contains(event.target as Node) &&
-                menuButtonRef.current &&
-                !menuButtonRef.current.contains(event.target as Node)
-            ) {
-                setSidebarOpen(false);
-            }
-        }
-
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, [sidebarOpen]);
 
     // function for clicking "Name" label
     const toggleSortOrder = () => {
@@ -70,91 +40,105 @@ export default function UsersManagement(){
     } else if (sortOrder === "desc") {
         alumniUsers.sort((a, b) => b.firstName.localeCompare(a.firstName));
     }
-
-    if (!session) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-white">
-                <h2
-                    className="text-3xl font-bold text-center text-gray-800"
-                    style={{ fontFamily: "Montserrat, sans-serif" }}
-                >
-                    Not Authenticated
-                </h2>
-            </div>
-        );
-    }
     
     return(
-        <div className="min-h-screen flex flex-col bg-white">
-            <Navbar
-                setSidebarOpen={setSidebarOpen}
-                menuButtonRef={menuButtonRef}
-                homePath="/admin"
-            />
+        <div className="w-full">
+            <motion.div 
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="bg-white shadow-xl rounded-3xl p-6 w-full"
+            >
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                    <h2
+                        className="text-3xl font-bold text-gray-800 mb-4 md:mb-0"
+                        style={{ fontFamily: "Montserrat, sans-serif" }}
+                    >
+                        User Management
+                    </h2>
+                </div>
 
-            <AdminSidebar
-                sidebarOpen={sidebarOpen}
-                setSidebarOpen={setSidebarOpen}
-                sidebarRef={sidebarRef}
-                role={session.user.role}
-            />
-
-            <main className="flex-grow container mx-auto px-4 py-8 lg:ml-64 transition-all duration-300">
-                <div className="mt-5">
-                    <div className="flex justify-end">
-                        <label className="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">Search</label>
-                        <div className="relative w-full sm:w-auto">
-                            <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-                                <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-                                    <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"/>
-                                </svg>
-                            </div>
-                            <input  type="search" 
-                                    className="block w-full p-2.5 ps-10 text-sm text-black border border-gray-300 rounded-lg" 
-                                    placeholder="Search" 
-                                    value={tempQuery} 
-                                    onChange={(e) => setTempQuery(e.target.value)} 
-                                    onKeyDown={handleSearch} />
-                        </div>
-                        <button className="btn ml-3 bg-[#0C0051] text-white hover:bg-[#12006A] mr-3" 
-                                style={{ fontFamily: "Montserrat, sans-serif", fontSize: "15px", cursor: "pointer"}}
-                                onClick={() => setIsModalOpen(true)}>Filters
-                        </button>
+                <div className="flex flex-col md:flex-row gap-4 mb-6">
+                    <div className="relative flex-grow">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                        <input
+                            type="text"
+                            placeholder="Search users..."
+                            value={tempQuery}
+                            onChange={(e) => setTempQuery(e.target.value)}
+                            onKeyDown={handleSearch}
+                            className="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-100 text-gray-800 placeholder-gray-500 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
                     </div>
-                
-                    <FilterModal 
-                        isOpen={isModalOpen}
-                        onClose={() => setIsModalOpen(false)}
-                        selectedRole={roleFilter}
-                        onSelectRole={setRoleFilter}
-                    />
-                    
-                    <div>
-                        {/* displays users */}
-                        <table className="table text-center">
-                            <thead>
-                                <tr>
-                                    <th className="text-left text-black" style={{cursor:"pointer"}} onClick={toggleSortOrder}>Name {sortOrder === "asc" ? "▲" : sortOrder === "desc" ? "▼" : ""}</th>
-                                    <th className="text-left text-black">Role</th>
-                                    <th className="text-left text-black">Email</th>
-                                    <th className="text-center text-black">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="mr-0">
-                                {alumniUsers.map((user, index) => 
-                                    <tr key={index}>
-                                        <td className="text-black text-left" >{user.firstName} {user.lastName}</td>
-                                        <td className="text-black text-left" >{user.role}</td>
-                                        <td className="text-black text-left"> Email </td>
-                                        <td className="text-center"> <PromoteUser name={{ firstName: user.firstName, lastName: user.lastName}} /> <DeleteUser person={{ firstName: user.firstName, lastName: user.lastName}} /> </td>
-                                    </tr>
-                                )}
-                            </tbody>
-                        </table>
-                        {alumniUsers.length === 0 && <p className="text-center text-gray-500 mt-4">No Alumni Found</p>}
+                    <div className="flex space-x-2">
+                        <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => setIsModalOpen(true)}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center"
+                        >
+                            Filters
+                        </motion.button>
                     </div>
                 </div>
-            </main>
+                
+                <FilterModal 
+                    isOpen={isModalOpen}
+                    onClose={() => setIsModalOpen(false)}
+                    selectedRole={roleFilter}
+                    onSelectRole={setRoleFilter}
+                />
+                
+                <div className="overflow-x-auto rounded-lg border border-gray-200">
+                    <table className="min-w-full divide-y divide-gray-200">
+                        <thead className="bg-gray-50">
+                            <tr>
+                                <th 
+                                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
+                                    onClick={toggleSortOrder}
+                                >
+                                    Name {sortOrder === "asc" ? "▲" : sortOrder === "desc" ? "▼" : ""}
+                                </th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody className="bg-white divide-y divide-gray-200">
+                            {alumniUsers.map((user, index) => (
+                                <motion.tr 
+                                    key={index}
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ duration: 0.3 }}
+                                    className="hover:bg-gray-50 transition-colors"
+                                >
+                                    <td className="px-6 py-4 whitespace-nowrap text-gray-800">
+                                        {user.firstName} {user.lastName}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-gray-800">
+                                        {user.role}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-gray-800">
+                                        {user.email || "Email"}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap text-center">
+                                        <div className="flex justify-center space-x-2">
+                                            <PromoteUser name={{ firstName: user.firstName, lastName: user.lastName}} />
+                                            <DeleteUser person={{ firstName: user.firstName, lastName: user.lastName}} />
+                                        </div>
+                                    </td>
+                                </motion.tr>
+                            ))}
+                        </tbody>
+                    </table>
+                    {alumniUsers.length === 0 && (
+                        <div className="text-center py-8">
+                            <p className="text-gray-500">No users found</p>
+                        </div>
+                    )}
+                </div>
+            </motion.div>
         </div>
     );
 }
