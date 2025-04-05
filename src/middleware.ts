@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { NextRequest } from "next/server";
 import { UserRole } from "./entities/user";
+import { Logs } from "./entities/logs";
+
+// in nextjs, a middleware cannot access the session object directly.
+// instead, we can just access the token and its fields.
 export async function middleware(req: NextRequest) {
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
     console.log(token);
@@ -28,6 +32,43 @@ export async function middleware(req: NextRequest) {
     if ((!token.role?.find(role => role === UserRole.ADMIN) && req.nextUrl.pathname.includes("/admin"))) {
         return NextResponse.redirect(new URL("/login", req.url));
       }
+    
+    // log the user's activity
+    if (req.nextUrl.pathname.startsWith('/api')) {
+        // Log the API request
+        const log: Logs = {
+            name: token.name || "unknown",
+            imageUrl: token.imageUrl || "",
+            action: req.method + " " + req.nextUrl.pathname,
+            status: 'Pending',
+            timestamp: new Date(),
+            // TODO: get the ip address
+            ipAddress: "127.0.0.1"
+        };
+        
+        // Send log to the logs API
+        try {
+            // Create a clone of the request to avoid modifying the original
+            const logRequest = new Request(new URL('/api/logs', req.url), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    ...log,
+                    // Add additional fields that aren't in the Logs interface
+                    path: req.nextUrl.pathname,
+                    method: req.method
+                })
+            });
+            
+            // We can't await the fetch in middleware, so we use a non-blocking approach
+            fetch(logRequest).catch(err => console.error('Failed to log API request:', err));
+        } catch (error) {
+            console.error('Error logging API request:', error);
+        }
+    }
+    
     return NextResponse.next();
 }
 
