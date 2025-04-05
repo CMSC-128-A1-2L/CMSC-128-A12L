@@ -75,6 +75,8 @@ const adapter: Adapter = (() => {
         console.log("Adapter.createUser() called");
         const userToRegister: User = {
             ...user,
+            // TODO: remove if validation is already handled (to check whether the user is a real alumni)
+            role: [UserRole.ALUMNI],
             id: userIdProvider.generate()
         };
 
@@ -268,6 +270,10 @@ export const authOptions: NextAuthOptions = {
             if (account && profile) {
                 token.provider = account.provider;
                 token.accessToken = account.access_token;
+                token.name = user.name;
+                if(user.image){
+                    token.imageUrl = user.image;
+                }
                 // token.expiresAt = Date.now() + (account.expires_at ?? 45) * 1000; // Set expiration time
                 console.log(token);
             }
@@ -286,11 +292,24 @@ export const authOptions: NextAuthOptions = {
         // Callback for storing any non-sensitive information that persists in all sessions
         async session({ session, token }) {
             /* DO NOT STORE ANY SENSITIVE INFORMATION IN THE SESSION! */
-            if (token) {
-                session.user.role = token.role as UserRole[];
-                session.user.accessToken = token.accessToken as string;
-                console.log(session);
+            try{
+                if (token) {
+                    
+                    // create user repository instance
+                    const userRepository = getUserRepository();
+                    const currentUser = await userRepository.getUserByEmail(session.user.email!);
+
+                    // set session user properties
+                    session.user.role = token.role as UserRole[];
+                    session.user.accessToken = token.accessToken as string;
+                    session.user.id = currentUser!.id;
+                    
+                    console.log("The session is: ", session);
+                }
+            } catch (error){
+                console.error(error);
             }
+            
             return session;
         }
     }

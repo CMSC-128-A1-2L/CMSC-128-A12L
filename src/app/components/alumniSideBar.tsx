@@ -16,7 +16,7 @@ interface SidebarProps {
   sidebarOpen: boolean;
   setSidebarOpen: (open: boolean) => void;
   sidebarRef: RefObject<HTMLDivElement>;
-  role?: string;
+  role?: string | string[];
 }
 
 export default function AlumniSidebar({
@@ -42,7 +42,7 @@ export default function AlumniSidebar({
       } transition-transform duration-300 ease-in-out`}
     >
       <div className="p-4 flex justify-between items-center border-b">
-        <h2 className="text-lg font-bold text-gray-800">Admin Sidebar</h2>
+        <h2 className="text-lg font-bold text-gray-800">Alumni Sidebar</h2>
         <button
           onClick={() => setSidebarOpen(false)}
           className="focus:outline-none cursor-pointer"
@@ -55,20 +55,33 @@ export default function AlumniSidebar({
         <ul className="flex-1">
           {sidebarItems.map((item, index) => (
             <li key={index}>
-              <a
-                href="#"
+            {item.name === "Alumni Network" ? (
+              <Link
+                href="/alumni/network" // Navigate to /alumni for Alumni Network
                 className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
+                onClick={() => setSidebarOpen(false)} // Close the sidebar on click
+              >
+                <span className="mr-3">{item.icon}</span>
+                {item.name}
+              </Link>
+            ) : (
+              <a
+                href={`/alumni/${item.name.toLowerCase()}`}
+                className={`flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer ${
+                  window.location.pathname === `/alumni/${item.name.toLowerCase()}` ? 'bg-gray-100' : ''
+                }`}
               >
                 <span className="mr-3">{item.icon}</span>
                 {item.name}
               </a>
-            </li>
+            )}
+          </li>
           ))}
         </ul>
 
         {role === "admin" && ( //alumniadmin palitan mo mamaya
           <Link
-            href="/admin-landing"
+            href="/admin"
             className="mt-auto border-t pt-2"
             onClick={() => setSidebarOpen(false)}
           >

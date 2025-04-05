@@ -9,6 +9,7 @@ declare module "next-auth" {
     }
     interface Session {
         user: {
+            id: string;
             role: UserRole[];
             email: string;
             accessToken: string;
@@ -20,5 +21,8 @@ declare module "next-auth/jwt" {
         provider?: string;
         accessToken?: string;
         role?: UserRole[];
+        // currently being used for logging
+        name?: string;
+        imageUrl?: string;
     }
 }

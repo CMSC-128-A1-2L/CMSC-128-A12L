@@ -1,3 +1,4 @@
+"use client"
 import React, { useState } from 'react';
 
 export default function JobDetails(){
@@ -8,7 +9,7 @@ export default function JobDetails(){
     }
     return(
         <>
-            <button onClick={handleModal} className="btn bg-[#FF0000] text-white hover:bg-[#ff0000ab]" style={{ fontFamily: "Montserrat, sans-serif", fontSize: "15px", cursor: "pointer"}}>Details</button>
+            <button onClick={handleModal} className="btn bg-[#0c0051] text-white hover:bg-[#12006A]" style={{ fontFamily: "Montserrat, sans-serif", fontSize: "15px", cursor: "pointer"}}>Details</button>
             {openModal &&
                 <div className="fixed top-0 left-0 visible bg-black/20 w-full h-full flex justify-center items-center">
                     <div className="max-w-[460px] bg-white shadow-lg py-2 rounded-md">

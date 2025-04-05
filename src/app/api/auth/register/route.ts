@@ -1,4 +1,4 @@
-import { User } from "@/entities/user";
+import { User, UserRole } from "@/entities/user";
 import { UserCredentials } from "@/entities/user_credentials";
 import { getPasswordEncryptionProvider } from "@/providers/password_encryption";
 import { getUserIdProvider } from "@/providers/user_id";
@@ -27,7 +27,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         name,
         email,
         emailVerified: null,
-        role: []
+        // TODO: uncomment if validation is already handled (to check whether the user is a real alumni)
+        role: [UserRole.ALUMNI]
+        // role: []
     };
 
     const userCredentials: UserCredentials = {
