@@ -36,6 +36,7 @@ export default function AlumniPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null!);
   const sidebarRef = useRef<HTMLDivElement>(null!);
+  const filterRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -55,11 +56,19 @@ export default function AlumniPage() {
       ) {
         setSidebarOpen(false);
       }
+
+      if (
+        showFilter &&
+        filterRef.current &&
+        !filterRef.current.contains(event.target as Node)
+      ) {
+        setShowFilter(false);
+      }
     }
 
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [sidebarOpen]);
+  }, [sidebarOpen, showFilter]);
 
   // filters based on role and gender
   const filteredAlumni = userData.filter((alumni) => {
@@ -132,7 +141,7 @@ export default function AlumniPage() {
             />
 
             {/* Filter Dropdown */}
-            <div className="relative">
+            <div className="relative" ref={filterRef}>
               <button
                 onClick={() => setShowFilter(!showFilter)}
                 className="btn btn-outline flex items-center"
