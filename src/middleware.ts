@@ -35,6 +35,7 @@ export async function middleware(req: NextRequest) {
     
     // log the user's activity
     if (req.nextUrl.pathname.startsWith('/api')) {
+        console.log("logging the user's activity")
         // Log the API request
         const log: Logs = {
             name: token.name || "unknown",
@@ -43,9 +44,9 @@ export async function middleware(req: NextRequest) {
             status: 'Pending',
             timestamp: new Date(),
             // TODO: get the ip address
-            ipAddress: "127.0.0.1"
+            ipAddress: "127.0.0.1" 
         };
-        
+        console.log("log: ", log)
         // Send log to the logs API
         try {
             // Create a clone of the request to avoid modifying the original
