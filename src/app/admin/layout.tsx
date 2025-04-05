@@ -40,7 +40,7 @@ export default function AdminLayout({
           className="text-3xl font-bold text-center text-gray-800"
           style={{ fontFamily: "Montserrat, sans-serif" }}
         >
-          Not Authenticated
+          Loading...
         </h2>
       </div>
     );
