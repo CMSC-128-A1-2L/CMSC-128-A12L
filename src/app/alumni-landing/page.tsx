@@ -8,8 +8,8 @@ import AlumniSidebar from "@/app/components/alumniSideBar";
 export default function AlumniLanding() {
   const { data: session, status } = useSession();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const sidebarRef = useRef<HTMLDivElement>(null);
-  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const sidebarRef = useRef<HTMLDivElement>(null!);
+  const menuButtonRef = useRef<HTMLButtonElement>(null!);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -69,7 +69,7 @@ export default function AlumniLanding() {
             className="text-3xl font-bold text-center text-gray-800 mb-6"
             style={{ fontFamily: "Montserrat, sans-serif" }}
           >
-            Welcome to Alumni Portal!
+            Welcome to the Alumni Portal!
           </h2>
           <p
             className="text-gray-600"
