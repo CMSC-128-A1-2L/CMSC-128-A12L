@@ -13,13 +13,6 @@ export default function JobListings() {
     const menuButtonRef = useRef<HTMLButtonElement>(null);
 
     useEffect(() => {
-        if (status === "unauthenticated") {
-        console.log("You've been logged out due to inactivity");
-        signOut();
-        }
-    }, [status]);
-
-    useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
         if (
             sidebarOpen &&
