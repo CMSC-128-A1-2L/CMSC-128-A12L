@@ -16,7 +16,7 @@ interface SidebarProps {
   sidebarOpen: boolean;
   setSidebarOpen: (open: boolean) => void;
   sidebarRef: RefObject<HTMLDivElement>;
-  role?: string;
+  role?: string | string[];
 }
 
 export default function AlumniSidebar({

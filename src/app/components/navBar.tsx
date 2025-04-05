@@ -7,9 +7,14 @@ import { RefObject } from "react";
 interface NavbarProps {
   setSidebarOpen: (open: boolean) => void;
   menuButtonRef: RefObject<HTMLButtonElement>;
+  homePath: string;
 }
 
-export default function Navbar({ setSidebarOpen, menuButtonRef }: NavbarProps) {
+export default function Navbar({
+  setSidebarOpen,
+  menuButtonRef,
+  homePath,
+}: NavbarProps) {
   return (
     <header style={{ backgroundColor: "#0C0051" }} className="text-white py-4">
       <div className="container mx-auto px-4 flex justify-between items-center">
@@ -22,7 +27,7 @@ export default function Navbar({ setSidebarOpen, menuButtonRef }: NavbarProps) {
           >
             <Menu size={24} />
           </button>
-          <Link href="/alumni-landing">
+          <Link href={homePath}>
             <h1 className="text-xl font-bold cursor-pointer">AEGIS |</h1>
           </Link>
         </div>

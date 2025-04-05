@@ -1,14 +1,14 @@
 "use client";
 
 import userData from "@/dummy_data/user.json";
-import PromoteUser from "../components/promoteUser";
-import DeleteUser from "../components/deleteUser";
+import PromoteUser from "../../components/promoteUser";
+import DeleteUser from "../../components/deleteUser";
 import { signOut, useSession } from "next-auth/react";
 import { Menu, X, LogOut, User, Briefcase, Calendar, DollarSign, Bell, Users } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { text } from "stream/consumers";
-import FilterModal from "../components/filterModal";
+import FilterModal from "../../components/filterModal";
 
 export default function UsersManagement(){
     const [tempQuery, setTempQuery] = useState("");
