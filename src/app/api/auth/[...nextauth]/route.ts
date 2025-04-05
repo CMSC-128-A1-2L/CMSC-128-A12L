@@ -270,6 +270,10 @@ export const authOptions: NextAuthOptions = {
             if (account && profile) {
                 token.provider = account.provider;
                 token.accessToken = account.access_token;
+                token.name = user.name;
+                if(user.image){
+                    token.imageUrl = user.image;
+                }
                 // token.expiresAt = Date.now() + (account.expires_at ?? 45) * 1000; // Set expiration time
                 console.log(token);
             }
