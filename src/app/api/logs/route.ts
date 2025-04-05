@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
         const data = await request.json();
 
         // Validate required fields
-        const requiredFields = ["name", "action", "status"];
+        const requiredFields = ["name", "action"];
         for (const field of requiredFields) {
             if (!data[field]) {
                 return NextResponse.json(
@@ -26,6 +26,8 @@ export async function POST(request: NextRequest) {
         const newLog = {
             userId: session?.user?.id || "anonymous",
             ...data,
+            // Set status to the HTTP method if not provided
+            status: data.status || request.method,
             // Add IP address if available
             ipAddress: request.headers.get("x-forwarded-for") || 
                       request.headers.get("x-real-ip") || 

@@ -3,7 +3,7 @@ export interface Logs {
     imageUrl?: string;
     name: string;
     action: string;
-    status: string;
+    status?: string;
     timestamp: Date;
     ipAddress?: string;
   }

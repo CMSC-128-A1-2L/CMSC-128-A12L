@@ -40,10 +40,9 @@ export async function middleware(req: NextRequest) {
             name: token.name || "unknown",
             imageUrl: token.imageUrl || "",
             action: req.method + " " + req.nextUrl.pathname,
-            status: 'Pending',
+            status: req.method, // Use HTTP method as status
             timestamp: new Date(),
-            // TODO: get the ip address
-            ipAddress: "127.0.0.1"
+            ipAddress: req.headers.get("x-forwarded-for") || "unknown"
         };
         
         // Send log to the logs API
@@ -73,5 +72,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-    matcher: ["/alumni-landing/:path*", "/admin/:path*", "/api/admin/:path*"], 
-  };
+    matcher: ["/alumni-landing/:path*", "/admin-landing/:path*", "/api/admin/:path*"], 
+};
