@@ -29,7 +29,7 @@ export default function AdminSidebar({
 }: SidebarProps) {
   const sidebarItems = [
     { name: "Dashboard", icon: <LayoutDashboardIcon size={20} /> },
-    { name: "Manage Users", icon: <Users size={20} /> },
+    { name: "Manage Users", icon: <Users size={20} />, },
     { name: "Job Listings", icon: <Briefcase size={20} /> },
     { name: "Events", icon: <CalendarCogIcon size={20} /> },
     { name: "Communications", icon: <Phone size={20} /> },
@@ -58,6 +58,16 @@ export default function AdminSidebar({
         <ul className="flex-1">
           {sidebarItems.map((item, index) => (
             <li key={index}>
+            {item.name === "Manage Users" ? (
+              <Link
+                href="/admin/user-management"
+                className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
+                onClick={() => setSidebarOpen(false)}
+              >
+                <span className="mr-3">{item.icon}</span>
+                {item.name}
+              </Link>
+            ) : (
               <a
                 href="#"
                 className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
@@ -65,6 +75,7 @@ export default function AdminSidebar({
                 <span className="mr-3">{item.icon}</span>
                 {item.name}
               </a>
+            )}
             </li>
           ))}
         </ul>

@@ -6,14 +6,16 @@ import Image from 'next/image';
 import ConstellationBackground from '../components/constellation_background';
 import { useState } from 'react';
 import { signIn } from "next-auth/react";
-import { redirect } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 
 export default function Login() {
+	const router = useRouter();
 	const [isFlipped, setIsFlipped] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState("");
 	const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+	
 
 	const handleEmailClick = () => {
 		setIsFlipped(true);
@@ -156,6 +158,22 @@ export default function Login() {
 								transition={{ duration: 0.7, delay: 0.7, ease: "easeOut" }}
 								className="w-full md:w-[65%] p-6 sm:p-8 lg:p-12 text-[#0C0051] flex flex-col items-center justify-center bg-white"
 							>
+								{/* Back to Home Button */}
+								<motion.button
+									onClick={() => router.push('/')}
+									className="self-start mb-4 md:mb-6 flex items-center text-gray-600 hover:text-gray-800 transition-colors cursor-pointer"
+									style={{ fontFamily: "Montserrat, sans-serif" }}
+									whileHover={{ x: -5 }}
+									>
+									<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+										<path
+										fillRule="evenodd"
+										d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+										clipRule="evenodd"
+										/>
+									</svg>
+									Back to home
+								</motion.button>
 								<div className="w-full max-w-md">
 									<div className="mb-6 md:mb-8">
 										{/* Welcome Heading */}
@@ -303,19 +321,22 @@ export default function Login() {
 							<div className="w-full md:w-[65%] p-6 sm:p-8 lg:p-12 text-[#0C0051] flex flex-col items-center justify-center bg-white">
 								<div className="w-full max-w-md">
 									<div className="mb-6 md:mb-8">
-										{/* Back Button */}
+										{/* Back to options Button*/}
 										<motion.button
 											onClick={handleBackClick}
-											className="mb-4 md:mb-6 flex items-center text-gray-600 hover:text-gray-800 transition-colors"
+											className="mb-4 md:mb-6 flex items-center text-gray-600 hover:text-gray-800 transition-colors cursor-pointer"
 											style={{ fontFamily: "Montserrat, sans-serif" }}
 											whileHover={{ x: -5 }}
-										>
+											>
 											<svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
-												<path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+												<path
+												fillRule="evenodd"
+												d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z"
+												clipRule="evenodd"
+												/>
 											</svg>
 											Back to options
 										</motion.button>
-
 										{/* Login Form Heading */}
 										<h2 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-800 mb-3"
 											style={{ fontFamily: "Montserrat, sans-serif" }}
@@ -401,19 +422,19 @@ export default function Login() {
 											</div>
 											<motion.button
 												type="submit"
-												className="w-full bg-[#0C0051] text-white py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 hover:bg-[#0A0041] mt-2 flex items-center justify-center"
+												className="w-full bg-[#0C0051] text-white py-3 px-4 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 hover:bg-[#0A0041] mt-2 flex items-center justify-center cursor-pointer"
 												style={{ fontFamily: "Montserrat, sans-serif" }}
 												whileHover={{ scale: isLoading ? 1 : 1.02 }}
 												whileTap={{ scale: isLoading ? 1 : 0.98 }}
 												disabled={isLoading}
-											>
+												>
 												{isLoading ? (
 													<>
-														<svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-															<circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-															<path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-														</svg>
-														Signing in...
+													<svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+														<circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+														<path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+													</svg>
+													Signing in...
 													</>
 												) : (
 													"Sign In"

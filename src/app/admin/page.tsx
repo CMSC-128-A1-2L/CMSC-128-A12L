@@ -53,7 +53,7 @@ export default function AdminLanding() {
       <Navbar
         setSidebarOpen={setSidebarOpen}
         menuButtonRef={menuButtonRef}
-        homePath="/admin-landing"
+        homePath="/admin"
       />
 
       <AdminSidebar
