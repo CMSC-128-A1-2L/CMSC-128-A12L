@@ -12,10 +12,9 @@ export async function POST(request: NextRequest) {
         const data = await request.json();
 
         // Validate required fields
-        const requiredFields = ["name", "action", "status"];
+        const requiredFields = ["name", "action"];
         for (const field of requiredFields) {
             if (!data[field]) {
-                console.error("Missing required field: ", field)
                 return NextResponse.json(
                     { error: `Missing required field: ${field}` },
                     { status: 400 }
@@ -23,13 +22,19 @@ export async function POST(request: NextRequest) {
             }
         }
 
-
         // Create new log with user ID if available
         const newLog = {
-            imageUrl: data.imageUrl || "",
-            ipAddress: data.ipAddress || "",
-            timestamp: data.timestamp || new Date(),
+            userId: session?.user?.id || "anonymous",
             ...data,
+            // Set status to the HTTP method if not provided
+            status: data.status || request.method,
+            // Add IP address if available
+            ipAddress: request.headers.get("x-forwarded-for") || 
+                      request.headers.get("x-real-ip") || 
+                      "unknown",
+            // Add path and method if available
+            path: request.headers.get("referer") || "unknown",
+            method: request.method
         };
 
         await logRepository.createLog(newLog);

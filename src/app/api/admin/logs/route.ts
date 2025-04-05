@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
         const data = await request.json();
 
         // Validate required fields
-        const requiredFields = ["name", "action", "status"];
+        const requiredFields = ["name", "action"];
         for (const field of requiredFields) {
             if (!data[field]) {
                 return NextResponse.json(
@@ -50,7 +50,9 @@ export async function POST(request: NextRequest) {
         // Create new log with admin's user ID
         const newLog = {
             userId: session.user.id,
-            ...data
+            ...data,
+            // Set status to the HTTP method if not provided
+            status: data.status || request.method
         };
 
         await logRepository.createLog(newLog);

@@ -6,6 +6,7 @@ import Navbar from "@/app/components/navBar";
 import AdminSidebar from "@/app/components/adminSideBar";
 import { motion } from 'framer-motion';
 import { Search, Filter, Download, Calendar, User, Activity, Clock } from 'lucide-react';
+import { LogsDto } from "@/models/logs";
 
 export default function AdminLogs() {
   const { data: session, status } = useSession();
@@ -15,20 +16,21 @@ export default function AdminLogs() {
   const [activeTab, setActiveTab] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [dateRange, setDateRange] = useState('last7days');
+  const [logs, setLogs] = useState<LogsDto[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
+  const [filteredLogs, setFilteredLogs] = useState<LogsDto[]>([]);
 
-  // Sample log data
-  const logs = [
-    { id: 1, user: 'John Doe', action: 'Login', timestamp: '2023-04-01 09:30:45', status: 'Success', ip: '192.168.1.1' },
-    { id: 2, user: 'Jane Smith', action: 'Create Event', timestamp: '2023-04-01 10:15:22', status: 'Success', ip: '192.168.1.2' },
-    { id: 3, user: 'Robert Johnson', action: 'Update Profile', timestamp: '2023-04-01 11:05:10', status: 'Success', ip: '192.168.1.3' },
-    { id: 4, user: 'Emily Davis', action: 'Delete Opportunity', timestamp: '2023-04-01 12:30:15', status: 'Failed', ip: '192.168.1.4' },
-    { id: 5, user: 'Michael Wilson', action: 'Login', timestamp: '2023-04-01 13:45:30', status: 'Success', ip: '192.168.1.5' },
-    { id: 6, user: 'Sarah Brown', action: 'Create Opportunity', timestamp: '2023-04-01 14:20:05', status: 'Success', ip: '192.168.1.6' },
-    { id: 7, user: 'David Miller', action: 'Update Event', timestamp: '2023-04-01 15:10:40', status: 'Success', ip: '192.168.1.7' },
-    { id: 8, user: 'Jennifer Taylor', action: 'Login', timestamp: '2023-04-01 16:25:15', status: 'Failed', ip: '192.168.1.8' },
-    { id: 9, user: 'William Anderson', action: 'Delete Event', timestamp: '2023-04-01 17:05:50', status: 'Success', ip: '192.168.1.9' },
-    { id: 10, user: 'Elizabeth Thomas', action: 'Create User', timestamp: '2023-04-01 18:30:25', status: 'Success', ip: '192.168.1.10' },
-  ];
+  useEffect(() => {
+    const fetchLogs = async () => {
+      const response = await fetch("/api/admin/logs");
+      const data = await response.json();
+      console.log("The fetched logs are: ", data);
+      setLogs(data);
+      setFilteredLogs(data);
+    }
+    fetchLogs();
+  }, []);
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -53,6 +55,107 @@ export default function AdminLogs() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [sidebarOpen]);
+
+  // Filter logs based on search query, date range, and active tab
+  useEffect(() => {
+    let filtered = [...logs];
+
+    // Filter by search query
+    if (searchQuery) {
+      filtered = filtered.filter(log => 
+        log.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        log.action.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        log.ipAddress?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    // Filter by HTTP method
+    if (activeTab !== 'all') {
+      filtered = filtered.filter(log => 
+        log.action.startsWith(activeTab)
+      );
+    }
+
+    // Filter by date range
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const last7Days = new Date(today);
+    last7Days.setDate(last7Days.getDate() - 7);
+    const last30Days = new Date(today);
+    last30Days.setDate(last30Days.getDate() - 30);
+
+    filtered = filtered.filter(log => {
+      const logDate = new Date(log.timestamp);
+      switch (dateRange) {
+        case 'today':
+          return logDate >= today;
+        case 'yesterday':
+          return logDate >= yesterday && logDate < today;
+        case 'last7days':
+          return logDate >= last7Days;
+        case 'last30days':
+          return logDate >= last30Days;
+        default:
+        // case 'custom': (don't know whether to put a modal here)
+          return true;
+      }
+    });
+
+    setFilteredLogs(filtered);
+    setCurrentPage(1); // Reset to first page when filters change
+  }, [logs, searchQuery, activeTab, dateRange]);
+
+  // Calculate pagination
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredLogs.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredLogs.length / itemsPerPage);
+
+  const handlePageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+  };
+
+  const handlePreviousPage = () => {
+    if (currentPage > 1) {
+      setCurrentPage(currentPage - 1);
+    }
+  };
+
+  const handleNextPage = () => {
+    if (currentPage < totalPages) {
+      setCurrentPage(currentPage + 1);
+    }
+  };
+
+  // Generate page numbers for pagination
+  const getPageNumbers = () => {
+    const pageNumbers = [];
+    const maxVisiblePages = 3;
+    
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pageNumbers.push(i);
+      }
+    } else {
+      if (currentPage <= 2) {
+        for (let i = 1; i <= 3; i++) {
+          pageNumbers.push(i);
+        }
+      } else if (currentPage >= totalPages - 1) {
+        for (let i = totalPages - 2; i <= totalPages; i++) {
+          pageNumbers.push(i);
+        }
+      } else {
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+          pageNumbers.push(i);
+        }
+      }
+    }
+    
+    return pageNumbers;
+  };
 
   if (!session) {
     return (
@@ -105,20 +208,12 @@ export default function AdminLogs() {
                 <Download className="w-4 h-4 mr-2" />
                 Export
               </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg flex items-center"
-              >
-                <Filter className="w-4 h-4 mr-2" />
-                Filter
-              </motion.button>
             </div>
           </div>
 
           {/* Tabs */}
           <div className="flex overflow-x-auto mb-6 pb-2">
-            {['all', 'login', 'create', 'update', 'delete', 'failed'].map((tab) => (
+            {['all', 'GET', 'POST', 'PUT', 'DELETE'].map((tab) => (
               <motion.button
                 key={tab}
                 whileHover={{ scale: 1.05 }}
@@ -130,7 +225,7 @@ export default function AdminLogs() {
                     : 'bg-white/10 text-white hover:bg-white/20'
                 }`}
               >
-                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                {tab}
               </motion.button>
             ))}
           </div>
@@ -155,11 +250,11 @@ export default function AdminLogs() {
                   onChange={(e) => setDateRange(e.target.value)}
                   className="pl-10 pr-4 py-2 rounded-lg bg-white/10 text-white border border-white/20 focus:outline-none focus:ring-2 focus:ring-white/30 appearance-none"
                 >
-                  <option value="today">Today</option>
-                  <option value="yesterday">Yesterday</option>
-                  <option value="last7days">Last 7 Days</option>
-                  <option value="last30days">Last 30 Days</option>
-                  <option value="custom">Custom Range</option>
+                  <option value="today" className="bg-[#1a237e] text-white">Today</option>
+                  <option value="yesterday" className="bg-[#1a237e] text-white">Yesterday</option>
+                  <option value="last7days" className="bg-[#1a237e] text-white">Last 7 Days</option>
+                  <option value="last30days" className="bg-[#1a237e] text-white">Last 30 Days</option>
+                  <option value="custom" className="bg-[#1a237e] text-white">Custom Range</option>
                 </select>
               </div>
             </div>
@@ -173,14 +268,13 @@ export default function AdminLogs() {
                   <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">User</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Action</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Timestamp</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Status</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">IP Address</th>
                 </tr>
               </thead>
               <tbody className="bg-white/5 divide-y divide-white/10">
-                {logs.map((log) => (
+                {currentItems.map((log) => (
                   <motion.tr 
-                    key={log.id}
+                    key={log._id}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.3 }}
@@ -192,7 +286,7 @@ export default function AdminLogs() {
                           <User className="w-4 h-4 text-white" />
                         </div>
                         <div className="ml-3">
-                          <div className="text-sm font-medium">{log.user}</div>
+                          <div className="text-sm font-medium">{log.name}</div>
                         </div>
                       </div>
                     </td>
@@ -205,22 +299,11 @@ export default function AdminLogs() {
                     <td className="px-6 py-4 whitespace-nowrap text-white">
                       <div className="flex items-center">
                         <Clock className="w-4 h-4 mr-2 text-white" />
-                        <span>{log.timestamp}</span>
+                        <span>{log.timestamp.toLocaleString()}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                        log.status === 'Success' 
-                          ? 'bg-green-100 text-green-800' 
-                          : log.status === 'Failed'
-                            ? 'bg-red-100 text-red-800'
-                            : 'bg-gray-100 text-gray-800'
-                      }`}>
-                        {log.status}
-                      </span>
-                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-white">
-                      {log.ip}
+                      {log.ipAddress}
                     </td>
                   </motion.tr>
                 ))}
@@ -231,41 +314,47 @@ export default function AdminLogs() {
           {/* Pagination */}
           <div className="flex justify-between items-center mt-6">
             <div className="text-white text-sm">
-              Showing 1 to 10 of 50 entries
+              Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredLogs.length)} of {filteredLogs.length} entries
             </div>
             <div className="flex space-x-2">
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="px-4 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20"
+                onClick={handlePreviousPage}
+                disabled={currentPage === 1}
+                className={`px-4 py-2 rounded-lg ${
+                  currentPage === 1 
+                    ? 'bg-white/5 text-white/50 cursor-not-allowed' 
+                    : 'bg-white/10 text-white hover:bg-white/20'
+                }`}
               >
                 Previous
               </motion.button>
+              {getPageNumbers().map((number) => (
+                <motion.button
+                  key={number}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handlePageChange(number)}
+                  className={`px-4 py-2 rounded-lg ${
+                    currentPage === number
+                      ? 'bg-white text-[#1a237e] font-semibold'
+                      : 'bg-white/10 text-white hover:bg-white/20'
+                  }`}
+                >
+                  {number}
+                </motion.button>
+              ))}
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="px-4 py-2 rounded-lg bg-white text-[#1a237e] font-semibold"
-              >
-                1
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-4 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20"
-              >
-                2
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-4 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20"
-              >
-                3
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="px-4 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20"
+                onClick={handleNextPage}
+                disabled={currentPage === totalPages}
+                className={`px-4 py-2 rounded-lg ${
+                  currentPage === totalPages
+                    ? 'bg-white/5 text-white/50 cursor-not-allowed'
+                    : 'bg-white/10 text-white hover:bg-white/20'
+                }`}
               >
                 Next
               </motion.button>

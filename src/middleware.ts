@@ -35,18 +35,16 @@ export async function middleware(req: NextRequest) {
     
     // log the user's activity
     if (req.nextUrl.pathname.startsWith('/api')) {
-        console.log("logging the user's activity")
         // Log the API request
         const log: Logs = {
             name: token.name || "unknown",
             imageUrl: token.imageUrl || "",
             action: req.method + " " + req.nextUrl.pathname,
-            status: 'Pending',
+            status: req.method, // Use HTTP method as status
             timestamp: new Date(),
-            // TODO: get the ip address
-            ipAddress: "127.0.0.1" 
+            ipAddress: req.headers.get("x-forwarded-for") || "unknown"
         };
-        console.log("log: ", log)
+        
         // Send log to the logs API
         try {
             // Create a clone of the request to avoid modifying the original
@@ -74,5 +72,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-    matcher: ["/alumni-landing/:path*", "/admin/:path*", "/api/admin/:path*"], 
-  };
+    matcher: ["/alumni-landing/:path*", "/admin-landing/:path*", "/api/admin/:path*"], 
+};
