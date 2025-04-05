@@ -17,8 +17,8 @@ import Link from "next/link";
 interface SidebarProps {
   sidebarOpen: boolean;
   setSidebarOpen: (open: boolean) => void;
-  sidebarRef: RefObject<HTMLDivElement>;
-  role?: string;
+  sidebarRef?: RefObject<HTMLDivElement> | null;
+  role?: string | string[];
 }
 
 export default function AdminSidebar({
@@ -69,7 +69,7 @@ export default function AdminSidebar({
               </Link>
             ) : (
               <a
-                href="#"
+                href={`/admin/${item.name.toLowerCase()}`}
                 className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
               >
                 <span className="mr-3">{item.icon}</span>

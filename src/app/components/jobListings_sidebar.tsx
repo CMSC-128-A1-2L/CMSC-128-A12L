@@ -16,8 +16,8 @@ import Link from "next/link";
 interface SidebarProps {
   sidebarOpen: boolean;
   setSidebarOpen: (open: boolean) => void;
-  sidebarRef: RefObject<HTMLDivElement>;
-  role?: string;
+  sidebarRef?: RefObject<HTMLDivElement> | null;
+  role?: string | string[];
 }
 
 export default function JobListingsSidebar({

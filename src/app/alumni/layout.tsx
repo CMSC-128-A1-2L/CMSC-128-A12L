@@ -51,7 +51,7 @@ export default function AlumniLayout({
       <Navbar
         setSidebarOpen={setSidebarOpen}
         menuButtonRef={menuButtonRef}
-        homePath="/alumni-landing"
+        homePath="/alumni"
       />
 
       <AlumniSidebar
