@@ -75,7 +75,6 @@ export async function middleware(req: NextRequest) {
             console.error('Error logging API request:', error);
         }
     }
-    
     return NextResponse.next();
 }
 

@@ -8,9 +8,10 @@ import { useState } from 'react';
 import { signIn } from "next-auth/react";
 import { redirect, useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
-
+import { useSession } from "next-auth/react";
 export default function Login() {
 	const router = useRouter();
+	const { data: session } = useSession();
 	const [isFlipped, setIsFlipped] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState("");
@@ -62,7 +63,11 @@ export default function Login() {
 		redirect(`${process.env.NEXT_PUBLIC_CALLBACK_URL}/redirect`)
 
 	};
-
+	// If user goes to login page and is already logged in, redirect to the callback url
+	if(session){
+		redirect(`${process.env.NEXT_PUBLIC_CALLBACK_URL}/redirect`)
+	}
+	
 	return (
 		<div className="min-h-screen flex items-center justify-center bg-[#1a237e] p-4 sm:px-6 lg:px-8 relative overflow-hidden">
 			{/* Constellation Background */}

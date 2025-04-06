@@ -13,7 +13,7 @@ export default function LandingPage() {
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.8 }}
-        className="fixed top-0 left-0 w-full bg-[#1a1f4d] backdrop-blur-sm text-white flex justify-between p-4 z-50"
+        className="fixed top-0 left-0 w-full bg-[#1a1f4d] backdrop-blur-sm text-white flex justify-between p-2 pr-8 z-50 "
       >
           <motion.div 
             whileHover={{ scale: 1.05 }}

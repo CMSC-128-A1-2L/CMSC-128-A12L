@@ -4,7 +4,7 @@ import userData from "@/dummy_data/user.json";
 import PromoteUser from "../../components/promoteUser";
 import DeleteUser from "../../components/deleteUser";
 import { useSession } from "next-auth/react";
-import { Search } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, Download, User, Mail, Shield } from "lucide-react";
 import { useState, useEffect } from "react";
 import FilterModal from "../../components/filterModal";
 import { motion } from 'framer-motion';
@@ -16,6 +16,10 @@ export default function UsersManagement(){
     const [sortOrder, setSortOrder] = useState<"asc" | "desc" | null>(null);
     const [roleFilter, setRoleFilter] = useState("All");
     const [isModalOpen, setIsModalOpen] = useState(false);
+    
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 20;
 
     // function for clicking "Name" label
     const toggleSortOrder = () => {
@@ -26,6 +30,7 @@ export default function UsersManagement(){
     const handleSearch = (e: any) => {
         if (e.key === "Enter") {  // Check if Enter key is pressed
             setSearchQuery(tempQuery);
+            setCurrentPage(1); // Reset to first page when searching
         }
     };
 
@@ -41,13 +46,55 @@ export default function UsersManagement(){
         alumniUsers.sort((a, b) => b.firstName.localeCompare(a.firstName));
     }
     
+    // Calculate pagination
+    const totalPages = Math.ceil(alumniUsers.length / itemsPerPage);
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    const currentUsers = alumniUsers.slice(startIndex, endIndex);
+    
+    // Handle page navigation
+    const goToPage = (page: number) => {
+        if (page >= 1 && page <= totalPages) {
+            setCurrentPage(page);
+        }
+    };
+    
+    // Generate page numbers to display
+    const getPageNumbers = () => {
+        const pageNumbers = [];
+        const maxVisiblePages = 3;
+        
+        if (totalPages <= maxVisiblePages) {
+            // Show all pages if total is less than max visible
+            for (let i = 1; i <= totalPages; i++) {
+                pageNumbers.push(i);
+            }
+        } else {
+            if (currentPage <= 2) {
+                for (let i = 1; i <= 3; i++) {
+                    pageNumbers.push(i);
+                }
+            } else if (currentPage >= totalPages - 1) {
+                for (let i = totalPages - 2; i <= totalPages; i++) {
+                    pageNumbers.push(i);
+                }
+            } else {
+                for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+                    pageNumbers.push(i);
+                }
+            }
+        }
+        
+        return pageNumbers;
+    };
+    
     return(
         <div className="w-full">
             <motion.div 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5 }}
-                className="bg-white shadow-xl rounded-3xl p-6 w-full"
+                className="bg-white/10 backdrop-blur-md shadow-xl rounded-3xl p-6 w-full"
             >
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
                     <h2
@@ -56,6 +103,38 @@ export default function UsersManagement(){
                     >
                         User Management
                     </h2>
+                    <div className="flex space-x-2">
+                        <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center"
+                        >
+                            <Download className="w-4 h-4 mr-2" />
+                            Export
+                        </motion.button>
+                    </div>
+                </div>
+
+                {/* Tabs */}
+                <div className="flex overflow-x-auto mb-6 pb-2">
+                    {['All', 'admin', 'alumni', 'alumniadmin'].map((tab) => (
+                        <motion.button
+                            key={tab}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => {
+                                setRoleFilter(tab);
+                                setCurrentPage(1);
+                            }}
+                            className={`px-4 py-2 mr-2 rounded-lg whitespace-nowrap ${
+                                roleFilter === tab 
+                                    ? 'bg-blue-600 text-white font-semibold' 
+                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            }`}
+                        >
+                            {tab}
+                        </motion.button>
+                    ))}
                 </div>
 
                 <div className="flex flex-col md:flex-row gap-4 mb-6">
@@ -86,7 +165,10 @@ export default function UsersManagement(){
                     isOpen={isModalOpen}
                     onClose={() => setIsModalOpen(false)}
                     selectedRole={roleFilter}
-                    onSelectRole={setRoleFilter}
+                    onSelectRole={(role) => {
+                        setRoleFilter(role);
+                        setCurrentPage(1); // Reset to first page when changing filters
+                    }}
                 />
                 
                 <div className="overflow-x-auto rounded-lg border border-gray-200">
@@ -105,7 +187,7 @@ export default function UsersManagement(){
                             </tr>
                         </thead>
                         <tbody className="bg-white divide-y divide-gray-200">
-                            {alumniUsers.map((user, index) => (
+                            {currentUsers.map((user, index) => (
                                 <motion.tr 
                                     key={index}
                                     initial={{ opacity: 0 }}
@@ -114,13 +196,26 @@ export default function UsersManagement(){
                                     className="hover:bg-gray-50 transition-colors"
                                 >
                                     <td className="px-6 py-4 whitespace-nowrap text-gray-800">
-                                        {user.firstName} {user.lastName}
+                                        <div className="flex items-center">
+                                            <div className="flex-shrink-0 h-8 w-8 bg-gray-200 rounded-full flex items-center justify-center">
+                                                <User className="w-4 h-4 text-gray-600" />
+                                            </div>
+                                            <div className="ml-3">
+                                                <div className="text-sm font-medium">{user.firstName} {user.lastName}</div>
+                                            </div>
+                                        </div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-gray-800">
-                                        {user.role}
+                                        <div className="flex items-center">
+                                            <Shield className="w-4 h-4 mr-2 text-gray-600" />
+                                            <span>{user.role}</span>
+                                        </div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-gray-800">
-                                        {user.email || "Email"}
+                                        <div className="flex items-center">
+                                            <Mail className="w-4 h-4 mr-2 text-gray-600" />
+                                            <span>{user.email || "N/A"}</span>
+                                        </div>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-center">
                                         <div className="flex justify-center space-x-2">
@@ -138,6 +233,60 @@ export default function UsersManagement(){
                         </div>
                     )}
                 </div>
+                
+                {/* Pagination Controls */}
+                {alumniUsers.length > 0 && (
+                    <div className="flex justify-between items-center mt-6">
+                        <div className="text-gray-600 text-sm">
+                            Showing {startIndex + 1} to {Math.min(endIndex, alumniUsers.length)} of {alumniUsers.length} users
+                        </div>
+                        <div className="flex space-x-2">
+                            <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => goToPage(currentPage - 1)}
+                                disabled={currentPage === 1}
+                                className={`px-4 py-2 rounded-lg ${
+                                    currentPage === 1
+                                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                }`}
+                            >
+                                Previous
+                            </motion.button>
+                            
+                            {getPageNumbers().map((page, index) => (
+                                <motion.button
+                                    key={index}
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => goToPage(page)}
+                                    className={`px-4 py-2 rounded-lg ${
+                                        currentPage === page
+                                            ? 'bg-blue-600 text-white font-semibold'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    }`}
+                                >
+                                    {page}
+                                </motion.button>
+                            ))}
+                            
+                            <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => goToPage(currentPage + 1)}
+                                disabled={currentPage === totalPages}
+                                className={`px-4 py-2 rounded-lg ${
+                                    currentPage === totalPages
+                                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                }`}
+                            >
+                                Next
+                            </motion.button>
+                        </div>
+                    </div>
+                )}
             </motion.div>
         </div>
     );
