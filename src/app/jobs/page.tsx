@@ -6,13 +6,8 @@ import JobListingsSidebar from "@/app/components/jobListings_sidebar";
 import FilterSidebar from "@/app/components/filtersJobListings";
 import JobCard from "../components/jobCard";
 import JobDetails from "../components/jobDetails";
-import { FiFilter } from "react-icons/fi";
-import { IoIosArrowForward, IoIosArrowBack } from "react-icons/io";
 import jobData from "@/dummy_data/job.json";
-import { SlidersHorizontal } from "lucide-react";
-
-import { redirect } from "next/navigation";
-
+import { SlidersHorizontal, Search, ArrowDownUp, LayoutGrid, ChevronRight, ChevronLeft, Plus} from "lucide-react";
 
 export default function JobListings() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -21,6 +16,8 @@ export default function JobListings() {
 
     const [search, setSearch] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
+    const [selectedJob, setSelectedJob] = useState<any>(null);
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const itemsPerPage = 10;
 
     const filteredJobs = jobData.filter((job) => {
@@ -33,6 +30,20 @@ export default function JobListings() {
         (currentPage - 1) * itemsPerPage,
         currentPage * itemsPerPage
     );
+
+    const handleJobDetails = (job: any) => {
+        setSelectedJob(job);
+        setIsModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+    };
+
+    const handleApply = (jobTitle: string) => {
+        console.log(`Applying for ${jobTitle}`);
+        // Application logic would go here
+    };
 
     return (
         <div className="flex flex-col h-screen">
@@ -48,20 +59,23 @@ export default function JobListings() {
                 sidebarRef={sidebarRef}
             />
 
-            <div className="mx-8 my-4 prose lg:prose-xl">
-                <h1 className="">Jobs</h1>
+            <div className="mx-8 mt-16 my-4 prose lg:prose-xl">
+                {/* <h1 className="">Jobs</h1> */}
             </div>
 
             <div className="flex-grow flex w-screen">
-                <FilterSidebar />
+                <aside className="flex flex-col gap-4 m-4">
+                    <button className="btn btn-wide btn-primary btn-lg rounded-3xl"> <Plus/> Test </button>
+                    <FilterSidebar />
+                </aside>
 
                 <main className="flex-1 px-12">
-                    <div className="flex gap-2 my-4">
-                        <button className="btn btn-sqr"><SlidersHorizontal /></button>
+                    <div className="flex items-center align-center gap-2 my-4">
+                        <button className="btn btn-sqr btn-soft"> <SlidersHorizontal /> </button>
 
                         <div className="flex flex-1 justify-center">
                             <label className="input w-150 input-lg">
-                                <svg className="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g strokeLinejoin="round" strokeLinecap="round" strokeWidth="2.5" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></g></svg>
+                                <Search />
                                 <input type="search"
                                     className=""
                                     placeholder="Search jobs"
@@ -72,11 +86,11 @@ export default function JobListings() {
                             </label>
                         </div>
 
-                        <button className="btn btn-soft">Sort</button>
-                        <button className="btn btn-soft">View</button>
+                        <button className="btn btn-soft"> <ArrowDownUp /> Sort </button>
+                        <button className="btn btn-soft"> <LayoutGrid /> View </button>
                     </div>
 
-                    <div className="w-full flex">
+                    <div className="w-full flex justify-center">
                         <div className="flex flex-wrap gap-3 justify-center">
                             {displayedJobs.length > 0 ? (
                                 displayedJobs.map((job, index) => (
@@ -87,7 +101,8 @@ export default function JobListings() {
                                         location={job.location}
                                         description={job.description}
                                         imageUrl={job.imageUrl}
-                                        onApplyClick={() => console.log(`Applying for ${job.title}`)}
+                                        onDetailsClick={() => handleJobDetails(job)}
+                                        onApplyClick={() => handleApply(job.title)}
                                     />
                                 ))
                             ) : (
@@ -103,9 +118,9 @@ export default function JobListings() {
                             <button
                                 onClick={() => setCurrentPage(currentPage - 1)}
                                 disabled={currentPage === 1}
-                                className="btn btn-outline btn-sm"
+                                className="btn btn-sqr"
                             >
-                                <IoIosArrowBack />
+                                <ChevronLeft />
                             </button>
                             <span>
                                 {currentPage} / {totalPages}
@@ -113,11 +128,25 @@ export default function JobListings() {
                             <button
                                 onClick={() => setCurrentPage(currentPage + 1)}
                                 disabled={currentPage === totalPages}
-                                className="btn btn-outline btn-sm"
+                                className="btn btn-sqr"
                             >
-                                <IoIosArrowForward />
+                                <ChevronRight />
                             </button>
                         </div>
+                    )}
+
+                    {/* Job Details Modal */}
+                    {selectedJob && (
+                        <JobDetails
+                            title={selectedJob.title}
+                            company={selectedJob.company}
+                            location={selectedJob.location}
+                            salary={selectedJob.salary}
+                            description={selectedJob.description}
+                            isOpen={isModalOpen}
+                            onClose={handleCloseModal}
+                            onApplyClick={() => handleApply(selectedJob.title)}
+                        />
                     )}
                 </main>
             </div>

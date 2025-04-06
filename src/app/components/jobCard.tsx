@@ -1,32 +1,29 @@
 "use client";
 import React from "react";
 
-interface JobListingCardProps {
+interface JobCardProps {
   title: string;
   company: string;
   location: string;
-  salary?: string;
   description: string;
   imageUrl: string;
+  onDetailsClick: () => void;
   onApplyClick: () => void;
 }
 
-const JobListingCard: React.FC<JobListingCardProps> = ({
+const JobCard: React.FC<JobCardProps> = ({
   title,
   company,
   location,
-  salary,
   description,
   imageUrl,
+  onDetailsClick,
   onApplyClick,
 }) => {
   return (
-    <div className="card bg-base-100 w-64 h-128 shadow-sm">
+    <div className="cursor-pointer card bg-base-100 w-64 h-112 shadow-sm hover:shadow-lg transition-shadow">
       <figure>
-        <img
-          src={imageUrl}
-          alt={`${company} job banner`}
-        />
+        <img src={imageUrl} alt={`${company} job banner`} className="w-full h-40 object-cover" />
       </figure>
 
       <div className="card-body">
@@ -34,19 +31,23 @@ const JobListingCard: React.FC<JobListingCardProps> = ({
         <p>
           {company} • {location}
         </p>
-        <div className="card-actions justify-end">
+        <div className="card-actions justify-between mt-4">
+          <button
+            onClick={onDetailsClick}
+            className="btn bg-[#0c0051] text-white hover:bg-[#12006A]"
+          >
+            Details
+          </button>
           <button
             onClick={onApplyClick}
-            className="btn btn-primary btn-wide">
-            Apply Now
+            className="btn btn-primary"
+          >
+            Apply
           </button>
         </div>
       </div>
-
-
-
     </div>
   );
 };
 
-export default JobListingCard;
+export default JobCard;
