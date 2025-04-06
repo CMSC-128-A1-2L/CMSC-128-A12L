@@ -1,162 +1,163 @@
 "use client";
-import userData from "@/dummy_data/user.json";
-import Navbar from "@/app/components/navBar";
-import AlumniSidebar from "@/app/components/alumniSideBar";
 
-import PromoteUser from "../components/promoteUser";
-import DeleteUser from "../components/deleteUser";
-import FilterModal from "../components/filterModal";
-
-
-import { signOut, useSession } from "next-auth/react";
 import { useState, useEffect, useRef } from "react";
-import Link from "next/link";
-import { Menu, X, LogOut, User, Briefcase, Calendar, DollarSign, Bell, Users } from "lucide-react";
+import Navbar from "@/app/components/navBar";
+import JobListingsSidebar from "@/app/components/jobListings_sidebar";
+import FilterSidebar from "@/app/components/filtersJobListings";
+import JobCard from "../components/jobCard";
+import JobDetails from "../components/jobDetails";
+import { FiFilter } from "react-icons/fi";
+import { IoIosArrowForward, IoIosArrowBack } from "react-icons/io";
+import jobData from "@/dummy_data/job.json";
 import { redirect } from "next/navigation";
 
-export default function AlumniLanding() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const sidebarRef = useRef<HTMLDivElement>(null);
-  const menuButtonRef = useRef<HTMLButtonElement>(null);
+type Alumni = {
+    role: string;
+    studentId: string;
+    firstName: string;
+    middleName?: string | null;
+    lastName: string;
+    suffix?: string | null;
+    gender?: string;
+    bio?: string;
+    linkedIn?: string;
+    contactNumbers?: string[];
+};
 
-  // Handle clicks outside the sidebar to close it
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (
-        sidebarOpen &&
-        sidebarRef.current &&
-        !sidebarRef.current.contains(event.target as Node) &&
-        menuButtonRef.current &&
-        !menuButtonRef.current.contains(event.target as Node)
-      ) {
-        setSidebarOpen(false);
-      }
-    }
+export default function JobListings() {
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const menuButtonRef = useRef<HTMLButtonElement>(null);
+    const sidebarRef = useRef<HTMLDivElement>(null);
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+    const [search, setSearch] = useState("");
+    const [selectedFilter, setSelectedFilter] = useState({
+        role: "",
+        gender: "",
+    });
+    const [currentPage, setCurrentPage] = useState(1);
+    const [showFilter, setShowFilter] = useState(false);
+    const itemsPerPage = 12;
+    const filterRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (
+                showFilter &&
+                filterRef.current &&
+                !filterRef.current.contains(event.target as Node)
+            ) {
+                setShowFilter(false);
+            }
+        }
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, [showFilter]);
+
+    // Filter job listings based on search and selected filters
+    const filteredJobs = jobData.filter((job) => {
+        const searchMatch = job.title.toLowerCase().includes(search.toLowerCase());
+        const roleMatch =
+            selectedFilter.role === "" || job.title === selectedFilter.role;
+
+        return searchMatch && roleMatch;
+    });
+
+    // Clear filters
+    const clearFilters = () => {
+        setSelectedFilter({ role: "", gender: "" });
+        setSearch("");
     };
-  }, [sidebarOpen]);
 
-  const sidebarItems = [
-    { name: "Profile", icon: <User size={20} /> },
-    { name: "Job Listings", icon: <Briefcase size={20} /> },
-    { name: "Events", icon: <Calendar size={20} /> },
-    { name: "Donations", icon: <DollarSign size={20} /> },
-    { name: "Notifications", icon: <Bell size={20} /> },
-    { name: "Alumni", icon: <Users size={20} /> },
-  ];
+    // Pagination logic
+    const totalPages = Math.ceil(filteredJobs.length / itemsPerPage);
+    const displayedJobs = filteredJobs.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
 
+    return (
+        <div className="min-h-screen flex flex-col bg-white">
+            <Navbar
+                setSidebarOpen={setSidebarOpen}
+                menuButtonRef={menuButtonRef}
+                homePath="/job-listings"
+            />
 
-  // AFWAFWAPIFWHAFIPHWAIHF for user management body
-  const [tempQuery, setTempQuery] = useState("");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc" | null>(null);
-  const [roleFilter, setRoleFilter] = useState("All");
-  const [isModalOpen, setIsModalOpen] = useState(false);
+            <JobListingsSidebar
+                sidebarOpen={sidebarOpen}
+                setSidebarOpen={setSidebarOpen} 
+                sidebarRef={sidebarRef}
+            />
 
-  // function for clicking "Name" label
-  const toggleSortOrder = () => {
-      setSortOrder((prevOrder) => (prevOrder === "asc" ? "desc" : "asc"));
-  };
+            <div>
+                <h1 className="pl-8 text-6xl font-bold mt-8">Jobs</h1>
+            </div>
 
-  // search input box only works for when user presses enter key
-  const handleSearch = (e: any) => {
-      if (e.key === "Enter") {  // Check if Enter key is pressed
-          setSearchQuery(tempQuery);
-      }
-  };
+            <div className="flex">
+                <FilterSidebar />
 
-  const alumniUsers = userData
-      .filter(user => 
-      `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-      .filter(user => roleFilter === "All" || user.role === roleFilter);
+                <main className="flex-1">
+                    {/* Search Section */}
+                    <div className="flex justify-center space-x-2 my-4 px-6 w-full">
+                        <div className="flex space-x-2 max-w-7xl">
+                            <input
+                                type="text"
+                                placeholder="Search jobs"
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                className="input input-bordered w-96 bg-white"
+                            />
+                        </div>
+                    </div>
 
-  if (sortOrder === "asc") {
-      alumniUsers.sort((a, b) => a.firstName.localeCompare(b.firstName));
-  } else if (sortOrder === "desc") {
-      alumniUsers.sort((a, b) => b.firstName.localeCompare(a.firstName));
-  }
+                    {/* Job Listings Grid */}
+                    <div className="w-full flex justify-center px-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 max-w-7xl">
+                            {displayedJobs.length > 0 ? (
+                                displayedJobs.map((job, index) => (
+                                    <JobCard
+                                        key={index}
+                                        title={job.title}
+                                        company={job.company}
+                                        location={job.location}
+                                        description={job.description}
+                                        imageUrl={job.imageUrl}
+                                        onApplyClick={() => console.log(`Applying for ${job.title}`)}
+                                    />
+                                ))
+                            ) : (
+                                <p className="text-gray-500 text-center w-full col-span-full">
+                                    No jobs found.
+                                </p>
+                            )}
+                        </div>
+                    </div>
 
-  
-  return (  
-    <div className="min-h-screen flex flex-col bg-white">
-      {/* Navbar - Update to use component */}
-      <header style={{ backgroundColor: "#0C0051" }} className="text-white py-4">
-        <div className="container mx-auto px-4 flex justify-between items-center">
-          <div className="flex items-center">
-            <button
-              ref={menuButtonRef}
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="mr-4 focus:outline-none cursor-pointer"
-              aria-label="Toggle menu"
-            >
-              <Menu size={24} />
-            </button>
-            <Link href="/jobs">
-              <h1 className="text-xl font-bold cursor-pointer">AEGIS | <span className="text-lg font-normal">Jobs</span></h1>
-            </Link>
-          </div>
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={() => signOut()}
-              className="focus:outline-none cursor-pointer"
-              aria-label="Sign Out"
-            >
-              <LogOut size={20} />
-            </button>
-          </div>
+                    {/* Pagination */}
+                    {totalPages > 1 && (
+                        <div className="flex justify-center items-center space-x-4 my-4 px-6 w-full">
+                            <button
+                                onClick={() => setCurrentPage(currentPage - 1)}
+                                disabled={currentPage === 1}
+                                className="btn btn-outline btn-sm"
+                            >
+                                <IoIosArrowBack />
+                            </button>
+                            <span>
+                                {currentPage} / {totalPages}
+                            </span>
+                            <button
+                                onClick={() => setCurrentPage(currentPage + 1)}
+                                disabled={currentPage === totalPages}
+                                className="btn btn-outline btn-sm"
+                            >
+                                <IoIosArrowForward />
+                            </button>
+                        </div>
+                    )}
+                </main>
+            </div>
         </div>
-      </header>
-
-      {/* Sidebar - Update to use component */}
-      <div
-        ref={sidebarRef}
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform ${sidebarOpen ? "translate-x-0" : "-translate-x-full"
-          } transition-transform duration-300 ease-in-out`}
-      >
-        <div className="p-4 flex justify-between items-center border-b">
-          <h2 className="text-lg font-bold text-gray-800">AEGIS Menu</h2>
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="focus:outline-none cursor-pointer"
-            aria-label="Close menu"
-          >
-            <X size={24} />
-          </button>
-        </div>
-        <nav className="mt-4">
-          <ul>
-            {sidebarItems.map((item, index) => (
-              <li key={index}>
-                <a
-                  href="#"
-                  className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
-                >
-                  <span className="mr-3">{item.icon}</span>
-                  {item.name}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      </div>
-
-      {/* Main Content */}
-      <main className="flex-grow container mx-auto px-4 py-8 flex items-center justify-center">
-
-        {/* TEST */}
-
-        <div className="p-6">
-            <h1 className="text-3xl font-bold">Test</h1>
-            <p>Test test.</p>
-        </div>
-
-
-      </main>
-
-    </div>
-  );
+    );
 }

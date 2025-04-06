@@ -8,7 +8,7 @@ export default function FilterSidebar() {
   return (
     <div className="flex m-4 rounded">
       {/* Sidebar */}
-      <div className={`w-64 bg-base-200 p-4 ${isOpen ? "block" : "hidden"} md:block sticky top-0 h-screen overflow-y-auto`}>
+      <div className={`w-64 h-100 bg-base-200 p-4 rounded-3xl ${isOpen ? "block" : "hidden"} md:block sticky top-0 h-screen overflow-y-auto`}>
         <h2 className="text-lg font-bold mb-4">Filters</h2>
 
         {/* Job Type Filter */}
