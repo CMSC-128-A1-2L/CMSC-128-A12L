@@ -33,7 +33,6 @@ export default function AdminLayout({
   }, [sidebarOpen]);
 
   if (!session) {
-
     return (
       <div className="min-h-screen flex items-center justify-center bg-white">
         <h2
@@ -47,7 +46,7 @@ export default function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col bg-white overflow-hidden">
       <Navbar
         setSidebarOpen={setSidebarOpen}
         menuButtonRef={menuButtonRef}
@@ -61,9 +60,11 @@ export default function AdminLayout({
         role={session.user.role}
       />
 
-      <main className="flex-grow container mx-auto px-4 py-8 lg:ml-64 transition-all duration-300 flex items-center justify-center min-h-[calc(100vh-64px)]">
-        {children}
+      <main className={`flex-grow w-full px-4 py-6 transition-all duration-300 ${sidebarOpen ? 'md:ml-64' : ''} overflow-x-hidden`}>
+        <div className="max-w-7xl mx-auto flex items-center justify-center min-h-[calc(100vh-64px)]">
+          {children}
+        </div>
       </main>
     </div>
   );
-} 
+}

@@ -67,6 +67,15 @@ export default function AdminSidebar({
                 <span className="mr-3">{item.icon}</span>
                 {item.name}
               </Link>
+            ) : item.name === "Dashboard" ? (
+              <Link
+                href="/admin"
+                className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
+                onClick={() => setSidebarOpen(false)}
+              >
+                <span className="mr-3">{item.icon}</span>
+                {item.name}
+              </Link>
             ) : (
               <a
                 href={`/admin/${item.name.toLowerCase()}`}
