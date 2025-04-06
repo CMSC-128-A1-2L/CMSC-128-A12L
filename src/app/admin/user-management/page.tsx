@@ -8,6 +8,7 @@ import { Search, ChevronLeft, ChevronRight, Download, User, Mail, Shield } from 
 import { useState, useEffect } from "react";
 import FilterModal from "../../components/filterModal";
 import { motion } from 'framer-motion';
+import { UserDto } from "@/models/user";
 
 export default function UsersManagement(){
     const { data: session } = useSession();
@@ -16,12 +17,28 @@ export default function UsersManagement(){
     const [sortOrder, setSortOrder] = useState<"asc" | "desc" | null>(null);
     const [roleFilter, setRoleFilter] = useState("All");
     const [isModalOpen, setIsModalOpen] = useState(false);
-    
+    const [alumniUsers, setAlumniUsers] = useState<UserDto[]>([]);
+    useEffect(() => {
+        const fetchAlumniUsers = async () => {
+            const response = await fetch("/api/admin/users");
+            const data = await response.json();
+            data.forEach((datas) => {
+                console.log(datas)
+            })
+            setAlumniUsers(data);
+        }
+        fetchAlumniUsers();
+    }, []);
+
+   
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 20;
 
-    // function for clicking "Name" label
+    const deleteSuccess = (userId: string) => {
+        setAlumniUsers(alumniUsers.filter((user) => user.id !== userId));
+    }
+    // function for clicking "Name" label 
     const toggleSortOrder = () => {
         setSortOrder((prevOrder) => (prevOrder === "asc" ? "desc" : "asc"));
     };
@@ -34,23 +51,24 @@ export default function UsersManagement(){
         }
     };
 
-    const alumniUsers = userData
+    // Filter and sort users based on search query and role filter
+    const filteredUsers = alumniUsers
         .filter(user => 
-        `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchQuery.toLowerCase())
+            user.name.toLowerCase().includes(searchQuery.toLowerCase())
         )
-        .filter(user => roleFilter === "All" || user.role === roleFilter);
+        .filter(user => roleFilter === "All" || user.role.toString() === roleFilter);
 
     if (sortOrder === "asc") {
-        alumniUsers.sort((a, b) => a.firstName.localeCompare(b.firstName));
+        filteredUsers.sort((a, b) => a.name.localeCompare(b.name));
     } else if (sortOrder === "desc") {
-        alumniUsers.sort((a, b) => b.firstName.localeCompare(a.firstName));
+        filteredUsers.sort((a, b) => b.name.localeCompare(a.name));
     }
     
     // Calculate pagination
-    const totalPages = Math.ceil(alumniUsers.length / itemsPerPage);
+    const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    const currentUsers = alumniUsers.slice(startIndex, endIndex);
+    const currentUsers = filteredUsers.slice(startIndex, endIndex);
     
     // Handle page navigation
     const goToPage = (page: number) => {
@@ -201,7 +219,7 @@ export default function UsersManagement(){
                                                 <User className="w-4 h-4 text-gray-600" />
                                             </div>
                                             <div className="ml-3">
-                                                <div className="text-sm font-medium">{user.firstName} {user.lastName}</div>
+                                                <div className="text-sm font-medium">{user.name}</div>
                                             </div>
                                         </div>
                                     </td>
@@ -219,15 +237,15 @@ export default function UsersManagement(){
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-center">
                                         <div className="flex justify-center space-x-2">
-                                            <PromoteUser name={{ firstName: user.firstName, lastName: user.lastName}} />
-                                            <DeleteUser person={{ firstName: user.firstName, lastName: user.lastName}} />
+                                            {user.role[0] === "alumni" ? <PromoteUser person={user} /> : <span className="pt-1 text-gray-500 font-bold">Promoted</span>}
+                                            {user.role[0] !== "admin" ? <DeleteUser person={user} deleteSuccess={deleteSuccess} /> : null}
                                         </div>
                                     </td>
                                 </motion.tr>
                             ))}
                         </tbody>
                     </table>
-                    {alumniUsers.length === 0 && (
+                    {filteredUsers.length === 0 && (
                         <div className="text-center py-8">
                             <p className="text-gray-500">No users found</p>
                         </div>
@@ -235,10 +253,10 @@ export default function UsersManagement(){
                 </div>
                 
                 {/* Pagination Controls */}
-                {alumniUsers.length > 0 && (
+                {filteredUsers.length > 0 && (
                     <div className="flex justify-between items-center mt-6">
                         <div className="text-gray-600 text-sm">
-                            Showing {startIndex + 1} to {Math.min(endIndex, alumniUsers.length)} of {alumniUsers.length} users
+                            Showing {startIndex + 1} to {Math.min(endIndex, filteredUsers.length)} of {filteredUsers.length} users
                         </div>
                         <div className="flex space-x-2">
                             <motion.button
