@@ -61,6 +61,20 @@ export default function JobListings() {
     console.log(`Applying for ${jobTitle}`);
   };
 
+  const handleEdit = (job:any) => {
+    // console.log(`Editing ${jobTitle}`);
+
+    setSelectedJob(job);
+    // Use the DaisyUI modal show method
+    const modal = document.getElementById(
+      "edit_job_modal"
+    ) as HTMLDialogElement;
+    if (modal) {
+      modal.showModal();
+      setIsModalOpen(true);
+    }
+  };
+
   return (
     <div className="flex flex-col h-screen">
       <Navbar
@@ -98,9 +112,7 @@ export default function JobListings() {
         </div>
 
         {/* Placeholder */}
-        <button className="btn btn-ghost btn-lg">
-          My job listings
-        </button>
+        <button className="btn btn-ghost btn-lg">My job listings</button>
 
         {/* Search bar */}
         <div className="flex flex-1 justify-center">
@@ -139,7 +151,6 @@ export default function JobListings() {
         <main className="flex-1 pr-8">
           {/* Job listing grid */}
           <div className="w-full flex justify-center">
-            <EditJobListComponent />
             <div className="flex flex-wrap gap-3 justify-center">
               {displayedJobs.length > 0 ? (
                 displayedJobs.map((job, index) => (
@@ -175,9 +186,25 @@ export default function JobListings() {
               isOpen={isModalOpen}
               onClose={handleCloseModal}
               onApplyClick={() => handleApply(selectedJob.title)}
+              //   ONLY FOR ADMIN/CREATOR VIEWS WIP
+              onEditClick={() => handleEdit(selectedJob)}
+              onDeleteClick={() => console.log("Delete job")}
             />
           )}
 
+          {/* Edit Job Details Modal */}
+          {selectedJob && (
+            <EditJobListComponent
+              isOpen={false}
+              onClose={function (): void {
+                throw new Error("Function not implemented.");
+              }}
+              onSave={function (jobData: any): void {
+                throw new Error("Function not implemented.");
+              }}
+            />
+          )}
+          
           {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex justify-center items-center space-x-4 my-4 px-6 w-full select-none">

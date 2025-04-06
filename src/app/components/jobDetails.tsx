@@ -15,6 +15,8 @@ interface JobDetailsProps {
   isOpen: boolean;
   onClose: () => void;
   onApplyClick: () => void;
+  onEditClick: () => void;
+  onDeleteClick: () => void;
 }
 
 const JobDetails: React.FC<JobDetailsProps> = ({
@@ -28,6 +30,7 @@ const JobDetails: React.FC<JobDetailsProps> = ({
   isOpen,
   onClose,
   onApplyClick,
+  onEditClick,
 }) => {
   return (
     <dialog id="job_details_modal" className="modal">
@@ -66,7 +69,7 @@ const JobDetails: React.FC<JobDetailsProps> = ({
           <div className="flex flex-col gap-2 pt-6">
             {/* ON ADMIN/CREATOR VIEWS ONLY WIP */}
             <div className="flex flex-row gap-2">
-              <button onClick={onApplyClick} className="btn btn-dash flex-grow">
+              <button onClick={onEditClick} className="btn btn-dash flex-grow">
                 Edit
               </button>
               <button onClick={onApplyClick} className="btn btn-dash btn-error btn-sqr">
