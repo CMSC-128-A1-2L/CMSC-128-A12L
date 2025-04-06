@@ -1,9 +1,10 @@
 "use client"
 import { User } from '@/entities/user';
+import { UserDto } from '@/models/user';
 import { getUserRepository } from '@/repositories/user_repository';
 import React, { useState, useEffect } from 'react';
 
-export default function PromoteUser({ person }: {person: User}) {
+export default function PromoteUser({ person }: {person: UserDto}) {
     const [openModal, setModal] = useState(false);
     const [disable, setDisabled] = useState(false);
     const [promote, setPromote] = useState("Promote");
