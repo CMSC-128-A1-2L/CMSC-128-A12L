@@ -1,5 +1,8 @@
 "use client";
 import React from "react";
+import {
+  Trash2
+} from "lucide-react";
 
 interface JobDetailsProps {
   title: string;
@@ -38,7 +41,6 @@ const JobDetails: React.FC<JobDetailsProps> = ({
         <h3 className="font-bold text-lg mt-4">{title}</h3>
 
         <div className="pt-4">
-
           <p className="font-bold text-left text-gray-700">Job Type</p>
           <p className="px-2 pb-2">{jobType}</p>
 
@@ -47,7 +49,6 @@ const JobDetails: React.FC<JobDetailsProps> = ({
 
           <p className="font-bold text-left text-gray-700">Company</p>
           <p className="px-2 pb-2">{company}</p>
-
 
           <p className="font-bold text-left text-gray-700">Location</p>
           <p className="px-2 pb-2">{location}</p>
@@ -62,7 +63,16 @@ const JobDetails: React.FC<JobDetailsProps> = ({
             </>
           )}
 
-          <div className="pt-6">
+          <div className="flex flex-col gap-2 pt-6">
+            {/* ON ADMIN/CREATOR VIEWS ONLY WIP */}
+            <div className="flex flex-row gap-2">
+              <button onClick={onApplyClick} className="btn btn-dash flex-grow">
+                Edit
+              </button>
+              <button onClick={onApplyClick} className="btn btn-dash btn-error btn-sqr">
+                <Trash2 />
+              </button>
+            </div>
             <button
               onClick={onApplyClick}
               className="btn btn-primary btn-block"

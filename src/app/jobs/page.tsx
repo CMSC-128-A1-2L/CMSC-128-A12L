@@ -2,10 +2,11 @@
 
 import { useState, useRef } from "react";
 import Navbar from "@/app/components/navBar";
-import JobListingsSidebar from "@/app/components/jobListings_sidebar";
-import FilterSidebar from "@/app/components/filtersJobListings";
+import JobListingsSidebar from "../components/jobListings_sidebar";
+import FilterSidebar from "../components/filtersJobListings";
 import JobCard from "../components/jobCard";
 import JobDetails from "../components/jobDetails";
+import EditJobListComponent from "../components/editJobList";
 import jobData from "@/dummy_data/job.json";
 import {
   SlidersHorizontal,
@@ -138,6 +139,7 @@ export default function JobListings() {
         <main className="flex-1 pr-8">
           {/* Job listing grid */}
           <div className="w-full flex justify-center">
+            <EditJobListComponent />
             <div className="flex flex-wrap gap-3 justify-center">
               {displayedJobs.length > 0 ? (
                 displayedJobs.map((job, index) => (
