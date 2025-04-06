@@ -5,6 +5,8 @@ interface JobCardProps {
   title: string;
   company: string;
   location: string;
+  jobType: string;
+  workType: string;
   description: string;
   imageUrl: string;
   onDetailsClick: () => void;
@@ -15,6 +17,8 @@ const JobCard: React.FC<JobCardProps> = ({
   title,
   company,
   location,
+  jobType,
+  workType,
   description,
   imageUrl,
   onDetailsClick,

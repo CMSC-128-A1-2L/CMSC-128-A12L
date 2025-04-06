@@ -79,8 +79,7 @@ export default function JobListings() {
       </div>
 
       {/* Toolbar */}
-      <div className="flex items-center align-center gap-2 m-4">
-        
+      <div className="flex items-center align-center gap-2 m-4 my-6">
         <div className="flex items-center gap-2 w-64">
           {/* Filter sidebar toggle */}
           <button
@@ -96,6 +95,11 @@ export default function JobListings() {
             <Plus /> Test{" "}
           </button>
         </div>
+
+        {/* Placeholder */}
+        <button className="btn btn-ghost btn-lg">
+          My job listings
+        </button>
 
         {/* Search bar */}
         <div className="flex flex-1 justify-center">
@@ -142,6 +146,8 @@ export default function JobListings() {
                     title={job.title}
                     company={job.company}
                     location={job.location}
+                    jobType={job.job_type}
+                    workType={job.work_type}
                     description={job.description}
                     imageUrl={job.imageUrl}
                     onDetailsClick={() => handleJobDetails(job)}
@@ -161,6 +167,8 @@ export default function JobListings() {
               company={selectedJob.company}
               location={selectedJob.location}
               salary={selectedJob.salary}
+              jobType={selectedJob.job_type}
+              workType={selectedJob.work_type}
               description={selectedJob.description}
               isOpen={isModalOpen}
               onClose={handleCloseModal}
