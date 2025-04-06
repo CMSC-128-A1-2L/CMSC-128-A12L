@@ -9,20 +9,10 @@ import JobDetails from "../components/jobDetails";
 import { FiFilter } from "react-icons/fi";
 import { IoIosArrowForward, IoIosArrowBack } from "react-icons/io";
 import jobData from "@/dummy_data/job.json";
+import { SlidersHorizontal } from "lucide-react";
+
 import { redirect } from "next/navigation";
 
-type Alumni = {
-    role: string;
-    studentId: string;
-    firstName: string;
-    middleName?: string | null;
-    lastName: string;
-    suffix?: string | null;
-    gender?: string;
-    bio?: string;
-    linkedIn?: string;
-    contactNumbers?: string[];
-};
 
 export default function JobListings() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -30,46 +20,14 @@ export default function JobListings() {
     const sidebarRef = useRef<HTMLDivElement>(null);
 
     const [search, setSearch] = useState("");
-    const [selectedFilter, setSelectedFilter] = useState({
-        role: "",
-        gender: "",
-    });
     const [currentPage, setCurrentPage] = useState(1);
-    const [showFilter, setShowFilter] = useState(false);
-    const itemsPerPage = 12;
-    const filterRef = useRef<HTMLDivElement>(null);
+    const itemsPerPage = 10;
 
-    useEffect(() => {
-        function handleClickOutside(event: MouseEvent) {
-            if (
-                showFilter &&
-                filterRef.current &&
-                !filterRef.current.contains(event.target as Node)
-            ) {
-                setShowFilter(false);
-            }
-        }
-
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, [showFilter]);
-
-    // Filter job listings based on search and selected filters
     const filteredJobs = jobData.filter((job) => {
         const searchMatch = job.title.toLowerCase().includes(search.toLowerCase());
-        const roleMatch =
-            selectedFilter.role === "" || job.title === selectedFilter.role;
-
-        return searchMatch && roleMatch;
+        return searchMatch;
     });
 
-    // Clear filters
-    const clearFilters = () => {
-        setSelectedFilter({ role: "", gender: "" });
-        setSearch("");
-    };
-
-    // Pagination logic
     const totalPages = Math.ceil(filteredJobs.length / itemsPerPage);
     const displayedJobs = filteredJobs.slice(
         (currentPage - 1) * itemsPerPage,
@@ -86,7 +44,7 @@ export default function JobListings() {
 
             <JobListingsSidebar
                 sidebarOpen={sidebarOpen}
-                setSidebarOpen={setSidebarOpen} 
+                setSidebarOpen={setSidebarOpen}
                 sidebarRef={sidebarRef}
             />
 
@@ -94,26 +52,32 @@ export default function JobListings() {
                 <h1 className="">Jobs</h1>
             </div>
 
-            <div className="flex-grow flex">
+            <div className="flex-grow flex w-screen">
                 <FilterSidebar />
 
-                <main className="flex-1">
-                    {/* Search/Sort/View Section */}
-                    <div className="flex justify-center my-4">
-                        <div className="flex space-x-2 max-w-7xl">
-                            <input
-                                type="text"
-                                placeholder="Search jobs"
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                className="input input-bordered w-96 bg-white"
-                            />
+                <main className="flex-1 px-12">
+                    <div className="flex gap-2 my-4">
+                        <button className="btn btn-sqr"><SlidersHorizontal /></button>
+
+                        <div className="flex flex-1 justify-center">
+                            <label className="input w-150 input-lg">
+                                <svg className="h-[1em] opacity-50" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><g strokeLinejoin="round" strokeLinecap="round" strokeWidth="2.5" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></g></svg>
+                                <input type="search"
+                                    className=""
+                                    placeholder="Search jobs"
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)} />
+                                <kbd className="kbd kbd-sm">ctrl</kbd>
+                                <kbd className="kbd kbd-sm">K</kbd>
+                            </label>
                         </div>
+
+                        <button className="btn btn-soft">Sort</button>
+                        <button className="btn btn-soft">View</button>
                     </div>
 
-                    {/* Job Listings Grid */}
-                    <div className="w-full flex justify-center px-6">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4 max-w-7xl">
+                    <div className="w-full flex">
+                        <div className="flex flex-wrap gap-3 justify-center">
                             {displayedJobs.length > 0 ? (
                                 displayedJobs.map((job, index) => (
                                     <JobCard
@@ -127,14 +91,13 @@ export default function JobListings() {
                                     />
                                 ))
                             ) : (
-                                <p className="text-gray-500 text-center w-full col-span-full">
+                                <p className="text-gray-500">
                                     No jobs found.
                                 </p>
                             )}
                         </div>
                     </div>
 
-                    {/* Pagination */}
                     {totalPages > 1 && (
                         <div className="flex justify-center items-center space-x-4 my-4 px-6 w-full">
                             <button

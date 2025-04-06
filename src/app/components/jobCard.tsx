@@ -21,7 +21,7 @@ const JobListingCard: React.FC<JobListingCardProps> = ({
   onApplyClick,
 }) => {
   return (
-    <div className="card bg-base-100 w-64 shadow-sm">
+    <div className="card bg-base-100 w-64 h-128 shadow-sm">
       <figure>
         <img
           src={imageUrl}
