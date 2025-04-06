@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Navbar from "@/app/components/navBar";
 import JobListingsSidebar from "@/app/components/jobListings_sidebar";
 import FilterSidebar from "@/app/components/filtersJobListings";
 import JobCard from "../components/jobCard";
 import JobDetails from "../components/jobDetails";
 import jobData from "@/dummy_data/job.json";
-import { SlidersHorizontal, Search, ArrowDownUp, LayoutGrid, ChevronRight, ChevronLeft, Plus} from "lucide-react";
+import { SlidersHorizontal, Search, ArrowDownUp, LayoutGrid, ChevronRight, ChevronLeft, Plus } from "lucide-react";
 
 export default function JobListings() {
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -33,7 +33,12 @@ export default function JobListings() {
 
     const handleJobDetails = (job: any) => {
         setSelectedJob(job);
-        setIsModalOpen(true);
+        // Use the DaisyUI modal show method
+        const modal = document.getElementById('job_details_modal') as HTMLDialogElement;
+        if (modal) {
+            modal.showModal();
+            setIsModalOpen(true);
+        }
     };
 
     const handleCloseModal = () => {
@@ -42,7 +47,6 @@ export default function JobListings() {
 
     const handleApply = (jobTitle: string) => {
         console.log(`Applying for ${jobTitle}`);
-        // Application logic would go here
     };
 
     return (
@@ -65,14 +69,18 @@ export default function JobListings() {
 
             <div className="flex-grow flex w-screen">
                 <aside className="flex flex-col gap-4 m-4">
-                    <button className="btn btn-wide btn-primary btn-lg rounded-3xl"> <Plus/> Test </button>
+                    <button className="btn btn-wide btn-primary btn-lg rounded-3xl"> <Plus /> Test </button>
                     <FilterSidebar />
                 </aside>
 
                 <main className="flex-1 px-12">
-                    <div className="flex items-center align-center gap-2 my-4">
-                        <button className="btn btn-sqr btn-soft"> <SlidersHorizontal /> </button>
+                    {/* Toolbar */}
 
+                    <div className="flex items-center align-center gap-2 my-4">
+                        {/* Filter sidebar toggle */}
+                        <button className="btn btn-sqr btn-soft"> <SlidersHorizontal /> </button>
+                        
+                        {/* Search bar */}
                         <div className="flex flex-1 justify-center">
                             <label className="input w-150 input-lg">
                                 <Search />
@@ -86,10 +94,12 @@ export default function JobListings() {
                             </label>
                         </div>
 
+                    {/* Filter/view dropbar */}
                         <button className="btn btn-soft"> <ArrowDownUp /> Sort </button>
                         <button className="btn btn-soft"> <LayoutGrid /> View </button>
                     </div>
 
+                    {/* Job listing grid */}
                     <div className="w-full flex justify-center">
                         <div className="flex flex-wrap gap-3 justify-center">
                             {displayedJobs.length > 0 ? (
@@ -113,6 +123,21 @@ export default function JobListings() {
                         </div>
                     </div>
 
+                    {/* Job Details Modal - Always rendered but only shown when triggered */}
+                    {selectedJob && (
+                        <JobDetails
+                            title={selectedJob.title}
+                            company={selectedJob.company}
+                            location={selectedJob.location}
+                            salary={selectedJob.salary}
+                            description={selectedJob.description}
+                            isOpen={isModalOpen}
+                            onClose={handleCloseModal}
+                            onApplyClick={() => handleApply(selectedJob.title)}
+                        />
+                    )}
+
+                    {/* Pagination */}
                     {totalPages > 1 && (
                         <div className="flex justify-center items-center space-x-4 my-4 px-6 w-full">
                             <button
@@ -135,19 +160,6 @@ export default function JobListings() {
                         </div>
                     )}
 
-                    {/* Job Details Modal */}
-                    {selectedJob && (
-                        <JobDetails
-                            title={selectedJob.title}
-                            company={selectedJob.company}
-                            location={selectedJob.location}
-                            salary={selectedJob.salary}
-                            description={selectedJob.description}
-                            isOpen={isModalOpen}
-                            onClose={handleCloseModal}
-                            onApplyClick={() => handleApply(selectedJob.title)}
-                        />
-                    )}
                 </main>
             </div>
         </div>

@@ -21,7 +21,7 @@ const JobCard: React.FC<JobCardProps> = ({
   onApplyClick,
 }) => {
   return (
-    <div className="cursor-pointer card bg-base-100 w-64 h-112 shadow-sm hover:shadow-lg transition-shadow">
+    <div className="card bg-base-100 w-64 h-128 shadow-sm hover:shadow-lg transition-shadow">
       <figure>
         <img src={imageUrl} alt={`${company} job banner`} className="w-full h-40 object-cover" />
       </figure>
@@ -31,16 +31,19 @@ const JobCard: React.FC<JobCardProps> = ({
         <p>
           {company} • {location}
         </p>
-        <div className="card-actions justify-between mt-4">
+        <div className="card-actions mt-4">
           <button
             onClick={onDetailsClick}
-            className="btn bg-[#0c0051] text-white hover:bg-[#12006A]"
+            className="btn btn-outline btn-wide"
           >
             Details
           </button>
           <button
-            onClick={onApplyClick}
-            className="btn btn-primary"
+            onClick={(e) => {
+              e.stopPropagation();
+              onApplyClick();
+            }}
+            className="btn btn-primary btn-wide"
           >
             Apply
           </button>
