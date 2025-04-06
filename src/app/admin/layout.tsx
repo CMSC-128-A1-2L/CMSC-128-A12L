@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { redirect } from "next/navigation";
 import Navbar from "@/app/components/navBar";
 import AdminSidebar from "@/app/components/adminSideBar";
+import { motion } from "framer-motion";
 
 export default function AdminLayout({
   children,
@@ -46,25 +47,43 @@ export default function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-white overflow-hidden">
-      <Navbar
-        setSidebarOpen={setSidebarOpen}
-        menuButtonRef={menuButtonRef}
-        homePath="/admin"
-      />
+    <div className="min-h-screen flex flex-col overflow-hidden bg-gray-50">
+      {/* Subtle gradient background */}
+      <div className="fixed inset-0 bg-gradient-to-br from-[#1a1f4d]/5 to-[#0d47a1]/5 z-0"></div>
+      
+      {/* Content */}
+      <div className="relative z-10 flex flex-col min-h-screen">
+        <Navbar
+          setSidebarOpen={setSidebarOpen}
+          menuButtonRef={menuButtonRef as React.RefObject<HTMLButtonElement>}
+          homePath="/admin"
+        />
 
-      <AdminSidebar
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-        sidebarRef={sidebarRef}
-        role={session.user.role}
-      />
+        <AdminSidebar
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+          sidebarRef={sidebarRef as React.RefObject<HTMLDivElement>}
+          role={session.user.role}
+        />
 
-      <main className={`flex-grow w-full px-4 py-6 transition-all duration-300 ${sidebarOpen ? 'md:ml-64' : ''} overflow-x-hidden`}>
-        <div className="max-w-7xl mx-auto flex items-center justify-center min-h-[calc(100vh-64px)]">
-          {children}
-        </div>
-      </main>
+        <motion.main 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          className={`flex-grow w-full px-4 py-6 transition-all duration-300 ${sidebarOpen ? 'md:ml-64' : ''} overflow-x-hidden`}
+        >
+          <div className="max-w-7xl mx-auto flex items-center justify-center min-h-[calc(100vh-64px)]">
+            <motion.div 
+              initial={{ y: 20, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="w-full pt-10"
+            >
+              {children}
+            </motion.div>
+          </div>
+        </motion.main>
+      </div>
     </div>
   );
 }

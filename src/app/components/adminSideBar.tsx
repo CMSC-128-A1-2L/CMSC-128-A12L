@@ -1,4 +1,3 @@
-// Update the AdminSidebar component
 "use client";
 import {
   X,
@@ -13,6 +12,7 @@ import {
 } from "lucide-react";
 import { RefObject } from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -28,13 +28,13 @@ export default function AdminSidebar({
   role,
 }: SidebarProps) {
   const sidebarItems = [
-    { name: "Dashboard", icon: <LayoutDashboardIcon size={20} /> },
-    { name: "Manage Users", icon: <Users size={20} />, },
-    { name: "Job Listings", icon: <Briefcase size={20} /> },
-    { name: "Events", icon: <CalendarCogIcon size={20} /> },
-    { name: "Communications", icon: <Phone size={20} /> },
-    { name: "Reports", icon: <MessageCircleWarningIcon size={20} /> },
-    { name: "Logs", icon: <LogsIcon size={20} /> },
+    { name: "Dashboard", icon: <LayoutDashboardIcon size={20} />, path: "/admin" },
+    { name: "Manage Users", icon: <Users size={20} />, path: "/admin/user-management" },
+    { name: "Job Listings", icon: <Briefcase size={20} />, path: "/admin/job-listings" },
+    { name: "Events", icon: <CalendarCogIcon size={20} />, path: "/admin/events" },
+    { name: "Communications", icon: <Phone size={20} />, path: "/admin/communications" },
+    { name: "Reports", icon: <MessageCircleWarningIcon size={20} />, path: "/admin/reports" },
+    { name: "Logs", icon: <LogsIcon size={20} />, path: "/admin/logs" },
   ];
 
   return (
@@ -42,64 +42,48 @@ export default function AdminSidebar({
       ref={sidebarRef}
       className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform ${
         sidebarOpen ? "translate-x-0" : "-translate-x-full"
-      } transition-transform duration-300 ease-in-out`}
+      } transition-transform duration-300 ease-in-out overflow-hidden`}
     >
-      <div className="p-4 flex justify-between items-center border-b">
-        <h2 className="text-lg font-bold text-gray-800">Admin Sidebar</h2>
+      <div className="p-4 flex justify-between items-center border-b bg-gradient-to-r from-[#1a1f4d] to-[#0d47a1] text-white">
+        <h2 className="text-lg font-bold">Admin Panel</h2>
         <button
           onClick={() => setSidebarOpen(false)}
-          className="focus:outline-none cursor-pointer"
+          className="focus:outline-none cursor-pointer hover:text-gray-200 transition-colors"
           aria-label="Close menu"
         >
           <X size={24} />
         </button>
       </div>
+      
       <nav className="mt-4 flex flex-col h-[calc(100vh-80px)]">
-        <ul className="flex-1">
+        <ul className="flex-1 space-y-1 px-2">
           {sidebarItems.map((item, index) => (
             <li key={index}>
-            {item.name === "Manage Users" ? (
               <Link
-                href="/admin/user-management"
-                className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
+                href={item.path}
+                className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer group"
                 onClick={() => setSidebarOpen(false)}
               >
-                <span className="mr-3">{item.icon}</span>
-                {item.name}
+                <span className="mr-3 text-[#1a1f4d] group-hover:text-[#0d47a1] transition-colors">{item.icon}</span>
+                <span className="font-medium">{item.name}</span>
               </Link>
-            ) : item.name === "Dashboard" ? (
-              <Link
-                href="/admin"
-                className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
-                onClick={() => setSidebarOpen(false)}
-              >
-                <span className="mr-3">{item.icon}</span>
-                {item.name}
-              </Link>
-            ) : (
-              <a
-                href={`/admin/${item.name.toLowerCase()}`}
-                className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer"
-              >
-                <span className="mr-3">{item.icon}</span>
-                {item.name}
-              </a>
-            )}
             </li>
           ))}
         </ul>
 
-        {role === "admin" && ( //alumniadmin palitan mo mamaya
-          <Link
-            href="/alumni-landing"
-            className="mt-auto border-t pt-2"
-            onClick={() => setSidebarOpen(false)}
-          >
-            <div className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors cursor-pointer">
-              <SwitchCamera size={20} className="mr-3" />
-              Switch to Alumni View
-            </div>
-          </Link>
+        {role === "admin" && (
+          <div className="mt-auto border-t pt-2 px-2 pb-4">
+            <Link
+              href="/alumni-landing"
+              onClick={() => setSidebarOpen(false)}
+              className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer group"
+            >
+              <span className="mr-3 text-[#1a1f4d] group-hover:text-[#0d47a1] transition-colors">
+                <SwitchCamera size={20} />
+              </span>
+              <span className="font-medium">Switch to Alumni View</span>
+            </Link>
+          </div>
         )}
       </nav>
     </div>
