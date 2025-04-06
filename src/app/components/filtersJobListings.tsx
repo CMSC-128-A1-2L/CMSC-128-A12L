@@ -2,14 +2,21 @@
 import { useState } from "react";
 import { SlidersHorizontal } from "lucide-react";
 
-export default function FilterSidebar() {
-  const [isOpen, setIsOpen] = useState(true); // Sidebar toggle
-
+export default function FilterSidebar({
+  isOpen,
+  setIsOpen,
+}: {
+  isOpen: boolean;
+  setIsOpen: (isOpen: boolean) => void;
+}) {
   return (
     <div className="flex-grow">
       {/* Sidebar */}
-      <div className={`flex flex-col flex-start gap-3 w-64 bg-base-200 p-4 rounded-2xl ${isOpen ? "block" : "hidden"} md:block sticky top-0 h-full overflow-y-auto`}>
-
+      <div
+        className={`flex block flex-col flex-start gap-3 w-64 bg-base-200 p-4 rounded-2xl ${
+          isOpen ? "block" : "hidden"
+        } sticky top-0 h-full overflow-y-auto`}
+      >
         <h2 className="text-lg font-bold mb-4">Filters</h2>
 
         {/* Job Type Filter */}
@@ -25,12 +32,10 @@ export default function FilterSidebar() {
           <label className="fieldset-label text-black">
             <input type="checkbox" className="checkbox" /> Contract
           </label>
-
         </fieldset>
 
         {/* Work Type Filter */}
         <fieldset className="fieldset p-4 bg-base-100 border border-base-300 rounded-box gap-3">
-
           <h3 className="font-semibold mb-2">Work Type</h3>
 
           <label className="fieldset-label text-black">
@@ -46,12 +51,12 @@ export default function FilterSidebar() {
       </div>
 
       {/* Toggle Button for Mobile */}
-      <button
+      {/* <button
         onClick={() => setIsOpen(!isOpen)}
         className="btn btn-ghost md:hidden fixed top-4 left-4 z-50"
       >
         <SlidersHorizontal size={24} />
-      </button>
+      </button> */}
     </div>
   );
 }

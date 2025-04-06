@@ -7,7 +7,7 @@ export default function EditJobListComponent() {
   const [location, setLocation] = useState("");
   const [jobType, setJobType] = useState("Full-time");
   const [jobSpecs, setJobSpecs] = useState("");
-  
+
   const [errors, setErrors] = useState({
     jobTitle: "",
     location: "",
@@ -35,7 +35,6 @@ export default function EditJobListComponent() {
     };
     console.log("Saved Job Data:", jobData);
     setIsOpen(false);
-
   };
 
   return (
@@ -50,21 +49,33 @@ export default function EditJobListComponent() {
             <button
               onClick={() => setIsOpen(false)}
               className="absolute top-3 right-4 text-xl text-[#0c0051]"
-              style={{ fontFamily: "Montserrat, sans-serif", fontWeight: "200" }}
+              style={{
+                fontFamily: "Montserrat, sans-serif",
+                fontWeight: "200",
+              }}
             >
               &times;
             </button>
 
             <h2
               className="text-lg text-center"
-              style={{ fontFamily: "Montserrat, sans-serif", fontWeight: "700" }}
+              style={{
+                fontFamily: "Montserrat, sans-serif",
+                fontWeight: "700",
+              }}
             >
               Edit Job Post
             </h2>
 
             <div className="mt-4 space-y-3">
               {/* Job Title */}
-              <label className="block" style={{ fontFamily: "Montserrat, sans-serif", fontWeight: "200" }}>
+              <label
+                className="block"
+                style={{
+                  fontFamily: "Montserrat, sans-serif",
+                  fontWeight: "200",
+                }}
+              >
                 Enter Job title:
               </label>
               <input
@@ -72,12 +83,23 @@ export default function EditJobListComponent() {
                 className="w-full p-2 bg-[#0c0051] text-white rounded-md"
                 value={jobTitle}
                 onChange={(e) => setJobTitle(e.target.value)}
-                style={{ fontFamily: "Montserrat, sans-serif", fontWeight: "400" }}
+                style={{
+                  fontFamily: "Montserrat, sans-serif",
+                  fontWeight: "400",
+                }}
               />
-              {errors.jobTitle && <p className="text-red-500 text-sm">{errors.jobTitle}</p>}
+              {errors.jobTitle && (
+                <p className="text-red-500 text-sm">{errors.jobTitle}</p>
+              )}
 
               {/* Location */}
-              <label className="block" style={{ fontFamily: "Montserrat, sans-serif", fontWeight: "200" }}>
+              <label
+                className="block"
+                style={{
+                  fontFamily: "Montserrat, sans-serif",
+                  fontWeight: "200",
+                }}
+              >
                 Enter location:
               </label>
               <input
@@ -85,51 +107,78 @@ export default function EditJobListComponent() {
                 className="w-full p-2 bg-[#0c0051] text-white rounded-md"
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                style={{ fontFamily: "Montserrat, sans-serif", fontWeight: "200" }}
+                style={{
+                  fontFamily: "Montserrat, sans-serif",
+                  fontWeight: "200",
+                }}
               />
-              {errors.location && <p className="text-red-500 text-sm">{errors.location}</p>}
+              {errors.location && (
+                <p className="text-red-500 text-sm">{errors.location}</p>
+              )}
 
               {/* Job Type */}
-              <label className="block" style={{ fontFamily: "Montserrat, sans-serif", fontWeight: "200" }}>
+              <label
+                className="block"
+                style={{
+                  fontFamily: "Montserrat, sans-serif",
+                  fontWeight: "200",
+                }}
+              >
                 Select job type:
               </label>
               <select
                 className="w-full p-2 bg-[#0c0051] text-white rounded-md"
                 value={jobType}
                 onChange={(e) => setJobType(e.target.value)}
-                style={{ fontFamily: "Montserrat, sans-serif", fontWeight: "200" }}
+                style={{
+                  fontFamily: "Montserrat, sans-serif",
+                  fontWeight: "200",
+                }}
               >
                 <option>Full-time</option>
                 <option>Part-time</option>
                 <option>Freelance</option>
               </select>
-              {errors.jobType && <p className="text-red-500 text-sm">{errors.jobType}</p>}
+              {errors.jobType && (
+                <p className="text-red-500 text-sm">{errors.jobType}</p>
+              )}
 
               {/* Job Specifications */}
-              <label className="block" style={{ fontFamily: "Montserrat, sans-serif", fontWeight: "200" }}>
+              <label
+                className="block"
+                style={{
+                  fontFamily: "Montserrat, sans-serif",
+                  fontWeight: "200",
+                }}
+              >
                 Enter job specifications
               </label>
               <textarea
                 className="w-full p-2 bg-[#0c0051] text-white rounded-md h-24"
                 value={jobSpecs}
                 onChange={(e) => setJobSpecs(e.target.value)}
-                style={{ fontFamily: "Montserrat, sans-serif", fontWeight: "200" }}
+                style={{
+                  fontFamily: "Montserrat, sans-serif",
+                  fontWeight: "200",
+                }}
               ></textarea>
-              {errors.jobSpecs && <p className="text-red-500 text-sm">{errors.jobSpecs}</p>}
+              {errors.jobSpecs && (
+                <p className="text-red-500 text-sm">{errors.jobSpecs}</p>
+              )}
             </div>
 
-           {/* Submit Button */}
-           <div className="flex justify-center">
-            <button
+            {/* Submit Button */}
+            <div className="flex justify-center">
+              <button
                 onClick={handleSubmit}
                 className="bg-[#0c0051] text-white mt-4 px-4 py-1 rounded-md text-sm"
                 style={{
-                    fontFamily: "Montserrat, sans-serif",
-                    fontWeight: "200",
+                  fontFamily: "Montserrat, sans-serif",
+                  fontWeight: "200",
                 }}
-                >
+              >
                 Done
-             </button>
+              </button>
             </div>
           </div>
         </div>

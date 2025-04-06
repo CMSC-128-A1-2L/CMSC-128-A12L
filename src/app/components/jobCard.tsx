@@ -21,7 +21,7 @@ const JobCard: React.FC<JobCardProps> = ({
   onApplyClick,
 }) => {
   return (
-    <div className="card bg-base-100 w-64 h-128 shadow-sm hover:shadow-lg transition-shadow">
+    <div className="card bg-base-100 w-72 h-128 shadow-sm hover:shadow-lg transition-shadow">
       <figure>
         <img src={imageUrl} alt={`${company} job banner`} className="w-full h-40 object-cover" />
       </figure>
