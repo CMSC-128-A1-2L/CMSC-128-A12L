@@ -77,7 +77,7 @@ export default function JobListings() {
     );
 
     return (
-        <div className="min-h-screen flex flex-col bg-white">
+        <div className="flex flex-col h-screen">
             <Navbar
                 setSidebarOpen={setSidebarOpen}
                 menuButtonRef={menuButtonRef}
@@ -90,16 +90,16 @@ export default function JobListings() {
                 sidebarRef={sidebarRef}
             />
 
-            <div>
-                <h1 className="pl-8 text-6xl font-bold mt-8">Jobs</h1>
+            <div className="mx-8 my-4 prose lg:prose-xl">
+                <h1 className="">Jobs</h1>
             </div>
 
-            <div className="flex">
+            <div className="flex-grow flex">
                 <FilterSidebar />
 
                 <main className="flex-1">
-                    {/* Search Section */}
-                    <div className="flex justify-center space-x-2 my-4 px-6 w-full">
+                    {/* Search/Sort/View Section */}
+                    <div className="flex justify-center my-4">
                         <div className="flex space-x-2 max-w-7xl">
                             <input
                                 type="text"

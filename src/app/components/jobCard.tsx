@@ -1,56 +1,52 @@
 "use client";
-import React from 'react';
+import React from "react";
 
 interface JobListingCardProps {
-    title: string;
-    company: string;
-    location: string;
-    salary?: string;
-    description: string;
-    imageUrl: string;
-    onApplyClick: () => void;
+  title: string;
+  company: string;
+  location: string;
+  salary?: string;
+  description: string;
+  imageUrl: string;
+  onApplyClick: () => void;
 }
 
 const JobListingCard: React.FC<JobListingCardProps> = ({
-    title,
-    company,
-    location,
-    salary,
-    description,
-    imageUrl,
-    onApplyClick,
+  title,
+  company,
+  location,
+  salary,
+  description,
+  imageUrl,
+  onApplyClick,
 }) => {
-    return (
-        <div className="border rounded-lg shadow-md overflow-hidden max-w-md bg-white">
-            <div className="relative h-40">
-                <img
-                    src={imageUrl}
-                    alt={`${company} job banner`}
-                    className="w-full h-full object-cover"
-                />
-            </div>
+  return (
+    <div className="card bg-base-100 w-64 shadow-sm">
+      <figure>
+        <img
+          src={imageUrl}
+          alt={`${company} job banner`}
+        />
+      </figure>
 
-            <div className="p-6">
-                <h2 className="text-xl font-bold text-gray-800 mb-2">{title}</h2>
-                <p className="text-gray-600 mb-1">{company} • {location}</p>
-                {salary && <p className="text-gray-600 mb-4">{salary}</p>}
-
-                <div className="mb-6">
-                    <h3 className="text-md font-semibold text-gray-700 mb-2">Details</h3>
-                    {/* <p className="text-gray-600 text-sm">{description}</p> */}
-                </div>
-
-                <div className="flex justify-end">
-                    <button
-                        onClick={onApplyClick}
-                        className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
-                    >
-                        Apply Now
-                    </button>
-                </div>
-            </div>
+      <div className="card-body">
+        <h2 className="card-title">{title}</h2>
+        <p>
+          {company} • {location}
+        </p>
+        <div className="card-actions justify-end">
+          <button
+            onClick={onApplyClick}
+            className="btn btn-primary btn-wide">
+            Apply Now
+          </button>
         </div>
-    );
+      </div>
+
+
+
+    </div>
+  );
 };
 
 export default JobListingCard;
