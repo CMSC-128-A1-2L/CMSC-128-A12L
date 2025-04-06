@@ -154,7 +154,7 @@ const EditJobModal: React.FC<EditJobModalProps> = ({
               name="description"
               value={jobData.description}
               onChange={handleChange}
-              className="w-full p-2 border rounded-md h-24"
+              className="textarea w-full p-2 border rounded-md h-24"
             ></textarea>
             {errors.description && <p className="text-red-500 text-sm">{errors.description}</p>}
           </div>
