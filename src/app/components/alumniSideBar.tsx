@@ -28,7 +28,7 @@ export default function AlumniSidebar({
 }: SidebarProps) {
   const sidebarItems = [
     { name: "Profile", icon: <User size={20} />, path: "/alumni/profile" },
-    { name: "Job Board", icon: <Briefcase size={20} />, path: "/alumni/job-listings" },
+    { name: "Job Board", icon: <Briefcase size={20} />, path: "/alumni/job-Board" },
     { name: "Events", icon: <Calendar size={20} />, path: "/alumni/events" },
     { name: "Donations", icon: <DollarSign size={20} />, path: "/alumni/donations" },
     { name: "Notifications", icon: <Bell size={20} />, path: "/alumni/notifications" },
