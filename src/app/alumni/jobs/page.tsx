@@ -1,13 +1,11 @@
 "use client";
 
 import { useState, useRef } from "react";
-import Navbar from "@/app/components/navBar";
-import JobListingsSidebar from "../components/jobListings_sidebar";
-import FilterSidebar from "../components/filtersJobListings";
-import JobCard from "../components/jobContentCard";
-import JobRow from "../components/jobContentRow";
-import JobDetails from "../components/jobDetails";
-import EditJobListComponent from "../components/editJobList";
+import FilterSidebar from "../../components/filtersJobListings";
+import JobCard from "../../components/jobContentCard";
+import JobRow from "../../components/jobContentRow";
+import JobDetails from "../../components/jobDetails";
+import EditJobListComponent from "../../components/editJobList";
 import jobData from "@/dummy_data/job.json";
 import {
   Search,
@@ -145,17 +143,6 @@ export default function JobListings() {
 
   return (
     <div className="flex flex-col h-screen">
-      <Navbar
-        setSidebarOpen={setSidebarOpen}
-        menuButtonRef={menuButtonRef}
-        homePath="/job-listings"
-      />
-
-      <JobListingsSidebar
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-        sidebarRef={sidebarRef}
-      />
 
       {/* Margin to make up for the sticky navbar */}
       <div className="mx-8 mt-16 my-4 prose lg:prose-xl">
