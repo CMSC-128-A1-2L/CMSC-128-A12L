@@ -1,8 +1,6 @@
 "use client";
 import { signOut, useSession } from "next-auth/react";
 import { useState, useEffect, useRef } from "react";
-import JobListingsSidebar from "@/app/components/jobListings_sidebar";
-import Navbar from "@/app/components/navBar";
 import { redirect } from "next/navigation";
 import FilterSidebar from "@/app/components/filtersJobListings";
 
@@ -43,18 +41,6 @@ export default function JobListings() {
     }
     return (
     <div className="min-h-screen flex flex-col bg-white">
-        <Navbar
-        setSidebarOpen={setSidebarOpen}
-        menuButtonRef={menuButtonRef}
-        homePath="/job-listings"
-        />
-        
-        <JobListingsSidebar
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={setSidebarOpen}
-        sidebarRef={sidebarRef}
-        role={session.user.role}
-        />
         <FilterSidebar />
 
     </div>
