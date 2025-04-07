@@ -6,6 +6,8 @@ import { IoIosArrowForward, IoIosArrowBack } from "react-icons/io";
 import userData from "@/dummy_data/user.json";
 
 import CreateJL from "@/pages/createJL";
+import CreateEvent from "@/pages/createEvent"; 
+
 
 
 type Alumni = {
@@ -31,6 +33,7 @@ export default function AlumniPage() {
   const [showFilter, setShowFilter] = useState(false); // for filter
   const itemsPerPage = 12;
   const [showModal, setShowModal] = useState(false);
+  const [showEventModal, setShowEventModal] = useState(false);
 
   // filters based on role and gender
   const filteredAlumni = userData.filter((alumni) => {
@@ -224,16 +227,27 @@ export default function AlumniPage() {
           </button>
         </div>
       )}
-      {/* This is not included in this page, wala palang page for job listing */} 
+      {/* This is not included in this page, wala palang page for job listing and create event */} 
       {/* Button for creating a job listing */} 
+      <div className="flex space-x-4 mt-6">
       <button
               onClick={() => setShowModal(true)}
               className="bg-gray-700 text-white px-4 py-2 rounded"
             >
               Post a job
-            </button>
+      </button>
+      {/* Button for creating event modal */}
+      <button
+        onClick={() => setShowEventModal(true)}
+        className="bg-gray-700 text-white px-4 py-2 rounded"
+      >
+        Create Event
+      </button>
+      </div>
+              
 
-            {showModal && <CreateJL onClose={() => setShowModal(false)} />}
+      {showModal && <CreateJL onClose={() => setShowModal(false)} />}
+      {showEventModal && <CreateEvent onClose={() => setShowEventModal(false)} />}
     </div>
   );
 }
