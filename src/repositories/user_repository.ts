@@ -3,6 +3,7 @@ import { User } from "@/entities/user";
 import { mapUserDtoToUser, mapUserToUserDto } from "@/mappers/user";
 import { UserDto, UserSchema } from "@/models/user";
 import { Connection, Model } from "mongoose";
+import { getUserCredentialRepository } from "./user_credentials_repository";
 
 /**
  * A repository for managing data of registered users.
@@ -100,7 +101,17 @@ class MongoDBUserRepository implements UserRepository {
     }
 
     async deleteUser(id: string): Promise<void> {
-        await this.model.findOneAndDelete({ id: id });
+
+        try{
+            await this.model.findOneAndDelete({ id: id });
+
+            // we need to cascade delete the user (based on other collections of the database)
+            // TODO: as other models come together, please add the cascade delete here
+            const userCredentialsRepository = getUserCredentialRepository();
+            await userCredentialsRepository.deleteUserCredentials(id);
+        } catch (error) {
+            console.error(error);
+        }
     }
 
     constructor(connection: Connection) {

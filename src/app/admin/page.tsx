@@ -1,8 +1,8 @@
 "use client";
-import { useSession } from "next-auth/react";
 import { UserRole } from "@/entities/user";
+import { useSession } from "next-auth/react";
 
-export default function AlumniLanding() {
+export default function AdminLanding() {
   const { data: session } = useSession();
 
   return (
@@ -12,17 +12,16 @@ export default function AlumniLanding() {
           className="text-3xl font-bold text-center text-gray-800 mb-6"
           style={{ fontFamily: "Montserrat, sans-serif" }}
         >
-          Welcome to the Alumni Portal!
+          Welcome to Admin Portal, {session?.user.name}!
         </h2>
         <p
-          className="text-gray-600 text-center"
+          className="text-gray-600 text-center mb-4"
           style={{ fontFamily: "Montserrat, sans-serif" }}
         >
-          Connect with fellow alumni, explore job opportunities, stay updated
-          with university events, and contribute to our growing community.
-          Your success is our legacy!
+          Manage university operations, monitor activities, and oversee
+          community engagement through this comprehensive admin interface.
         </p>
-        {session?.user.role.includes(UserRole.ALUMNI) && (
+        {session?.user.role.includes(UserRole.ADMIN) && (
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-500">
               Switch to Alumni View using the button in the sidebar

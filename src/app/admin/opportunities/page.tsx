@@ -87,7 +87,7 @@ export default function OpportunitiesTestPage() {
 
     return (
         <div className="container mx-auto p-4">
-            <h1 className="text-2xl font-bold mb-4">Opportunities</h1>
+            <h1 className="text-2xl font-bold mb-4 text-black">Opportunities</h1>
             
             {error && (
                 <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">

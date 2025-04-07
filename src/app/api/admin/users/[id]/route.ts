@@ -27,7 +27,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
   const userRepository = getUserRepository();
   const user = await userRepository.getUserById(id);
-  
+  console.log("Found user: ", user)
   if (user === null) {
     const response = new NextResponse("User not found", { status: 404 });
     return response;
@@ -38,6 +38,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     ...user,
     ...body
   }
+
+  console.log("Updated user: ", updatedUser)
 
   return await userRepository.updateUser(updatedUser)
     .then(() => new NextResponse(JSON.stringify(updatedUser), { status: 200 }))

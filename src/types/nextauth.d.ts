@@ -21,5 +21,8 @@ declare module "next-auth/jwt" {
         provider?: string;
         accessToken?: string;
         role?: UserRole[];
+        // currently being used for logging
+        name?: string;
+        imageUrl?: string;
     }
 }

@@ -13,7 +13,7 @@ export default function LandingPage() {
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ duration: 0.8 }}
-        className="fixed top-0 left-0 w-full bg-[#1a1f4d] backdrop-blur-sm text-white flex justify-between p-4 z-50"
+        className="fixed top-0 left-0 w-full bg-[#1a1f4d] backdrop-blur-sm text-white flex justify-between p-2 pr-8 z-50 "
       >
           <motion.div 
             whileHover={{ scale: 1.05 }}
@@ -97,7 +97,7 @@ export default function LandingPage() {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="bg-white text-[#0c0151] px-8 py-3 rounded-md font-semibold hover:bg-gray-100 transition-colors"
+                className="bg-white text-[#0c0151] px-8 py-3 rounded-md font-semibold hover:bg-gray-100 transition-colors cursor-pointer border-2 border-transparent"
               >
                 Create Account
               </motion.button>
@@ -106,7 +106,7 @@ export default function LandingPage() {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="bg-transparent border-2 border-white text-white px-8 py-3 rounded-md font-semibold hover:bg-white/10 transition-colors"
+                className="bg-transparent border-2 border-white text-white px-8 py-3 rounded-md font-semibold hover:bg-white/10 transition-colors cursor-pointer"
               >
                 Log In
               </motion.button>
