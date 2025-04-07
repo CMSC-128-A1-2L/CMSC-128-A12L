@@ -60,7 +60,7 @@ export default function Navbar({
               
               <button
                 onClick={() => signOut()}
-                className="text-sm font-medium hover:text-gray-200 transition-colors relative group focus:outline-none"
+                className="text-sm font-medium hover:text-gray-200 transition-colors relative group focus:outline-none cursor-pointer"
                 aria-label="Sign Out"
               >
                 <span className="flex items-center">
