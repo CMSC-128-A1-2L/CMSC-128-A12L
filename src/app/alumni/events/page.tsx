@@ -1,15 +1,16 @@
 "use client";
 
 import { useState, useRef } from "react";
-import FilterSidebar from "../../components/filtersJobListings";
-import JobCard from "../../components/jobContentCard";
-import JobRow from "../../components/jobContentRow";
-import JobDetails from "../../components/jobDetails";
-import EditJobListComponent from "../../components/editJobList";
+import FilterSidebar from "@/app/components/filtersJobListings";
+import JobCard from "@/app/components/jobContentCard";
+import JobRow from "@/app/components/jobContentRow";
+import JobDetails from "@/app/components/jobDetails";
+import EditJobListComponent from "@/app/components/editJobList";
 import jobData from "@/dummy_data/job.json";
 
 import CreateEvent from "@/pages/createEvent";
-// Refactor add event list to use modal than page
+// Refactor add event list and edit event to use modal than page
+import EditEventModal from "@/app/components/editEvent";
 
 import {
   Search,
