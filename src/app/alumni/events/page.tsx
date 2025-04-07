@@ -7,11 +7,9 @@ import JobRow from "../../components/jobContentRow";
 import JobDetails from "../../components/jobDetails";
 import EditJobListComponent from "../../components/editJobList";
 import jobData from "@/dummy_data/job.json";
-import CreateJL from "@/pages/createJL";
-// Refactor add job list to use modal than page
-
 import {
   Search,
+  ArrowDownUp,
   LayoutGrid,
   LayoutList,
   ChevronRight,
@@ -29,9 +27,6 @@ export default function JobListings() {
 
   // Filter sidebar state
   const [filterSidebarOpen, setFilterSidebarOpen] = useState(true);
-
-  // Add job modal state
-  const [showModal, setShowModal] = useState(false);
 
   // Search state
   const [search, setSearch] = useState("");
@@ -148,44 +143,38 @@ export default function JobListings() {
 
   return (
     <div className="flex flex-col h-screen">
+
       {/* Margin to make up for the sticky navbar */}
       <div className="mx-8 mt-16 my-4 prose lg:prose-xl">
         {/* <h1 className="">Jobs</h1> */}
       </div>
 
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center align-center gap-2 m-4 my-6 py-1 px-2 bg-gray-200 rounded-2xl">
+      <div className="flex flex-wrap items-center align-center gap-2 m-4 my-6">
         <div className="flex items-center gap-2 w-64">
           {/* Filter sidebar toggle */}
           <button
-            className="btn btn-sqr  btn-ghost rounded-xl"
+            className="btn btn-sqr btn-lg btn-ghost rounded-xl"
             onClick={() => setFilterSidebarOpen(!filterSidebarOpen)}
           >
-            <Filter size={18} />{" "}
+            <Filter />{" "}
           </button>
 
-          {/* Add job button */}
-          <button
-            onClick={() => setShowModal(true)}
-            className="btn btn-primary btn-soft  rounded-xl flex-grow rounded-xl"
-          >
+          {/* Placeholder add job button */}
+          <button className="btn btn-primary btn-soft btn-lg rounded-xl flex-grow rounded-xl">
             {" "}
-            <Plus size={18} /> Add job{" "}
+            <Plus /> Test{" "}
           </button>
-
-          {/* Handle Add Job modal */}
-          {showModal && <CreateJL onClose={() => setShowModal(false)} />}
-
         </div>
 
         {/* Placeholder view all job listing button*/}
-        <button className="btn btn-disabled  rounded-xl">
+        <button className="btn btn-disabled btn-lg rounded-xl">
           My job listings
         </button>
 
         {/* Search bar */}
         <div className="flex flex-1 justify-center">
-          <label className="input w-full max-w-4xl sm:max-w-lg md:max-w-xl lg:max-w-2xl xl:max-w-3xl rounded-xl">
+          <label className="input w-full max-w-4xl sm:max-w-lg md:max-w-xl lg:max-w-2xl xl:max-w-3xl input-lg rounded-xl">
             <Search />
             <input
               type="search"
@@ -198,15 +187,21 @@ export default function JobListings() {
           </label>
         </div>
 
-        {/* View */}
-        <button onClick={toggleView} className="btn btn-ghost w-24 rounded-xl">
+        {/* Sort/view */}
+        <button className="btn btn-outline btn-lg rounded-xl">
+          <ArrowDownUp />
+        </button>
+        <button
+          onClick={toggleView}
+          className="btn btn-outline btn-lg  w-26 rounded-xl"
+        >
           {isGridView ? (
             <>
-              <LayoutList size={18} /> List
+              <LayoutList /> List
             </>
           ) : (
             <>
-              <LayoutGrid size={18} /> Grid
+              <LayoutGrid /> Grid
             </>
           )}
         </button>

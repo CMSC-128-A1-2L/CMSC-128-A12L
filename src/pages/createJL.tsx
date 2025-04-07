@@ -3,7 +3,7 @@ import { useState } from "react";
 
 export default function CreateJL({ onClose }: { onClose: () => void }) {
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-800 bg-opacity-50">
       <div className="bg-gray-100 p-6 rounded-lg shadow-lg w-1/2 relative">
         <button
           onClick={onClose}
