@@ -71,10 +71,10 @@ export default function AdminSidebar({
           ))}
         </ul>
 
-        {role === "admin" && (
+        {role == "admin" && (
           <div className="mt-auto border-t pt-2 px-2 pb-4">
             <Link
-              href="/alumni-landing"
+              href="/alumni"
               onClick={() => setSidebarOpen(false)}
               className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer group"
             >
