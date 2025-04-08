@@ -149,131 +149,99 @@ export default function JobListings() {
   };
 
   return (
-    <div className="flex flex-col h-screen">
-      {/* Margin to make up for the sticky navbar */}
-      <div className="mx-8 mt-16 my-4 prose lg:prose-xl">
-        {/* <h1 className="">Jobs</h1> */}
-      </div>
+    <div className="flex flex-col min-h-screen bg-[#151821]">
+      {/* Main container */}
+      <div className="flex-1 container mx-auto px-6">
+        {/* Toolbar */}
+        <div className="flex items-center gap-4 py-4">
+          {/* Left section */}
+          <div className="flex items-center gap-3">
+            <button
+              className="btn btn-ghost btn-sm rounded-lg"
+              onClick={() => setFilterSidebarOpen(!filterSidebarOpen)}
+            >
+              <Filter size={18} />
+            </button>
+            <button
+              onClick={() => setShowEventModal(true)}
+              className="btn btn-primary btn-sm rounded-lg"
+            >
+              <Plus size={18} /> Add Event
+            </button>
+          </div>
 
-      {/* Toolbar */}
-      <div className="flex flex-wrap items-center align-center gap-2 m-4 my-6 py-1 px-2 bg-gray-200 rounded-2xl">
-        <div className="flex items-center gap-2 w-64">
-          {/* Filter sidebar toggle */}
-          <button
-            className="btn btn-sqr  btn-ghost rounded-xl"
-            onClick={() => setFilterSidebarOpen(!filterSidebarOpen)}
-          >
-            <Filter size={18} />{" "}
+          {/* Search bar - center */}
+          <div className="flex-1 max-w-2xl mx-auto">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+              <input
+                type="search"
+                placeholder="Search events"
+                className="input input-bordered w-full pl-10 pr-16 bg-[#1e2433] border-gray-700 text-gray-200"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+              <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
+                <kbd className="kbd kbd-sm">ctrl</kbd>
+                <kbd className="kbd kbd-sm">K</kbd>
+              </div>
+            </div>
+          </div>
+
+          {/* View toggle - right */}
+          <button onClick={toggleView} className="btn btn-ghost btn-sm rounded-lg text-gray-300">
+            {isGridView ? (
+              <>
+                <LayoutList size={18} /> List
+              </>
+            ) : (
+              <>
+                <LayoutGrid size={18} /> Grid
+              </>
+            )}
           </button>
-
-          {/* Add event button */}
-          <button
-            onClick={() => setShowEventModal(true)}
-            className="btn btn-primary btn-soft  rounded-xl flex-grow rounded-xl"
-          >
-            <Plus size={18} /> Add Event{" "}
-          </button>
-
-          {/* Handle Add Event Modal */}
-          {showEventModal && (
-            <CreateEvent onClose={() => setShowEventModal(false)} />
-          )}
         </div>
 
-        {/* Search bar */}
-        <div className="flex flex-1 justify-center">
-          <label className="input w-full max-w-4xl sm:max-w-lg md:max-w-xl lg:max-w-2xl xl:max-w-3xl rounded-xl">
-            <Search />
-            <input
-              type="search"
-              placeholder="Search events"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-            <kbd className="kbd kbd-sm">ctrl</kbd>
-            <kbd className="kbd kbd-sm">K</kbd>
-          </label>
-        </div>
-
-        {/* View */}
-        <button onClick={toggleView} className="btn btn-ghost w-24 rounded-xl">
-          {isGridView ? (
-            <>
-              <LayoutList size={18} /> List
-            </>
-          ) : (
-            <>
-              <LayoutGrid size={18} /> Grid
-            </>
-          )}
-        </button>
-      </div>
-
-      {/* Main content area */}
-
-      {/* Animation when loading in */}
-      <motion.div
-        initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-      >
-        <div className="flex-grow flex w-screen">
+        {/* Content area */}
+        <div className="flex gap-6 mt-6">
           {/* Sidebar */}
-          <aside className="flex flex-col gap-4 mx-4 mb-4">
-            <FilterSidebar
-              isOpen={filterSidebarOpen}
-              setIsOpen={setFilterSidebarOpen}
-              onFilterChange={handleFilterChange}
-            />
+          <aside className={`w-64 flex-shrink-0 ${filterSidebarOpen ? 'block' : 'hidden'} lg:block`}>
+              <FilterSidebar
+                isOpen={filterSidebarOpen}
+                setIsOpen={setFilterSidebarOpen}
+                onFilterChange={handleFilterChange}
+              />
           </aside>
 
-          <main className="flex-1 pr-8">
-            {/* Filter Tags / Active Filters */}
-            <div className="flex flex-wrap gap-2 mb-4 p-2 rounded-lg border border-gray-200">
-              {Object.entries(activeFilters.jobType).map(([key, value]) =>
+          <main className="flex-1">
+            {/* Active filters */}
+            <div className="flex flex-wrap items-center gap-2 mb-4">
+              {Object.entries({...activeFilters.jobType, ...activeFilters.workType}).map(([key, value]) =>
                 value ? (
                   <div
                     key={key}
-                    className="badge badge-primary rounded-xl badge-outline p-3"
+                    className="badge badge-lg gap-2 px-3 py-3 bg-[#1e2433] text-white border-none"
                   >
                     {key === "fullTime"
                       ? "Full-time"
                       : key === "partTime"
                       ? "Part-time"
-                      : "Contract"}
-                    <button
-                      className="ml-2"
-                      onClick={() => {
-                        const newFilters = { ...activeFilters };
-                        newFilters.jobType[
-                          key as keyof typeof newFilters.jobType
-                        ] = false;
-                        handleFilterChange(newFilters);
-                      }}
-                    >
-                      ✕
-                    </button>
-                  </div>
-                ) : null
-              )}
-              {Object.entries(activeFilters.workType).map(([key, value]) =>
-                value ? (
-                  <div
-                    key={key}
-                    className="badge badge-secondary rounded-xl badge-outline p-3"
-                  >
-                    {key === "onSite"
+                      : key === "contract"
+                      ? "Contract"
+                      : key === "onSite"
                       ? "On-site"
                       : key === "remote"
                       ? "Remote"
                       : "Hybrid"}
                     <button
-                      className="ml-2"
+                      className="opacity-60 hover:opacity-100"
                       onClick={() => {
                         const newFilters = { ...activeFilters };
-                        newFilters.workType[
-                          key as keyof typeof newFilters.workType
-                        ] = false;
+                        if (key in newFilters.jobType) {
+                          newFilters.jobType[key as keyof typeof newFilters.jobType] = false;
+                        } else if (key in newFilters.workType) {
+                          newFilters.workType[key as keyof typeof newFilters.workType] = false;
+                        }
                         handleFilterChange(newFilters);
                       }}
                     >
@@ -285,25 +253,24 @@ export default function JobListings() {
 
               {/* Results count */}
               {filteredJobs.length > 0 && (
-                <div className="text-sm text-gray-500 flex items-center ml-auto">
+                <div className="ml-auto text-sm text-gray-400">
                   Showing {filteredJobs.length} results
                 </div>
               )}
             </div>
 
-            {/* Jobs listing View */}
-            {isGridView ? (
-              // Grid view
-              <div className="flex flex-wrap gap-3 justify-center px-12">
-                {displayedJobs.length > 0 ? (
-                  displayedJobs.map((job, index) => (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.3 }}
-                      className="hover:bg-gray-50 transition-colors"
-                    >
+            {/* Grid/List View */}
+            <div className={`grid ${isGridView ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'} gap-4`}>
+              {displayedJobs.length > 0 ? (
+                displayedJobs.map((job, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                    className="hover:bg-gray-700 transition-colors"
+                  >
+                    {isGridView ? (
                       <JobCard
                         key={index}
                         title={job.title}
@@ -316,91 +283,49 @@ export default function JobListings() {
                         onDetailsClick={() => handleJobDetails(job)}
                         onApplyClick={() => handleApply(job.title)}
                       />
-                    </motion.div>
-                  ))
-                ) : (
-                  <div className="w-full text-center py-8">
-                    <p className="text-gray-500">
-                      No jobs found matching your filters.
-                    </p>
-                    <button
-                      className="btn btn-error rounded-lg mt-4"
-                      onClick={() =>
-                        handleFilterChange({
-                          jobType: {
-                            fullTime: false,
-                            partTime: false,
-                            contract: false,
-                          },
-                          workType: {
-                            onSite: false,
-                            remote: false,
-                            hybrid: false,
-                          },
-                        })
-                      }
-                    >
-                      Clear all filters
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              // List view
-              <div className="flex justify-center">
-                <ul className="list rounded-lg border border-gray-200 w-full">
-                  {displayedJobs.length > 0 ? (
-                    displayedJobs.map((job, index) => (
-                      <motion.div
+                    ) : (
+                      <JobRow
                         key={index}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 0.3 }}
-                        className="hover:bg-gray-50 transition-colors"
-                      >
-                        <JobRow
-                          key={index}
-                          title={job.title}
-                          company={job.company}
-                          location={job.location}
-                          jobType={job.job_type}
-                          workType={job.work_type}
-                          description={job.description}
-                          imageUrl={job.imageUrl}
-                          onDetailsClick={() => handleJobDetails(job)}
-                          onApplyClick={() => handleApply(job.title)}
-                        />
-                      </motion.div>
-                    ))
-                  ) : (
-                    <div className="w-full text-center py-8">
-                      <p className="text-gray-500">
-                        No jobs found matching your filters.
-                      </p>
-                      <button
-                        className="btn btn-error rounded-lg mt-4"
-                        onClick={() =>
-                          handleFilterChange({
-                            jobType: {
-                              fullTime: false,
-                              partTime: false,
-                              contract: false,
-                            },
-                            workType: {
-                              onSite: false,
-                              remote: false,
-                              hybrid: false,
-                            },
-                          })
-                        }
-                      >
-                        Clear all filters
-                      </button>
-                    </div>
-                  )}
-                </ul>
-              </div>
-            )}
+                        title={job.title}
+                        company={job.company}
+                        location={job.location}
+                        jobType={job.job_type}
+                        workType={job.work_type}
+                        description={job.description}
+                        imageUrl={job.imageUrl}
+                        onDetailsClick={() => handleJobDetails(job)}
+                        onApplyClick={() => handleApply(job.title)}
+                      />
+                    )}
+                  </motion.div>
+                ))
+              ) : (
+                <div className="col-span-full text-center py-8">
+                  <p className="text-white">
+                    No jobs found matching your filters.
+                  </p>
+                  <button
+                    className="btn btn-error rounded-lg mt-4"
+                    onClick={() =>
+                      handleFilterChange({
+                        jobType: {
+                          fullTime: false,
+                          partTime: false,
+                          contract: false,
+                        },
+                        workType: {
+                          onSite: false,
+                          remote: false,
+                          hybrid: false,
+                        },
+                      })
+                    }
+                  >
+                    Clear all filters
+                  </button>
+                </div>
+              )}
+            </div>
 
             {/* Job Details Modal */}
             {selectedJob && (
@@ -458,7 +383,7 @@ export default function JobListings() {
             )}
           </main>
         </div>
-      </motion.div>
+      </div>
     </div>
   );
 }
