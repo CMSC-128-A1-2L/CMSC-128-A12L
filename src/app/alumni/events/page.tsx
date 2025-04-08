@@ -7,8 +7,10 @@ import JobRow from "@/app/components/jobContentRow";
 import JobDetails from "@/app/components/jobDetails";
 import EditJobListComponent from "@/app/components/editJobList";
 import jobData from "@/dummy_data/job.json";
-import CreateJL from "@/pages/createJL";
-// Refactor add job list to use modal than page
+
+import CreateEvent from "@/pages/createEvent";
+// Refactor add event list and edit event to use modal than page
+import EditEventModal from "@/app/components/editEvent";
 
 import {
   Search,
@@ -22,6 +24,9 @@ import {
 import { motion } from "framer-motion";
 
 export default function JobListings() {
+  // Add Event modal state
+  const [showEventModal, setShowEventModal] = useState(false);
+
   // Sidebar state
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
@@ -29,9 +34,6 @@ export default function JobListings() {
 
   // Filter sidebar state
   const [filterSidebarOpen, setFilterSidebarOpen] = useState(true);
-
-  // Add job modal state
-  const [showModal, setShowModal] = useState(false);
 
   // Search state
   const [search, setSearch] = useState("");
@@ -147,7 +149,7 @@ export default function JobListings() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#1a1f2e]">
+    <div className="flex flex-col min-h-screen bg-[#151821]">
       {/* Main container */}
       <div className="flex-1 container mx-auto px-6">
         {/* Toolbar */}
@@ -161,10 +163,10 @@ export default function JobListings() {
               <Filter size={18} />
             </button>
             <button
-              onClick={() => setShowModal(true)}
+              onClick={() => setShowEventModal(true)}
               className="btn btn-primary btn-sm rounded-lg"
             >
-              <Plus size={18} /> Add Job
+              <Plus size={18} /> Add Event
             </button>
           </div>
 
@@ -174,8 +176,8 @@ export default function JobListings() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
               <input
                 type="search"
-                placeholder="Search jobs"
-                className="input input-bordered w-full pl-10 pr-16 bg-[#242937] border-gray-700 text-gray-200"
+                placeholder="Search events"
+                className="input input-bordered w-full pl-10 pr-16 bg-[#1e2433] border-gray-700 text-gray-200"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
@@ -187,7 +189,7 @@ export default function JobListings() {
           </div>
 
           {/* View toggle - right */}
-          <button onClick={toggleView} className="btn btn-ghost btn-sm rounded-lg">
+          <button onClick={toggleView} className="btn btn-ghost btn-sm rounded-lg text-gray-300">
             {isGridView ? (
               <>
                 <LayoutList size={18} /> List
@@ -211,26 +213,35 @@ export default function JobListings() {
               />
           </aside>
 
-          {/* Main content */}
           <main className="flex-1">
             {/* Active filters */}
             <div className="flex flex-wrap items-center gap-2 mb-4">
-              {Object.entries(activeFilters.jobType).map(([key, value]) =>
+              {Object.entries({...activeFilters.jobType, ...activeFilters.workType}).map(([key, value]) =>
                 value ? (
                   <div
                     key={key}
-                    className="badge badge-lg gap-2 px-3 py-3 bg-[#242937] text-white border-none"
+                    className="badge badge-lg gap-2 px-3 py-3 bg-[#1e2433] text-white border-none"
                   >
                     {key === "fullTime"
                       ? "Full-time"
                       : key === "partTime"
                       ? "Part-time"
-                      : "Contract"}
+                      : key === "contract"
+                      ? "Contract"
+                      : key === "onSite"
+                      ? "On-site"
+                      : key === "remote"
+                      ? "Remote"
+                      : "Hybrid"}
                     <button
                       className="opacity-60 hover:opacity-100"
                       onClick={() => {
                         const newFilters = { ...activeFilters };
-                        newFilters.jobType[key as keyof typeof newFilters.jobType] = false;
+                        if (key in newFilters.jobType) {
+                          newFilters.jobType[key as keyof typeof newFilters.jobType] = false;
+                        } else if (key in newFilters.workType) {
+                          newFilters.workType[key as keyof typeof newFilters.workType] = false;
+                        }
                         handleFilterChange(newFilters);
                       }}
                     >
@@ -256,7 +267,8 @@ export default function JobListings() {
                     key={index}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    transition={{ duration: 0.3, delay: index * 0.1 }}
+                    transition={{ duration: 0.3 }}
+                    className="hover:bg-gray-700 transition-colors"
                   >
                     {isGridView ? (
                       <JobCard
@@ -289,11 +301,11 @@ export default function JobListings() {
                 ))
               ) : (
                 <div className="col-span-full text-center py-8">
-                  <p className="text-gray-400">
+                  <p className="text-white">
                     No jobs found matching your filters.
                   </p>
                   <button
-                    className="btn btn-error btn-sm rounded-lg mt-4"
+                    className="btn btn-error rounded-lg mt-4"
                     onClick={() =>
                       handleFilterChange({
                         jobType: {
@@ -314,6 +326,61 @@ export default function JobListings() {
                 </div>
               )}
             </div>
+
+            {/* Job Details Modal */}
+            {selectedJob && (
+              <JobDetails
+                title={selectedJob.title}
+                company={selectedJob.company}
+                location={selectedJob.location}
+                salary={selectedJob.salary}
+                jobType={selectedJob.job_type}
+                workType={selectedJob.work_type}
+                description={selectedJob.description}
+                isOpen={isModalOpen}
+                onClose={handleCloseModal}
+                onApplyClick={() => handleApply(selectedJob.title)}
+                //   ONLY FOR ADMIN/CREATOR VIEWS WIP
+                onEditClick={() => handleEdit(selectedJob)}
+                onDeleteClick={() => console.log("Delete job")}
+              />
+            )}
+
+            {/* Edit Job Details Modal */}
+            {selectedJob && (
+              <EditJobListComponent
+                isOpen={false}
+                onClose={function (): void {
+                  throw new Error("Function not implemented.");
+                }}
+                onSave={function (jobData: any): void {
+                  throw new Error("Function not implemented.");
+                }}
+              />
+            )}
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center space-x-4 my-4 px-6 w-full select-none">
+                <button
+                  onClick={() => setCurrentPage(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className="btn btn-sqr"
+                >
+                  <ChevronLeft />
+                </button>
+                <span>
+                  {currentPage} / {totalPages}
+                </span>
+                <button
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className="btn btn-sqr"
+                >
+                  <ChevronRight />
+                </button>
+              </div>
+            )}
           </main>
         </div>
       </div>

@@ -25,20 +25,25 @@ const JobCard: React.FC<JobCardProps> = ({
   onApplyClick,
 }) => {
   return (
-    <div className="card rounded-xl border border-gray-200 w-72 h-128 hover:shadow-md transition-shadow">
-      <figure>
-        <img src={imageUrl} alt={`${company} job banner`} className="w-full h-40 object-cover" />
+    <div className="card bg-[#1e2433] rounded-xl overflow-hidden hover:bg-[#242937] transition-all duration-200">
+      <figure className="relative h-48">
+        <img 
+          src={imageUrl} 
+          alt={`${company} job banner`} 
+          className="w-full h-full object-cover" 
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
       </figure>
 
-      <div className="card-body">
-        <h2 className="card-title">{title}</h2>
-        <p>
+      <div className="card-body p-4">
+        <h2 className="card-title text-lg font-semibold text-white mb-1">{title}</h2>
+        <p className="text-sm text-gray-400 mb-3">
           {company} • {location}
         </p>
-        <div className="card-actions mt-4">
+        <div className="flex flex-col gap-2 mt-auto">
           <button
             onClick={onDetailsClick}
-            className="btn btn-soft btn-wide rounded-lg"
+            className="btn btn-sm btn-ghost bg-[#242937] hover:bg-[#2a3041] text-white rounded-lg w-full"
           >
             Details
           </button>
@@ -47,7 +52,7 @@ const JobCard: React.FC<JobCardProps> = ({
               e.stopPropagation();
               onApplyClick();
             }}
-            className="btn btn-primary btn-wide rounded-lg "
+            className="btn btn-sm btn-primary rounded-lg w-full"
           >
             Apply
           </button>

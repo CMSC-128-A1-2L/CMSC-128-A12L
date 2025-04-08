@@ -69,7 +69,7 @@ export default function AlumniSidebar({
           ))}
         </ul>
 
-        {role === "admin" && (
+        {role == "admin" && (
           <div className="mt-auto border-t pt-2 px-2 pb-4">
             <Link
               href="/admin"
