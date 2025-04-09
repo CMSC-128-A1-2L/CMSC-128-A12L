@@ -5,6 +5,7 @@ import FilterSidebar from "@/app/components/filtersJobListings";
 import JobCard from "@/app/components/jobContentCard";
 import JobRow from "@/app/components/jobContentRow";
 import JobDetails from "@/app/components/jobDetails";
+import SponsorshipsModal from "@/app/components/sponsorshipsModal";
 import EditJobListComponent from "@/app/components/editJobList";
 import jobData from "@/dummy_data/job.json";
 
@@ -134,6 +135,18 @@ export default function JobListings() {
   const handleApply = (jobTitle: string) => {
     console.log(`Applying for ${jobTitle}`);
   };
+
+  // Handle Sponsor Details button click
+  const handleSponsor = () => {
+    // Use the DaisyUI modal show method
+    const modal = document.getElementById(
+      "sponsor_details_modal"
+    ) as HTMLDialogElement;
+    if (modal) {
+      modal.showModal();
+      setIsModalOpen(true);
+    }
+  };  
 
   // Handle Edit Job button click
   const handleEdit = (job: any) => {
@@ -345,6 +358,12 @@ export default function JobListings() {
                 onDeleteClick={() => console.log("Delete job")}
               />
             )}
+
+            {/* Sponsorship Details Modal */}
+              {selectedJob && (
+                <SponsorshipsModal
+                  onClose={handleCloseModal}
+              />)}
 
             {/* Edit Job Details Modal */}
             {selectedJob && (
