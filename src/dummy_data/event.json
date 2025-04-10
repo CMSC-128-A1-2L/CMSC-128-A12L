@@ -1,0 +1,89 @@
+[
+    {
+      "_id": "67f24aa783b5719d2d9af100",
+      "index": 0,
+      "imageUrl": "https://images.unsplash.com/photo-1506784983877-45594efa4cbe",
+      "title": "International Space Innovation Summit",
+      "organizer": "FANFARE",
+      "location": "841 Hale Avenue, Dargan, Kentucky, 5051",
+      "date": "2025-06-15T09:00:00Z",
+      "rsvp": {
+        "enabled": true,
+        "options": ["Yes", "No", "Maybe"]
+      },
+      "sponsorship": {
+        "enabled": true,
+        "requests": [
+          {
+            "companyName": "StellarTech",
+            "contact": "contact@stellartech.com"
+          }
+        ]
+      },
+      "description": "A summit bringing together the world's leading minds in aerospace, innovation, and technology.",
+      "contact": "events@fanfare.com"
+    },
+    {
+      "_id": "67f24aa7e1d3252622ae2001",
+      "index": 1,
+      "imageUrl": "https://images.unsplash.com/photo-1581093588401-4c4e6be63638",
+      "title": "Global Climate Action Conference",
+      "organizer": "AVENETRO",
+      "location": "844 Metrotech Court, Como, Louisiana, 8154",
+      "date": "2025-07-20T10:00:00Z",
+      "rsvp": {
+        "enabled": true,
+        "options": ["Yes", "No"]
+      },
+      "sponsorship": {
+        "enabled": false,
+        "requests": []
+      },
+      "description": "Join environmental leaders and activists from around the globe in addressing the climate crisis.",
+      "contact": "green@avenetro.org"
+    },
+    {
+      "_id": "67f24aa7ac6a978b87351abc",
+      "index": 2,
+      "imageUrl": "https://images.unsplash.com/photo-1542751110-97427bbecf20",
+      "title": "NextGen Developer Bootcamp",
+      "organizer": "FURNAFIX",
+      "location": "214 Pitkin Avenue, Graball, North Carolina, 1089",
+      "date": "2025-08-01T08:00:00Z",
+      "rsvp": {
+        "enabled": true,
+        "options": ["Attending", "Not Attending"]
+      },
+      "sponsorship": {
+        "enabled": true,
+        "requests": []
+      },
+      "description": "A bootcamp for junior devs to gain hands-on experience with modern web technologies.",
+      "contact": "devbootcamp@furnafix.io"
+    },
+    {
+      "_id": "67f24aa7a9d8f82d412b0456",
+      "index": 3,
+      "imageUrl": "https://images.unsplash.com/photo-1497493292307-31c376b6e479",
+      "title": "Women in Tech Leadership Forum",
+      "organizer": "GORGANIC",
+      "location": "289 Hill Street, Winfred, Virginia, 6057",
+      "date": "2025-09-10T14:00:00Z",
+      "rsvp": {
+        "enabled": false,
+        "options": []
+      },
+      "sponsorship": {
+        "enabled": true,
+        "requests": [
+          {
+            "companyName": "SheTech",
+            "contact": "sponsor@shetech.org"
+          }
+        ]
+      },
+      "description": "Empowering women leaders and innovators in the tech industry through talks and networking.",
+      "contact": "leadership@gorganic.com"
+    }
+  ]
+  
