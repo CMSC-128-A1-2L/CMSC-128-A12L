@@ -38,6 +38,9 @@ export interface UserRepository {
      * 
      * @returns A promise that resolves to an array of users.
      */
+
+    getUsersByPendingVerification(): Promise<User[]>;
+
     getAllUsers(): Promise<User[]>;
 
     /**
@@ -91,6 +94,11 @@ class MongoDBUserRepository implements UserRepository {
 
     async getAllUsers(): Promise<User[]> {
         const userDtos = await this.model.find();
+        return userDtos.map(mapUserDtoToUser);
+    }
+
+    async getUsersByPendingVerification(): Promise<User[]> {
+        const userDtos = await this.model.find({ alumniStatus: "pending" });
         return userDtos.map(mapUserDtoToUser);
     }
 

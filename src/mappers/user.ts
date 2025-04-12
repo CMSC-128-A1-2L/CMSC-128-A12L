@@ -1,4 +1,4 @@
-import { UserDto, UserRoleDto } from "@/models/user";
+import { UserDto, UserRoleDto, AlumniStatus } from "@/models/user";
 import { User, UserRole } from "@/entities/user";
 import { Types } from "mongoose";
 
@@ -20,6 +20,8 @@ export function mapUserDtoToUser(userDto: UserDto): User {
         emailVerified: userDto.emailVerified ?? null,
         name: userDto.name,
         role: role,
+        alumniStatus: (userDto.alumniStatus as AlumniStatus) ?? AlumniStatus.PENDING,
+        documentUrl: userDto.documentUrl
     }
 }
 
@@ -39,11 +41,17 @@ export function mapUserToUserDto(user: User): UserDto {
         id: user.id,
         email: user.email,
         name: user.name!,
-        role: role
+        role: role,
+        alumniStatus: user.alumniStatus,
+        documentUrl: user.documentUrl
     };
 
     if (user.emailVerified !== null) {
         userDto.emailVerified = user.emailVerified;
+    }
+
+    if (user.documentUrl) {
+        userDto.documentUrl = user.documentUrl;
     }
 
     return userDto;

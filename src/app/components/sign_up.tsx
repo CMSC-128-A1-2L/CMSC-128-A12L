@@ -13,6 +13,7 @@ export default function SignUp() {
     password: '',
     confirmPassword: ''
   });
+  const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -49,6 +50,14 @@ export default function SignUp() {
       newErrors.confirmPassword = 'Passwords do not match';
     }
 
+    if (!pdfFile) {
+      newErrors.pdfFile = 'PDF document is required for registration';
+    } else if (pdfFile.type !== 'application/pdf') {
+      newErrors.pdfFile = 'Please upload a valid PDF file';
+    } else if (pdfFile.size > 5 * 1024 * 1024) { // 5MB limit
+      newErrors.pdfFile = 'PDF file size must be less than 5MB';
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -63,6 +72,27 @@ export default function SignUp() {
     }
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.type === 'application/pdf') {
+        if (file.size > 5 * 1024 * 1024) { // 5MB limit
+          setPdfFile(null);
+          setErrors(prev => ({ ...prev, pdfFile: 'PDF file size must be less than 5MB' }));
+        } else {
+          setPdfFile(file);
+          setErrors(prev => ({ ...prev, pdfFile: '' }));
+        }
+      } else {
+        setPdfFile(null);
+        setErrors(prev => ({ ...prev, pdfFile: 'Please upload a valid PDF file' }));
+      }
+    } else {
+      setPdfFile(null);
+      setErrors(prev => ({ ...prev, pdfFile: 'PDF document is required for registration' }));
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -73,18 +103,21 @@ export default function SignUp() {
     setIsSubmitting(true);
     try {
       await new Promise(resolve => setTimeout(resolve, 1000)); 
+      
+      // Create FormData object to handle file upload (we use form data since it is not possible thru json)
+      const formDataToSend = new FormData();
+      formDataToSend.append('firstname', formData.firstName);
+      formDataToSend.append('lastname', formData.lastName);
+      formDataToSend.append('email', formData.email);
+      formDataToSend.append('password', formData.password);
+      if (pdfFile) {
+        formDataToSend.append('pdfFile', pdfFile);
+      }
+
       const response = await fetch("../api/auth/register", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          firstname: formData.firstName,
-          lastname: formData.lastName,
-          email: formData.email,
-          password: formData.password,
-        }),
-      })
+        body: formDataToSend, // Send as FormData instead of JSON
+      });
       console.log("Register response: ", response);
     } catch (error) {
       console.error('Sign up failed:', error);
@@ -278,6 +311,35 @@ export default function SignUp() {
               {errors.confirmPassword && (
                 <p className="mt-0.5 text-xs text-red-500">{errors.confirmPassword}</p>
               )}
+            </div>
+
+            <div>
+              <label htmlFor="pdfFile" className="block text-xs lg:text-sm font-medium text-gray-700 mb-0.5">
+                Alumni Verification Document <span className="text-red-500">*</span>
+              </label>
+              <motion.div whileTap={{ scale: 0.98 }}>
+                <input
+                  tabIndex={3}
+                  id="pdfFile"
+                  name="pdfFile"
+                  type="file"
+                  accept=".pdf"
+                  onChange={handleFileChange}
+                  className={`w-full px-3 py-2 lg:py-2.5 rounded-lg border ${
+                    errors.pdfFile ? 'border-red-500' : 'border-gray-300'
+                  } focus:border-[#1a1f4d] focus:ring-1 focus:ring-[#1a1f4d] transition-all text-gray-800 placeholder-gray-500 text-xs lg:text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-[#1a1f4d] file:text-white hover:file:bg-[#2a2f5d]`}
+                  required
+                />
+              </motion.div>
+              {errors.pdfFile && (
+                <p className="mt-0.5 text-xs text-red-500">{errors.pdfFile}</p>
+              )}
+              {pdfFile && !errors.pdfFile && (
+                <p className="mt-0.5 text-xs text-green-600">Selected file: {pdfFile.name} ({(pdfFile.size / 1024 / 1024).toFixed(2)}MB)</p>
+              )}
+              <p className="mt-1 text-xs text-gray-500">Maximum file size: 5MB. Accepted format: PDF only.</p>
+              <p className="mt-1 text-xs text-gray-500">Please name your file in the format: <span className="font-bold ">SurnameInitials_AlumniVerification.pdf</span></p>
+              <p className="mt-1 text-xs text-gray-500">Example: <span className="font-medium">BorjaKJV_AlumniVerification.pdf</span></p>
             </div>
 
             <div className="space-y-2 lg:space-y-3">

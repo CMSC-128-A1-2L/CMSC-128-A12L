@@ -20,6 +20,12 @@ export enum UserRoleDto {
   FACULTY = 1 << 2
 };
 
+export enum AlumniStatus {
+  PENDING = "pending",
+  VERIFIED = "verified",
+  REJECTED = "rejected"
+}
+
 export interface UserDto {
   // In case of google authentication, we need to store the google id and refresh token.
   // googleId?: string,
@@ -31,6 +37,8 @@ export interface UserDto {
   studentId?: string,
   name: string,
   suffix?: string,
+  alumniStatus?: string,
+  documentUrl?: string,
   // gender: string,
   // currentAddress: string,
   // bio: string,
@@ -50,6 +58,8 @@ export const UserSchema = new Schema<UserDto>(
     studentId: { type: String },
     name: { type: String, required: true },
     suffix: { type: String },
+    alumniStatus: { type: String, enum: AlumniStatus, default: AlumniStatus.PENDING },
+    documentUrl: { type: String },
     // currentAddress: { type: String, default: "" },
     // bio : { type: String, default: "" },
     // linkedIn: { type: String, validate: {

@@ -2,6 +2,7 @@
  * The internal data structure for a user.
  */
 
+import { AlumniStatus } from "@/models/user";
 import { AdapterUser } from "next-auth/adapters";
 
 export enum UserRole {
@@ -18,4 +19,14 @@ export interface User extends AdapterUser {
      * The user's role.
      **/
     role: UserRole[];
+
+    /**
+     * The user's status.
+     **/
+    alumniStatus: AlumniStatus;
+    
+    /**
+     * URL to the user's uploaded document (PDF).
+     **/
+    documentUrl?: string;
 };

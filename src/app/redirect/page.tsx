@@ -1,6 +1,6 @@
 "use client"
 import { UserRole } from '@/entities/user';
-import { useSession } from 'next-auth/react';
+import { signOut, useSession } from 'next-auth/react';
 import { redirect } from 'next/navigation';
 import { useEffect } from 'react';
 import { handleSignOut } from '@/utils/auth';
@@ -36,8 +36,10 @@ const Redirect = () => {
         redirect("/admin");
     }
     else{
-        console.log("Invalid role");
-        redirect("/login");
+      // When the role is not found, redirect to verification pending page
+      console.log("User's alumni status is pending verification.");
+      signOut({ redirect: false });
+      redirect("/verification-pending");
     }
   }
 
