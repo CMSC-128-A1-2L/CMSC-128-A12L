@@ -5,9 +5,11 @@ import { useRouter } from "next/navigation";
 import ConstellationBackground from '../components/constellation_background';
 import { useEffect } from 'react';
 import { signOut } from 'next-auth/react';
-
+import { useSession } from 'next-auth/react';
 export default function VerificationPending() {
+    const { data: session } = useSession();
     const router = useRouter();
+    
     return (
         <div className="min-h-screen bg-[#1a237e] relative overflow-hidden">
             <ConstellationBackground />
