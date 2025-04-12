@@ -2,8 +2,9 @@
 import { signOut, useSession } from "next-auth/react";
 import { Menu, LogOut, User, X } from "lucide-react";
 import Link from "next/link";
-import { RefObject, useState } from "react";
+import { RefObject, useState, useEffect } from "react";
 import { UserRole } from "@/entities/user";
+import { usePathname } from "next/navigation";
 
 interface NavbarProps {
   setSidebarOpen: (open: boolean) => void;
@@ -18,10 +19,12 @@ export default function Navbar({
 }: NavbarProps) {
   const { data: session } = useSession();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
   
-  // Determine the role label based on the user's role
+  // Determine the role label and profile path based on the user's role
   const isAdmin = session?.user?.role?.includes(UserRole.ADMIN);
   const roleLabel = isAdmin ? "Admin" : "Alumni";
+  const profilePath = isAdmin ? "/admin/profile" : "/alumni/profile";
   
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
@@ -56,7 +59,7 @@ export default function Navbar({
         <div className="hidden md:flex items-center space-x-8">
           {session ? (
             <>
-              <Link href="/profile" className="text-sm font-medium hover:text-gray-200 transition-colors relative group">
+              <Link href={profilePath} className="text-sm font-medium hover:text-gray-200 transition-colors relative group">
                 <span className="flex items-center">
                   <User size={18} className="mr-1" />
                   <span>PROFILE</span>
@@ -98,7 +101,7 @@ export default function Navbar({
             {session ? (
               <>
                 <Link 
-                  href="/profile" 
+                  href={profilePath} 
                   className="text-sm font-medium hover:text-gray-200 transition-colors flex items-center py-2"
                   onClick={() => setMobileMenuOpen(false)}
                 >

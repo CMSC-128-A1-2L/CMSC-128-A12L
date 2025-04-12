@@ -50,6 +50,7 @@ const sampleUserData = [
     }
 ]
 
+
 export default function UsersManagement(){
     const { data: session } = useSession();
     const [tempQuery, setTempQuery] = useState("");
@@ -58,6 +59,66 @@ export default function UsersManagement(){
     const [roleFilter, setRoleFilter] = useState("All");
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [alumniUsers, setAlumniUsers] = useState<UserDto[]>([]);
+    const [pendingVerificationUsers, setPendingVerificationUsers] = useState<UserDto[]>([]);
+
+    const handleAccept = async (userId: string) => {
+        console.log(userId);
+        const response = await fetch(`/api/admin/users/${userId}`, {
+            method: "PUT",
+            body: JSON.stringify({
+                role: ["alumni"],
+                alumniStatus: "verified"
+            })
+        });
+
+        if (response.ok) {
+            console.log("User accepted");
+            setPendingVerificationUsers(pendingVerificationUsers.filter((user) => user.id !== userId));
+        }
+    }
+
+    const handleDecline = async (userId: string) => {
+        console.log(userId);
+        const response = await fetch(`/api/admin/users/${userId}`, {
+            method: "PUT",
+            body: JSON.stringify({
+                alumniStatus: "rejected"
+            })
+        });
+        if (response.ok) {
+            console.log("User declined");
+            setPendingVerificationUsers(pendingVerificationUsers.filter((user) => user.id !== userId));
+        }
+    }
+
+    const handleDocumentDownload = async (url: string, fileName: string) => {
+        try {
+            // Show loading state if needed
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('Network response was not ok');
+            
+            // Get the blob from the response
+            const blob = await response.blob();
+            
+            // Create a blob URL
+            const blobUrl = window.URL.createObjectURL(blob);
+            
+            // Create a temporary link element
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = `${fileName}.pdf`; // Force .pdf extension
+            
+            // Append to body, click, and remove
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            window.URL.revokeObjectURL(blobUrl);
+        } catch (error) {
+            console.error('Error downloading document:', error);
+        }
+    };
+
     useEffect(() => {
         const fetchAlumniUsers = async () => {
             const response = await fetch("/api/admin/users");
@@ -70,7 +131,16 @@ export default function UsersManagement(){
         fetchAlumniUsers();
     }, []);
 
-   
+    useEffect(() => {
+        const fetchPendingVerificationUsers = async () => {
+            const response = await fetch("/api/admin/users/pending-verification");
+            const data = await response.json();
+            setPendingVerificationUsers(data);
+            console.log(data);
+        }
+        fetchPendingVerificationUsers();
+    }, []);
+
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 20;
@@ -145,7 +215,7 @@ export default function UsersManagement(){
         
         return pageNumbers;
     };
-    
+
     return (
         <div className="w-full px-4 md:px-10">
             <div className="flex flex-col lg:flex-row gap-6">
@@ -245,17 +315,18 @@ export default function UsersManagement(){
                                 <div className="flex items-center text-sm text-gray-600">
                                     <Shield className="w-4 h-4 mr-2" />
                                     {/* bruh, don't mind these errors, it's just a type error */}
-                                    <span>{user.role[0].charAt(0).toUpperCase() + user.role[0].slice(1)}</span>
+                                    <span>{user.role[0] ? (user.role[0].charAt(0).toUpperCase() + user.role[0].slice(1)) : "Pending Verification"}</span>
                                 </div>
                                 <div className="flex justify-end space-x-2 pt-2">
-                                    {user.role[0] === "alumni" ? (
-                                        <PromoteUser person={user} />
-                                    ) : (
-                                        <span className="text-gray-500 text-sm">Promoted</span>
-                                    )}
-                                    {user.role[0] !== "admin" && (
-                                        <DeleteUser person={user} deleteSuccess={deleteSuccess} />
-                                    )}
+                                {user.role[0] ? (
+                                                user.role[0] === "alumni" ? (
+                                                    <PromoteUser person={user} />
+                                                ) : (
+                                                    <span className="text-gray-500 text-sm">Promoted</span>
+                                                )
+                                            ) : (
+                                                <span className="text-gray-500 text-sm">Pending Verification</span>
+                                            )}
                                 </div>
                             </motion.div>
                         ))}
@@ -285,16 +356,20 @@ export default function UsersManagement(){
                                         
                                         <div className="flex items-center text-sm text-gray-600">
                                             <Shield className="w-4 h-4 mr-2" />
-                                            <span>{user.role[0].charAt(0).toUpperCase() + user.role[0].slice(1)}</span>
+                                            <span>{user.role[0] ? (user.role[0].charAt(0).toUpperCase() + user.role[0].slice(1)) : "Pending Verification"}</span>
                                         </div>
                                         
                                         <div className="flex justify-end space-x-2 pt-2">
-                                            {user.role[0] === "alumni" ? (
-                                                <PromoteUser person={user} />
+                                            {user.role[0] ? (
+                                                user.role[0] === "alumni" ? (
+                                                    <PromoteUser person={user} />
+                                                ) : (
+                                                    <span className="text-gray-500 text-sm">Promoted</span>
+                                                )
                                             ) : (
-                                                <span className="text-gray-500 text-sm">Promoted</span>
+                                                <span className="text-gray-500 text-sm">Pending Verification</span>
                                             )}
-                                            {user.role[0] !== "admin" && (
+                                            {user.role[0] && user.role[0] !== "admin" && (
                                                 <DeleteUser person={user} deleteSuccess={deleteSuccess} />
                                             )}
                                         </div>
@@ -383,138 +458,129 @@ export default function UsersManagement(){
 
                     {/* Mobile Card View for Pending Verifications */}
                     <div className="md:hidden space-y-4">
-                        {sampleUserData.map((user: PendingVerification, index) => (
-                            <motion.div
-                                key={index}
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                transition={{ duration: 0.3 }}
-                                className="bg-white rounded-lg shadow p-4 space-y-3"
-                            >
-                                <div className="flex items-center space-x-3">
-                                    <div className="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
-                                        <User className="w-5 h-5 text-gray-600" />
-                                    </div>
-                                    <div>
-                                        <div className="font-medium text-gray-900">{user.name}</div>
-                                        <div className="text-sm text-gray-500">{user.email}</div>
-                                    </div>
-                                </div>
-                                <div className="flex items-center text-sm text-gray-600">
-                                    <a 
-                                        href="https://google.com" 
-                                        target="_blank" 
-                                        rel="noopener noreferrer"
-                                        className="text-blue-600 hover:text-blue-800 underline flex items-center"
-                                    >
-                                        <span className="mr-2">View Document:</span>
-                                        {user.document}
-                                    </a>
-                                </div>
-                                <div className="flex justify-end space-x-2 pt-2">
-                                    <motion.button
-                                        whileHover={{ scale: 1.05 }}
-                                        whileTap={{ scale: 0.95 }}
-                                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm"
-                                    >
-                                        Accept
-                                    </motion.button>
-                                    <motion.button
-                                        whileHover={{ scale: 1.05 }}
-                                        whileTap={{ scale: 0.95 }}
-                                        className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm"
-                                    >
-                                        Decline
-                                    </motion.button>
-                                </div>
-                            </motion.div>
-                        ))}
-                    </div>
-
-                    {/* Desktop Table View for Pending Verifications */}
-                    <div className="hidden md:block overflow-y-auto max-h-[calc(100vh-300px)] rounded-lg border border-gray-200 [&::-webkit-scrollbar]:hidden">
-                        <div className="grid grid-cols-1 gap-4 p-4">
-                            {[
-                                {
-                                    name: "John Doe",
-                                    email: "john.doe@example.com",
-                                    document: "alumni_verification.pdf"
-                                },
-                                {
-                                    name: "Jane Smith",
-                                    email: "jane.smith@example.com",
-                                    document: "graduation_cert.pdf"
-                                },
-                                {
-                                    name: "Mike Johnson",
-                                    email: "mike.j@example.com",
-                                    document: "diploma.pdf"
-                                },
-                                {
-                                    name: "Sarah Williams",
-                                    email: "sarah.w@example.com",
-                                    document: "transcript.pdf"
-                                },
-                                {
-                                    name: "David Brown",
-                                    email: "david.b@example.com",
-                                    document: "certificate.pdf"
-                                },
-                                {
-                                    name: "Emily Davis",
-                                    email: "emily.d@example.com",
-                                    document: "diploma_verification.pdf"
-                                }
-                            ].map((user: PendingVerification, index) => (
+                        {pendingVerificationUsers.length > 0 ? (
+                            pendingVerificationUsers.map((user: UserDto, index) => (
                                 <motion.div
                                     key={index}
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     transition={{ duration: 0.3 }}
-                                    className="bg-white rounded-lg shadow p-4"
+                                    className="bg-white rounded-lg shadow p-4 space-y-3"
                                 >
-                                    <div className="flex flex-col space-y-3">
-                                        <div className="flex items-center space-x-3">
-                                            <div className="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
-                                                <User className="w-5 h-5 text-gray-600" />
-                                            </div>
-                                            <div>
-                                                <div className="font-medium text-gray-900">{user.name}</div>
-                                                <div className="text-sm text-gray-500">{user.email}</div>
-                                            </div>
+                                    <div className="flex items-center space-x-3">
+                                        <div className="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
+                                            <User className="w-5 h-5 text-gray-600" />
                                         </div>
-                                        
-                                        <div className="flex items-center text-sm text-gray-600">
-                                            <span className="mr-2">View Document:</span>
-                                            <a 
-                                                href="https://google.com" 
-                                                target="_blank" 
-                                                rel="noopener noreferrer"
-                                                className="text-blue-600 hover:text-blue-800 underline flex items-center"
-                                            >
-                                                {user.document}
-                                            </a>
-                                        </div>
-                                        
-                                        <div className="flex justify-end space-x-2 pt-2">
-                                            <motion.button
-                                                whileHover={{ scale: 1.05 }}
-                                                whileTap={{ scale: 0.95 }}
-                                                className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg"
-                                            >
-                                                Accept
-                                            </motion.button>
-                                            <motion.button
-                                                whileHover={{ scale: 1.05 }}
-                                                whileTap={{ scale: 0.95 }}
-                                                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
-                                            >
-                                                Decline
-                                            </motion.button>
+                                        <div>
+                                            <div className="font-medium text-gray-900">{user.name}</div>
+                                            <div className="text-sm text-gray-500">{user.email}</div>
                                         </div>
                                     </div>
+                                    <div className="flex items-center text-sm text-gray-600">
+                                        <a 
+                                            href="#" 
+                                            className="text-blue-600 hover:text-blue-800 underline flex items-center"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                const fileName = user.documentUrl?.split("/").pop()?.split(".")[0] || "document";
+                                                handleDocumentDownload(user.documentUrl, fileName);
+                                            }}
+                                        >
+                                            <span className="mr-2">View Document:</span>
+                                            {user.documentUrl?.split("/").pop()}
+                                        </a>
+                                    </div>
+                                    <div className="flex justify-end space-x-2 pt-2">
+                                        <motion.button
+                                            whileHover={{ scale: 1.05 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm"
+                                            onClick={() => handleAccept(user.id)}
+                                        >
+                                            Accept
+                                        </motion.button>
+                                        <motion.button
+                                            whileHover={{ scale: 1.05 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm"
+                                            onClick={() => handleDecline(user.id)}
+                                        >
+                                            Decline
+                                        </motion.button>
+                                    </div>
                                 </motion.div>
-                            ))}
+                            ))
+                        ) : (
+                            <div className="bg-white rounded-lg shadow p-6 text-center">
+                                <p className="text-gray-500 text-lg">No pending verifications</p>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Desktop Table View for Pending Verifications */}
+                    <div className="hidden md:block overflow-y-auto max-h-[calc(100vh-300px)] rounded-lg border border-gray-200 [&::-webkit-scrollbar]:hidden">
+                        <div className="grid grid-cols-1 gap-4 p-4">
+                            {pendingVerificationUsers.length > 0 ? (
+                                pendingVerificationUsers.map((user: UserDto, index) => (
+                                    <motion.div
+                                        key={index}
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        transition={{ duration: 0.3 }}
+                                        className="bg-white rounded-lg shadow p-4"
+                                    >
+                                        <div className="flex flex-col space-y-3">
+                                            <div className="flex items-center space-x-3">
+                                                <div className="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
+                                                    <User className="w-5 h-5 text-gray-600" />
+                                                </div>
+                                                <div>
+                                                    <div className="font-medium text-gray-900">{user.name}</div>
+                                                    <div className="text-sm text-gray-500">{user.email}</div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="flex items-center text-sm text-gray-600">
+                                                <span className="mr-2">View Document:</span>
+                                                <a 
+                                                    href="#" 
+                                                    className="text-blue-600 hover:text-blue-800 underline flex items-center"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        const fileName = user.documentUrl?.split("/").pop()?.split(".")[0] || "document";
+                                                        handleDocumentDownload(user.documentUrl, fileName);
+                                                    }}
+                                                >
+                                                    {user.documentUrl?.split("/").pop()}    
+                                                </a>
+                                            </div>
+                                            
+                                            <div className="flex justify-end space-x-2 pt-2">
+                                                <motion.button
+                                                    whileHover={{ scale: 1.05 }}
+                                                    whileTap={{ scale: 0.95 }}
+                                                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg"
+                                                    onClick={() => handleAccept(user.id)}
+                                                >
+                                                    Accept
+                                                </motion.button>
+                                                <motion.button
+                                                    whileHover={{ scale: 1.05 }}
+                                                    whileTap={{ scale: 0.95 }}
+                                                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
+                                                    onClick={() => handleDecline(user.id)}
+                                                >
+                                                    Decline
+                                                </motion.button>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                ))
+                            ) : (
+                                <div className="bg-white rounded-lg shadow p-6 text-center">
+                                    <p className="text-gray-500 text-lg">No pending verifications</p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </motion.div>
