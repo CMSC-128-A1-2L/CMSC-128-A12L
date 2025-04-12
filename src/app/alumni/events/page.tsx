@@ -2,8 +2,8 @@
 
 import { useState, useRef } from "react";
 import FilterSidebar from "@/app/components/filtersJobListings";
-import JobCard from "@/app/components/jobContentCard";
-import JobRow from "@/app/components/jobContentRow";
+import EventCard from "@/app/components/alumniEventCard";
+import EventRow from "@/app/components/alumniEventRow";
 import JobDetails from "@/app/components/jobDetails";
 import SponsorshipsModal from "@/app/components/sponsorshipsModal";
 import EditJobListComponent from "@/app/components/editJobList";
@@ -137,7 +137,8 @@ export default function JobListings() {
   };
 
   // Handle Sponsor Details button click
-  const handleSponsor = () => {
+  const handleSponsor = (job:any) => {
+    setSelectedJob(job);
     // Use the DaisyUI modal show method
     const modal = document.getElementById(
       "sponsor_details_modal"
@@ -284,7 +285,7 @@ export default function JobListings() {
                     className="hover:bg-gray-700 transition-colors"
                   >
                     {isGridView ? (
-                      <JobCard
+                      <EventCard
                         key={index}
                         title={job.title}
                         company={job.company}
@@ -294,10 +295,11 @@ export default function JobListings() {
                         description={job.description}
                         imageUrl={job.imageUrl}
                         onDetailsClick={() => handleJobDetails(job)}
+                        onSponsorClick={() => handleSponsor(job)}
                         onApplyClick={() => handleApply(job.title)}
                       />
                     ) : (
-                      <JobRow
+                      <EventRow
                         key={index}
                         title={job.title}
                         company={job.company}
@@ -307,6 +309,7 @@ export default function JobListings() {
                         description={job.description}
                         imageUrl={job.imageUrl}
                         onDetailsClick={() => handleJobDetails(job)}
+                        onSponsorClick={() => handleSponsor(job)}
                         onApplyClick={() => handleApply(job.title)}
                       />
                     )}
