@@ -15,6 +15,7 @@ import { Adapter, AdapterAccount, AdapterUser } from "next-auth/adapters";
 import { getUserIdProvider } from "@/providers/user_id";
 import { getUserRepository } from "@/repositories/user_repository";
 import { User, UserRole } from "@/entities/user";
+import { AlumniStatus } from "@/models/user";
 
 import { UserCredentials } from "@/entities/user_credentials";
 import { JWT } from "next-auth/jwt";
@@ -76,7 +77,8 @@ const adapter: Adapter = (() => {
         const userToRegister: User = {
             ...user,
             // TODO: remove if validation is already handled (to check whether the user is a real alumni)
-            role: [UserRole.ALUMNI],
+            role: [],
+            alumniStatus: AlumniStatus.PENDING,
             id: userIdProvider.generate()
         };
 

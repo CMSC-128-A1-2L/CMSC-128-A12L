@@ -29,7 +29,7 @@ export default function Navbar({
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
   };
-  
+  console.log(session?.user.role);
   return (
     <header className="fixed top-0 left-0 w-full bg-[#1a1f4d] text-white py-4 z-50 shadow-md">
       <div className="container mx-auto px-4 flex justify-between items-center">
@@ -59,14 +59,13 @@ export default function Navbar({
         <div className="hidden md:flex items-center space-x-8">
           {session ? (
             <>
-              <Link href={profilePath} className="text-sm font-medium hover:text-gray-200 transition-colors relative group">
+              {session?.user.role.includes(UserRole.ALUMNI) ? (<Link href={profilePath} className="text-sm font-medium hover:text-gray-200 transition-colors relative group">
                 <span className="flex items-center">
                   <User size={18} className="mr-1" />
                   <span>PROFILE</span>
                 </span>
                 <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-white transition-all duration-300 group-hover:w-full"></span>
-              </Link>
-              
+              </Link>) : ""}
               <button
                 onClick={() => signOut()}
                 className="text-sm font-medium hover:text-gray-200 transition-colors relative group focus:outline-none cursor-pointer"
