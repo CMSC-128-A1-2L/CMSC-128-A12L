@@ -25,18 +25,7 @@ interface SidebarProps {
   role?: string | string[];
 }
 
-// Update the type declaration to match the exact session structure
-declare module "next-auth" {
-  interface Session {
-    user: {
-      id: string;
-      role: string[];
-      email: string;
-      accessToken: string;
-      imageUrl?: string;
-    };
-  }
-}
+
 
 export default function AlumniSidebar({
   sidebarOpen,
