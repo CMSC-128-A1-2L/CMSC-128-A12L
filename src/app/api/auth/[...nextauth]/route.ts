@@ -264,6 +264,7 @@ export const authOptions: NextAuthOptions = {
     callbacks: {
         // Callback for storing information (mostly tokens) in JWT
         async jwt({ token, account, profile, user }) {
+            // BIG AAAH NOTE. PROFILE CONTAINS THE PROVIDER'S detials (like google image etc.)
             console.log("JWT callback has been triggered.");
             if (user) {
                 token.role = user.role ?? [];
@@ -273,9 +274,8 @@ export const authOptions: NextAuthOptions = {
                 token.provider = account.provider;
                 token.accessToken = account.access_token;
                 token.name = user.name;
-                if(user.image){
-                    token.imageUrl = user.image;
-                }
+                // profile details contain the image url
+                token.imageUrl = profile.picture;
                 // token.expiresAt = Date.now() + (account.expires_at ?? 45) * 1000; // Set expiration time
                 console.log(token);
             }
@@ -305,7 +305,9 @@ export const authOptions: NextAuthOptions = {
                     session.user.role = token.role as UserRole[];
                     session.user.accessToken = token.accessToken as string;
                     session.user.id = currentUser!.id;
-                    
+                    // console.log("The image url is: ", token.imageUrl);
+                    session.user.image = token.imageUrl as string;
+
                     console.log("The session is: ", session);
                 }
             } catch (error){

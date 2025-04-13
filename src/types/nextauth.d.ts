@@ -13,7 +13,12 @@ declare module "next-auth" {
             role: UserRole[];
             email: string;
             accessToken: string;
+            image?: string;
         }
+    }
+    // added this interface to get the image url from the profile (just extended it)
+    interface Profile {
+        picture?: string;
     }
 }
 declare module "next-auth/jwt" {
