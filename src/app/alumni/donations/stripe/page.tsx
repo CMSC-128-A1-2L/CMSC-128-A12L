@@ -3,12 +3,15 @@
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import StripeDonate from "@/app/components/stripe_donate";
-
+import { usePathname } from 'next/navigation';
 export default function StripeDonation() {
+  const pathname = usePathname();
+  const parentPath = pathname ? pathname.split('/').slice(0, -1).join('/') : '/alumni/donations';
+
     return (
         <div className="container mx-auto px-4 py-8">
             <div className="mb-6">
-                <Link href="/donations" className="flex items-center text-purple-600 hover:text-purple-800">
+                <Link href={parentPath} className="flex items-center text-purple-600 hover:text-purple-800">
                     <ArrowLeft className="mr-2" size={18} />
                     Back to Donation Options
                 </Link>

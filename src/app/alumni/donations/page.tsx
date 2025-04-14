@@ -3,19 +3,22 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { CreditCard, ArrowRight } from "lucide-react";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 
 export default function DonationsPage() {
+  const pathname = usePathname();
+  
   const paymentOptions = [
     {
       description: "Make donations using Maya, a popular digital payment solution in the Philippines.",
       icon: <Image src="/assets/Maya_logo.svg" alt="Maya Logo" width={100} height={30} className="h-8 w-auto " />,
-      path: "/donations/maya",
+      path: `${pathname}/maya`,
       color: "from-green-500 to-green-600",
     },
     {
       description: "Secure international payments powered by Stripe's trusted payment infrastructure.",
       icon: <Image src="/assets/Stripe_logo.svg" alt="Stripe Logo" width={100} height={30} className="h-8 w-auto" />,
-      path: "/donations/stripe",
+      path: `${pathname}/stripe`,
       color: "from-purple-500 to-purple-600",
     },
   ];

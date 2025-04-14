@@ -30,7 +30,7 @@ export default function AdminSidebar({
   const sidebarItems = [
     { name: "Dashboard", icon: <LayoutDashboardIcon size={20} />, path: "/admin" },
     { name: "Manage Users", icon: <Users size={20} />, path: "/admin/user-management" },
-    { name: "Job Listings", icon: <Briefcase size={20} />, path: "/admin/jobs" },
+    { name: "Job Opportunities", icon: <Briefcase size={20} />, path: "/admin/opportunities" },
     { name: "Events", icon: <CalendarCogIcon size={20} />, path: "/admin/events" },
     { name: "Communications", icon: <Phone size={20} />, path: "/admin/communications" },
     { name: "Reports", icon: <MessageCircleWarningIcon size={20} />, path: "/admin/reports" },
