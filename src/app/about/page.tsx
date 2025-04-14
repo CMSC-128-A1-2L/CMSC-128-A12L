@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from 'framer-motion';
 import ConstellationBackground from '../components/constellation_background';
+import ScrollIndicator from '../components/ScrollIndicator';
 
 export default function AboutPage() {
   return (
@@ -103,6 +104,9 @@ export default function AboutPage() {
           </div>
         </motion.div>
       </motion.section>
+
+      {/* Scroll Indicator */}
+      <ScrollIndicator />
 
       {/* Vision Section */}
       <motion.section

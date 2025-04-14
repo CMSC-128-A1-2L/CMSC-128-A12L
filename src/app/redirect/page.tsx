@@ -36,8 +36,9 @@ const Redirect = () => {
         redirect("/admin");
     }
     else{
-        console.log("Invalid role");
-        redirect("/login");
+      // When the role is not found, redirect to verification pending page
+      console.log("User's alumni status is pending verification.");
+      redirect("/verification-pending");
     }
   }
 
