@@ -3,7 +3,6 @@ import { Types , Schema} from "mongoose";
 export interface AddressDto {
   _id?: string;
   alumniID?: string;
-  careerID?: string;
   unitNumber?: string;
   street?: string;
   districtMunicipality?: string;

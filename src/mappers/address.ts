@@ -14,17 +14,7 @@ export function mapAddressToAddressDto(address: Address): AddressDto {
     };
 }
 
-/* export interface AddressDto {
-    _id?: string;
-    alumniID?: string;
-    unitNumber?: string;
-    street?: string;
-    districtMunicipality?: string;
-    city?: string;
-    stateProvince?: string;
-    country: string;
-  }
- */
+
 export function mapAddressDtoToAddress(addressDto: AddressDto): Address {
     return {
         _id: addressDto._id,
