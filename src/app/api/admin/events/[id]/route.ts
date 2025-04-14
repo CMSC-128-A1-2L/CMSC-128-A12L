@@ -55,7 +55,7 @@ export async function PUT(request: NextRequest, {params}:{params: {id: string}})
 
         const currDate = new Date();
         if(currDate >= existingEvent.startDate){
-            return NextResponse.json({error: "Cannot edit event after it has started."}, {status: 403});
+            return NextResponse.json({error: "Cannot edit event on/after start date."}, {status: 403});
         }
 
         const updatedEvent = {...existingEvent, ...data, id: eventId};

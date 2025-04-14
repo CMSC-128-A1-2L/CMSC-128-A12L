@@ -9,7 +9,7 @@ export async function GET(request: NextRequest){
     try{
         const session = await getServerSession(authOptions);
         if(!session || !session.user.role.includes(UserRole.ADMIN)){
-            return NextResponse.json({error: "Unauthorized user."}, {status: 401});
+            return NextResponse.json({error: "Unauthorized."}, {status: 401});
         }
 
         const eventRepository = getEventRepository();
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest){
     try{
         const session = await getServerSession(authOptions);
         if(!session || !session.user.role.includes(UserRole.ADMIN)){
-            return NextResponse.json({error: "Unauthorized user."}, {status: 401});
+            return NextResponse.json({error: "Unauthorized."}, {status: 401});
         }
 
         const eventRepository = getEventRepository();
