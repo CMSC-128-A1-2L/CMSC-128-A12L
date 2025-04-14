@@ -46,6 +46,27 @@ export interface EventRepository {
      * @returns A promise that resolves when the event is deleted successfully.
      */
     deleteEvent(id: string): Promise<void>;
+
+    /**
+     * * NEW: Adds userID to the wouldGo field of an event from the repository.
+     * 
+     * @param eId The ID of the event to update.
+     * @param uId The ID of the user to enlist to the wouldGo.
+     * @returns A promise that resolves when the event is updated successfully.
+     */
+    addToEventWGo(eId: string, uId: string): Promise<void>
+
+    /**
+     * * NEW: Removes userID from the wouldGo field of an event from the repository.
+     * 
+     * @param eId The ID of the event to update.
+     * @param uId The ID of the user to remove from the wouldGo.
+     * @returns A promise that resolves when the event is updated successfully.
+     */
+    deleteFromEventWGo(eId: string, uId: string): Promise<void>
+
+
+
 }
 
 class MongoDBEventRepository implements EventRepository {
@@ -75,6 +96,16 @@ class MongoDBEventRepository implements EventRepository {
 
     async deleteEvent(id: string): Promise<void> {
         await this.model.findByIdAndDelete(id);
+    }
+
+    // * NEW
+    async addToEventWGo(eId: string, uId: string): Promise<void> {
+        await this.model.findByIdAndUpdate(eId, { $addToSet: {wouldGo: uId}});
+    }
+
+    // * NEW
+    async deleteFromEventWGo(eId: string, uId: string): Promise<void> {
+        await this.model.findByIdAndUpdate(eId, { $pull: {wouldGo: uId}});
     }
 
     constructor(connection: Connection) {
