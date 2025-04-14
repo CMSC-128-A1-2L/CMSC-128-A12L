@@ -18,7 +18,7 @@ export default function EmailForm() {
     const recipients = recipientList.split(",");
 
     const session = await getSession();
-    const userEmail = session?.user?.email || process.env.NEXT_PUBLIC_EMAIL; // Currently defaults to the latter
+    const userEmail = session?.user.email || process.env.NEXT_PUBLIC_EMAIL;
     const domain = userEmail?.split("@")[1];
     const provider = (domain==="gmail.com" || domain==="up.edu.ph")? 'google' : 'other';
 
@@ -29,9 +29,8 @@ export default function EmailForm() {
         recipients,
         subject: subject,
         htmlBody: `<p>${message}</p>`,
-        userEmail: userEmail,
         provider: provider,
-        scheduledTime: scheduledTime
+        scheduledTime: scheduledTime,
       })
     });
 
