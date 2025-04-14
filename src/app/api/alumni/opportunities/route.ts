@@ -1,66 +1,80 @@
 // pages/api/alumni/jobPostings.ts
-import { NextApiRequest, NextApiResponse } from 'next';
-import { getSession } from 'next-auth/react';
-import { getOpportunityRepository } from '@/repositories/opportunity_repository';
-import { Opportunity } from '@/entities/opportunity';
-import { UserRole } from '@/entities/user';
+import { NextRequest, NextResponse } from "next/server";
+import { getOpportunityRepository } from "@/repositories/opportunity_repository";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { UserRole } from "@/entities/user";
+import { Opportunity } from "@/entities/opportunity";
 
-export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
-) {
-  const session = await getSession({ req });
-  const opportunityRepo = getOpportunityRepository();
-  
-  // Check if user is authenticated and is an alumni
-  if (!session || !session.user.role.includes(UserRole.ALUMNI)) {
-    return res.status(401).json({ message: 'Unauthorized' });
-  }
-
-  const userId = session.user.id;
-
-  try {
-    switch (req.method) {
-      case 'GET':
-        if (req.query.id) {
-          await getJobPosting(req, res, opportunityRepo, userId);
-        } else {
-          await getAllJobPostings(req, res, opportunityRepo);
+export async function GET(request: NextRequest) {
+    try {
+        // Check alumni authentication
+        const session = await getServerSession(authOptions);
+        if (!session || !session.user.role.includes(UserRole.ALUMNI)) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
-        break;
-      case 'POST':
-        await createJobPosting(req, res, opportunityRepo, userId);
-        break;
-      case 'PUT':
-        await updateJobPosting(req, res, opportunityRepo, userId);
-        break;
-      case 'DELETE':
-        await deleteJobPosting(req, res, opportunityRepo, userId);
-        break;
-      default:
-        res.setHeader('Allow', ['GET', 'POST', 'PUT', 'DELETE']);
-        res.status(405).end(`Method ${req.method} Not Allowed`);
+
+        const opportunityRepository = getOpportunityRepository();
+        const opportunities = await opportunityRepository.getAllOpportunities();
+        
+        return NextResponse.json(opportunities);
+    } catch (error) {
+        console.error("Failed to fetch opportunities:", error);
+        return NextResponse.json(
+            { error: "Failed to fetch opportunities" },
+            { status: 500 }
+        );
     }
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Internal server error' });
-  }
 }
 
-// Get all job postings
-async function getAllJobPostings(
-  req: NextApiRequest,
-  res: NextApiResponse,
-  repo: ReturnType<typeof getOpportunityRepository>
-) {
-  const opportunities = await repo.getAllOpportunities();
-  res.status(200).json(opportunities);
+export async function POST(request: NextRequest) {
+    try {
+        // Check alumni authentication
+        const session = await getServerSession(authOptions);
+        if (!session || !session.user.role.includes(UserRole.ALUMNI)) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
+        const opportunityRepository = getOpportunityRepository();
+        const data = await request.json();
+
+        // Validate required fields
+        const requiredFields = ["title", "description", "position", "company", "location", "workMode"];
+        for (const field of requiredFields) {
+            if (!data[field]) {
+                return NextResponse.json(
+                    { error: `Missing required field: ${field}` },
+                    { status: 400 }
+                );
+            }
+        }
+
+        // Create new opportunity with alumni's user ID
+        const newOpportunity: Opportunity = {
+            userId: session.user.id,
+            ...data,
+            tags: data.tags || []
+        };
+
+        const id = await opportunityRepository.createOpportunity(newOpportunity);
+        
+        return NextResponse.json(
+            { ...newOpportunity, _id: id },
+            { status: 201 }
+        );
+    } catch (error) {
+        console.error("Failed to create opportunity:", error);
+        return NextResponse.json(
+            { error: "Failed to create opportunity" },
+            { status: 500 }
+        );
+    }
 }
 
 // Get specific job posting
 async function getJobPosting(
-  req: NextApiRequest,
-  res: NextApiResponse,
+  req: NextRequest,
+  res: NextResponse,
   repo: ReturnType<typeof getOpportunityRepository>,
   userId: string
 ) {
@@ -73,38 +87,10 @@ async function getJobPosting(
   res.status(200).json(opportunity);
 }
 
-// Create new job posting
-async function createJobPosting(
-  req: NextApiRequest,
-  res: NextApiResponse,
-  repo: ReturnType<typeof getOpportunityRepository>,
-  userId: string
-) {
-  const { title, description, position, company, location, tags, workMode } = req.body;
-
-  if (!title || !description || !position || !company || !location || !workMode) {
-    return res.status(400).json({ message: 'Missing required fields' });
-  }
-
-  const newOpportunity: Opportunity = {
-    userId,
-    title,
-    description,
-    position,
-    company,
-    location,
-    tags: tags || [],
-    workMode
-  };
-
-  const id = await repo.createOpportunity(newOpportunity);
-  res.status(201).json({ ...newOpportunity, _id: id });
-}
-
 // Update job posting (only owner's post/s)
 async function updateJobPosting(
-  req: NextApiRequest,
-  res: NextApiResponse,
+  req: NextRequest,
+  res: NextResponse,
   repo: ReturnType<typeof getOpportunityRepository>,
   userId: string
 ) {
@@ -136,8 +122,8 @@ async function updateJobPosting(
 
 // Delete job posting (only owner's post/s)
 async function deleteJobPosting(
-  req: NextApiRequest,
-  res: NextApiResponse,
+  req: NextRequest,
+  res: NextResponse,
   repo: ReturnType<typeof getOpportunityRepository>,
   userId: string
 ) {
