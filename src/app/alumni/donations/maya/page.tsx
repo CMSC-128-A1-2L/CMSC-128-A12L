@@ -3,11 +3,15 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
+import { usePathname } from 'next/navigation';
 
 export default function MayaDonationPage() {
   const [data, setData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const pathname = usePathname();
+  // Get the parent path by removing the last segment
+  const parentPath = pathname ? pathname.split('/').slice(0, -1).join('/') : '/alumni/donations';
 
   const testMayaAPI = async () => {
     setLoading(true);
@@ -53,7 +57,7 @@ export default function MayaDonationPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6">
-        <Link href="/donations" className="flex items-center text-blue-600 hover:text-blue-800">
+        <Link href={parentPath} className="flex items-center text-blue-600 hover:text-blue-800">
           <ArrowLeft className="mr-2" size={18} />
           Back to Donation Options
         </Link>
