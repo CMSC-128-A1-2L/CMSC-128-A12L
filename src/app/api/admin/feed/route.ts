@@ -4,7 +4,11 @@ import cron from "node-cron";
 
 async function sendWithGmail(recipient: string, subject: string, htmlBody: string, scheduledTime: Date){
     console.log("sendWithGmail");
-    const response = await fetch("https://script.google.com/macros/s/AKfycbwr9whGdfryOgQDVRqQ58nh-ZfEZOfG8anii-o-vGM3BSFqSa3llYahmA_cabSj6F0/exec",
+    console.log(process.env.GOOGLE_SCRIPT_URL);
+    const googleAppsScriptUrl = process.env.GOOGLE_SCRIPT_URL;
+    if (!googleAppsScriptUrl) throw new Error("Google Script URL not configured");
+    
+    const response = await fetch(googleAppsScriptUrl,
         {
             method: "POST",
             headers:{"Content-Type": "application/json"},
