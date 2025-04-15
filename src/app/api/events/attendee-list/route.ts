@@ -1,78 +1,92 @@
-// Simulating an API endpoint to return a list of attendees for events.
-// Dummy data used
-
 import { NextResponse } from "next/server";
-import events from "@/dummy_data/event.json";
-import users from "@/dummy_data/user.json";
-
-type RSVPType = "wouldGo" | "wouldMaybeGo" | "wouldNotGo";
-
-// Randomly assign users into three RSVP lists for each event
-function assignRandomAttendees() {
-  return (events as any[]).map((event) => {
-    const shuffled = [...users].sort(() => Math.random() - 0.5);
-    const total = shuffled.length;
-    const sliceSize = Math.floor(total / 3);
-
-    return {
-      ...event,
-      wouldGo: shuffled.slice(0, sliceSize),
-      wouldMaybeGo: shuffled.slice(sliceSize, 2 * sliceSize),
-      wouldNotGo: shuffled.slice(2 * sliceSize, total)
-    };
-  });
-}
+import { getEventRepository, RSVPType } from "@/repositories/event_repository";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { UserRole } from "@/entities/user";
 
 export async function GET(request: Request) {
   try {
+    // Get the user's session using NextAuth
+    const session = await getServerSession(authOptions);
+    
+    // Check if the user is authenticated and has admin role
+    if (!session || !session.user || !session.user.role || 
+        !session.user.role.includes(UserRole.ADMIN)) {
+      return NextResponse.json(
+        { error: "Unauthorized. Admin access required." },
+        { status: 403 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const eventId = searchParams.get("eventId");
-    const rsvpType = (searchParams.get("type") || "wouldGo") as RSVPType;
+    const userId = searchParams.get("userId");
+    const rsvpTypeParam = searchParams.get("type") || "wouldGo";
 
+    // Validate RSVP type
     const allowedTypes: RSVPType[] = ["wouldGo", "wouldMaybeGo", "wouldNotGo"];
-    if (!allowedTypes.includes(rsvpType)) {
+    if (!allowedTypes.includes(rsvpTypeParam as RSVPType)) {
       return NextResponse.json(
         { error: `Invalid type. Allowed types are ${allowedTypes.join(", ")}` },
         { status: 400 }
       );
     }
 
-    const eventsWithAttendees = assignRandomAttendees();
-    let result;
+    const rsvpType = rsvpTypeParam as RSVPType;
+    const eventRepository = getEventRepository();
 
+    // If eventId is provided, get attendees for a specific event
     if (eventId) {
-      const event = eventsWithAttendees.find((e) => e._id === eventId);
+      const event = await eventRepository.getEventById(eventId);
       if (!event) {
         return NextResponse.json({ error: "Event not found" }, { status: 404 });
       }
-      result = {
-        eventId: event._id,
-        title: event.title,
-        type: rsvpType,
-        attendees: event[rsvpType]  
-      };
-    } else {
-      result = eventsWithAttendees.map((event) => ({
-        eventId: event._id,
-        title: event.title,
-        type: rsvpType,
-        attendees: event[rsvpType]
-      }));
-    }
 
-    return NextResponse.json(result);
+      // Get attendees based on RSVP type and optional userId filter
+      const attendees = await eventRepository.getEventAttendees(eventId, rsvpType, userId);
+      
+      return NextResponse.json({
+        eventId: event._id,
+        title: event.name,
+        type: rsvpType,
+        attendees: attendees.map(user => ({
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role
+        }))
+      });
+    } 
+    // If no eventId is provided, get attendees for all events
+    else {
+      const events = await eventRepository.getAllEvents();
+      const result = await Promise.all(events.map(async (event) => {
+        const attendees = await eventRepository.getEventAttendees(
+          event._id as string, 
+          rsvpType, 
+          userId
+        );
+        
+        return {
+          eventId: event._id,
+          title: event.name,
+          type: rsvpType,
+          attendees: attendees.map(user => ({
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role
+          }))
+        };
+      }));
+
+      return NextResponse.json(result);
+    }
   } catch (error: any) {
-    console.error("Error in dummy attendee endpoint:", error);
+    console.error("Error in attendee list endpoint:", error);
     return NextResponse.json(
-      { error: "Failed to get dummy attendees", details: error.message },
+      { error: "Failed to get attendees", details: error.message },
       { status: 500 }
     );
   }
 }
-
-// Endpoint test
-// GET http://localhost:3000/api/events/attendee-list
-// GET http://localhost:3000/api/events/attendee-list?eventId=1&type=wouldGo
-// GET http://localhost:3000/api/events/attendee-list?eventId=1&type=wouldMaybeGo
-// GET http://localhost:3000/api/events/attendee-list?eventId=1&type=wouldNotGo
-// GET http://localhost:3000/api/events/attendee-list?eventId=1&type=invalidTypes
