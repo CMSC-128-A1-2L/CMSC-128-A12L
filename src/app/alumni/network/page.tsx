@@ -241,14 +241,14 @@ export default function AlumniPage() {
       <div className="flex space-x-4 mt-6">
       <button
               onClick={() => setShowModal(true)}
-              className="bg-gray-700 text-white px-4 py-2 rounded"
+              className="bg-gray-700 text-white px-4 py-2 rounded cursor-pointer"
             >
               Post a job
       </button>
       {/* Button for creating event modal */}
       <button
         onClick={() => setShowEventModal(true)}
-        className="bg-gray-700 text-white px-4 py-2 rounded"
+        className="bg-gray-700 text-white px-4 py-2 rounded cursor-pointer"
       >
         Create Event
       </button>
