@@ -107,7 +107,7 @@ export default function AlumniPage() {
                   onClick={() => setSelectedFilter({ ...selectedFilter, role: "" })}
                   className="block w-full text-left px-4 py-2 hover:bg-gray-200"
                 >
-                  All {selectedFilter.role === "all" && "✓"}
+                  All {selectedFilter.role === "" && "✓"}
                 </button>
               </li>
               <li>
