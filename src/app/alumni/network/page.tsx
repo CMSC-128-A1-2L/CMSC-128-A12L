@@ -200,11 +200,11 @@ export default function AlumniPage() {
                 value ? (
                   <div
                     key={key}
-                    className="badge badge-lg gap-2 px-3 py-3 bg-[#242937] text-white border-none"
+                    className="badge badge-lg gap-2 px-3 py-3 bg-[#1b1f4e] text-white border-none"
                   >
                     {value}
                     <button
-                      className="opacity-60 hover:opacity-100"
+                      className="text-white opacity-60 hover:opacity-100 cursor-pointer"
                       onClick={() => {
                         const newFilters = { ...selectedFilter };
                         newFilters[key as keyof typeof selectedFilter] = "";
