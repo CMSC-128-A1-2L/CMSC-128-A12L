@@ -41,7 +41,7 @@ export async function PUT(request: NextRequest, {params}:{params: {id: string}})
         const eventRepository = getEventRepository();
         
         const data = await request.json();
-        const requiredFields = ["name", "description", "type", "location", "startDate", "endDate", "monetaryValue", "wouldGo", "wouldNotGo", "wouldMaybeGo"];
+        const requiredFields = ["name", "description", "type", "location", "startDate", "endDate"];
         for(const field of requiredFields){
             if(!data[field]){
                 return NextResponse.json({error: `Missing required field: ${field}`}, {status: 400});
@@ -54,11 +54,27 @@ export async function PUT(request: NextRequest, {params}:{params: {id: string}})
         }
 
         const currDate = new Date();
-        if(currDate >= existingEvent.startDate){
+        if(currDate >= new Date(existingEvent.startDate)){
             return NextResponse.json({error: "Cannot edit event on/after start date."}, {status: 403});
         }
 
-        const updatedEvent = {...existingEvent, ...data, id: eventId};
+        // Ensure dates are properly formatted
+        const updatedEvent = {
+            ...existingEvent,
+            ...data,
+            startDate: new Date(data.startDate),
+            endDate: new Date(data.endDate),
+            _id: eventId,
+            // Preserve existing arrays if not provided in update
+            wouldGo: data.wouldGo || existingEvent.wouldGo || [],
+            wouldNotGo: data.wouldNotGo || existingEvent.wouldNotGo || [],
+            wouldMaybeGo: data.wouldMaybeGo || existingEvent.wouldMaybeGo || [],
+            // Handle optional fields
+            imageUrl: data.imageUrl || existingEvent.imageUrl,
+            sponsorship: data.sponsorship || existingEvent.sponsorship,
+            rsvp: data.rsvp || existingEvent.rsvp
+        };
+
         await eventRepository.updateEvent(updatedEvent);
 
         return NextResponse.json({message: "Event updated successfully.", event: updatedEvent});
