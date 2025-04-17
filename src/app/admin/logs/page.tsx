@@ -146,7 +146,7 @@ export default function AdminLogs() {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center cursor-pointer"
             >
               <Download className="w-4 h-4 mr-2" />
               Export
@@ -162,7 +162,7 @@ export default function AdminLogs() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 mr-2 rounded-lg whitespace-nowrap flex-shrink-0 ${
+              className={`px-4 py-2 mr-2 rounded-lg whitespace-nowrap flex-shrink-0 cursor-pointer ${
                 activeTab === tab 
                   ? 'bg-blue-600 text-white font-semibold' 
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -296,7 +296,7 @@ export default function AdminLogs() {
               whileTap={{ scale: 0.95 }}
               onClick={handlePreviousPage}
               disabled={currentPage === 1}
-              className={`px-3 py-1 md:px-4 md:py-2 rounded-lg ${
+              className={`px-3 py-1 md:px-4 md:py-2 rounded-lg cursor-pointer ${
                 currentPage === 1 
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -310,7 +310,7 @@ export default function AdminLogs() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => handlePageChange(number)}
-                className={`px-3 py-1 md:px-4 md:py-2 rounded-lg ${
+                className={`px-3 py-1 md:px-4 md:py-2 rounded-lg cursor-pointer ${
                   currentPage === number
                     ? 'bg-blue-600 text-white font-semibold'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -324,7 +324,7 @@ export default function AdminLogs() {
               whileTap={{ scale: 0.95 }}
               onClick={handleNextPage}
               disabled={currentPage === totalPages}
-              className={`px-3 py-1 md:px-4 md:py-2 rounded-lg ${
+              className={`px-3 py-1 md:px-4 md:py-2 rounded-lg cursor-pointer ${
                 currentPage === totalPages
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
