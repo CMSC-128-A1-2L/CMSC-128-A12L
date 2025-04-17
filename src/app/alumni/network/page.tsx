@@ -158,9 +158,9 @@ export default function AlumniPage() {
               <li className="p-2">
                 <button
                   onClick={clearFilters}
-                  className="w-full text-left px-4 py-2 bg-red-100 hover:bg-red-200 text-red-600 cursor-pointer"
+                  className="w-full text-center px-4 py-2 bg-[#1b1f4e] hover:bg-[#15183d] text-white rounded-md cursor-pointer"
                 >
-                  Clear Filter
+                  Clear
                 </button>
               </li>
             </ul>
