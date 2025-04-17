@@ -33,17 +33,39 @@ export async function POST(request: NextRequest){
         const eventRepository = getEventRepository();
         const data = await request.json();
 
-        const requiredFields = ["name", "description", "type", "location", "startDate", "endDate", "monetaryValue", "wouldGo", "wouldNotGo", "wouldMaybeGo"];
+        const requiredFields = [
+            "name", 
+            "organizer",
+            "description", 
+            "type", 
+            "location", 
+            "startDate", 
+            "endDate"
+        ];
+
         for(const field of requiredFields){
             if(!data[field]){
                 return NextResponse.json({error: `Missing required field: ${field}`}, {status: 400});
             }
         }
 
-        const newEvent = {userId: session.user.id, ...data};
-        await eventRepository.createEvent(newEvent);
+        // Initialize arrays if not provided
+        const newEvent = {
+            ...data,
+            wouldGo: data.wouldGo || [],
+            wouldNotGo: data.wouldNotGo || [],
+            wouldMaybeGo: data.wouldMaybeGo || [],
+            sponsorship: data.sponsorship || { enabled: false, sponsors: [] },
+            rsvp: data.rsvp || { enabled: false, options: ['Yes', 'No', 'Maybe'] },
+            userId: session.user.id
+        };
 
-        return NextResponse.json({message: "Event created successfully.", event: newEvent}, {status: 201});
+        const eventId = await eventRepository.createEvent(newEvent);
+
+        return NextResponse.json({
+            message: "Event created successfully.", 
+            event: { ...newEvent, _id: eventId }
+        }, {status: 201});
     }catch(error){
         console.error("Failed to create new event: ",error);
         return NextResponse.json({error: "Failed to create new event."}, {status: 500});
