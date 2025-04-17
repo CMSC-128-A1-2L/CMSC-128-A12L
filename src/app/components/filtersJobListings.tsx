@@ -63,7 +63,7 @@ export default function FilterSidebar({
     <div className="flex-grow">
       {/* Sidebar */}
       <div
-        className={`flex flex-col flex-start gap-3 w-64 bg-base-200 p-4 rounded-xl ${
+        className={`flex flex-col flex-start gap-3 w-64 bg-white p-4 rounded-xl shadow-lg ${
           isOpen ? "block" : "hidden"
         } sticky top-0 h-full overflow-y-auto`}
       >
