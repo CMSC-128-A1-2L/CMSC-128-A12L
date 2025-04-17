@@ -2,7 +2,7 @@
 import { useSession } from "next-auth/react";
 import { UserRole } from "@/entities/user";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { FiFilter } from "react-icons/fi";
 import { IoIosArrowForward, IoIosArrowBack } from "react-icons/io";
 import userData from "@/dummy_data/user.json";
@@ -36,6 +36,20 @@ export default function AlumniPage() {
   const itemsPerPage = 12;
   const [showModal, setShowModal] = useState(false);
   const [showEventModal, setShowEventModal] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowFilter(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   // filters based on role and gender
   const filteredAlumni = userData.filter((alumni) => {
@@ -76,7 +90,7 @@ export default function AlumniPage() {
         />
 
         {/* Filter Dropdown */}
-        <div className="relative">
+        <div className="relative" ref={dropdownRef}>
           <button
             onClick={() => setShowFilter(!showFilter)}
             className="btn btn-outline flex items-center"
