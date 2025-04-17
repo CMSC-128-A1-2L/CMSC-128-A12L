@@ -44,8 +44,8 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ isOpen, onClose, onSave
     organizer: event?.organizer || "",
     description: event?.description || "",
     type: event?.type || "social",
-    startDate: event?.startDate || new Date(),
-    endDate: event?.endDate || new Date(),
+    startDate: event?.startDate ? new Date(event.startDate) : new Date(),
+    endDate: event?.endDate ? new Date(event.endDate) : new Date(),
     location: event?.location || "",
     imageUrl: event?.imageUrl || "",
     sponsorship: {
@@ -92,10 +92,13 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ isOpen, onClose, onSave
     const { name, value } = e.target;
     
     if (name === 'startDate' || name === 'endDate') {
-      setFormData(prev => ({
-        ...prev,
-        [name]: new Date(value)
-      }));
+      const dateValue = new Date(value);
+      if (!isNaN(dateValue.getTime())) {
+        setFormData(prev => ({
+          ...prev,
+          [name]: dateValue
+        }));
+      }
     } else if (name === 'monetaryValue') {
       setFormData(prev => ({
         ...prev,
@@ -201,8 +204,8 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ isOpen, onClose, onSave
     
     const eventData: Partial<Event> = {
       ...formData,
-      startDate: new Date(formData.startDate),
-      endDate: new Date(formData.endDate),
+      startDate: formData.startDate instanceof Date ? formData.startDate : new Date(formData.startDate),
+      endDate: formData.endDate instanceof Date ? formData.endDate : new Date(formData.endDate),
     };
     onSave(eventData as Event);
     onClose();

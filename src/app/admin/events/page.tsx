@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
@@ -15,8 +15,6 @@ import EventCard from "@/app/components/eventContentCard";
 import EventRow from "@/app/components/eventContentRow";
 import EventDetails from "@/app/components/eventDetails";
 import EditJobListComponent from "@/app/components/editJobList";
-import eventData from "@/dummy_data/event.json";
-// Refactor add event list and edit event to use modal than page
 import EditEventModal from "@/app/components/editEvent";
 import CreateEventModal from "@/app/components/createEvent";
 import { Event } from "@/entities/event";
@@ -33,7 +31,9 @@ export default function EventsPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [eventToEdit, setEventToEdit] = useState<Event | null>(null);
-  const [events, setEvents] = useState<any[]>(eventData);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -47,9 +47,34 @@ export default function EventsPage() {
     image: null as File | null,
   });
 
-  // Filter events based on available data
+  // Fetch events on component mount
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  const fetchEvents = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch('/api/admin/events');
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch events');
+      }
+
+      const data = await response.json();
+      setEvents(data);
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching events:', err);
+      setError('Failed to load events. Please try again later.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Filter events based on search
   const filteredEvents = events.filter((event) =>
-    (event.title || event.name || "").toLowerCase().includes(search.toLowerCase())
+    (event.name || "").toLowerCase().includes(search.toLowerCase())
   );
 
   // Pagination
@@ -101,36 +126,19 @@ export default function EventsPage() {
   };
 
   // Helper to safely format event data for display components
-  const formatEventForDisplay = (event: any, index: number): Partial<Event> & { displayDate: string } => {
-    const eventId = event._id || event.id || `event-${index}`;
+  const formatEventForDisplay = (event: Event): Event & { displayDate: string } => {
     return {
-      ...event, // Include original fields
-      _id: eventId,
-      name: event.title || event.name || "Untitled Event",
-      description: event.description || "",
-      type: event.type || "other",
-      startDate: new Date(event.date || event.startDate || Date.now()), // Ensure Date object
-      endDate: new Date(event.endDate || event.date || event.startDate || Date.now()), // Ensure Date object
-      location: event.location || "N/A",
-      imageUrl: event.imageUrl || "",
-      monetaryValue: event.monetaryValue || 0,
-      wouldGo: event.wouldGo || [],
-      wouldNotGo: event.wouldNotGo || [],
-      wouldMaybeGo: event.wouldMaybeGo || [],
-      organizer: event.organizer || "N/A", // Add organizer if used in cards
-      // Simple formatted date string for cards/rows
-      displayDate: new Date(event.date || event.startDate || Date.now()).toLocaleDateString(),
+      ...event,
+      displayDate: new Date(event.startDate).toLocaleDateString(),
     };
   };
 
   // Handle event details modal open/close
-  const handleEventDetails = (eventData: any) => {
-    // Format the data passed from the card/row click
-    const formattedEvent = formatEventForDisplay(eventData, -1); // Index -1 as it's not from map loop
-    setSelectedEvent(formattedEvent as Event); // Assume formattedEvent matches Event structure
+  const handleEventDetails = (eventData: Event) => {
+    const formattedEvent = formatEventForDisplay(eventData);
+    setSelectedEvent(formattedEvent);
     setIsModalOpen(true);
   };
-  
 
   const handleCloseDetailsModal = () => {
     setIsModalOpen(false);
@@ -139,9 +147,9 @@ export default function EventsPage() {
 
   // Handle edit modal open/close
   const handleEdit = (event: Event) => {
-    setEventToEdit(event); // Set the event to be edited
-    setIsEditModalOpen(true); // Open the edit modal
-    setIsModalOpen(false); // Close the details modal if it was open
+    setEventToEdit(event);
+    setIsEditModalOpen(true);
+    setIsModalOpen(false);
   };
 
   const handleCloseEditModal = () => {
@@ -149,24 +157,33 @@ export default function EventsPage() {
     setEventToEdit(null);
   };
 
-  const handleSaveEditedEvent = (updatedEvent: Event) => {
-    console.log("Saving updated event:", updatedEvent);
-    // TODO: Implement actual save logic (e.g., API call)
-    // For now, just update the dummy data visually (if needed) or refetch
-    handleCloseEditModal();
-    // Potentially reopen details modal with updated data
-    // setSelectedEvent(updatedEvent); 
-    // setIsModalOpen(true);
-  };
+  const handleSaveEditedEvent = async (updatedEvent: Event) => {
+    try {
+      const response = await fetch(`/api/admin/events/${updatedEvent._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...updatedEvent,
+          startDate: updatedEvent.startDate.toISOString(),
+          endDate: updatedEvent.endDate.toISOString(),
+        }),
+      });
 
-  // Handle Apply to Job button click
-  const handleApply = (jobTitle: string) => {
-    console.log(`Applying for ${jobTitle}`);
-  };
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to update event');
+      }
 
-  function handleFilterChange(arg0: { jobType: { fullTime: boolean; partTime: boolean; contract: boolean; }; workType: { onSite: boolean; remote: boolean; hybrid: boolean; }; }): void {
-    throw new Error("Function not implemented.");
-  }
+      // Refresh the events list
+      await fetchEvents();
+      handleCloseEditModal();
+    } catch (error) {
+      console.error('Error updating event:', error);
+      // You might want to show an error message to the user here
+    }
+  };
 
   // Handle form submission
   const handleCreateEvent = async (eventData: Partial<Event>) => {
@@ -185,18 +202,53 @@ export default function EventsPage() {
       }
 
       const result = await response.json();
-      // Update the events list with the new event
-      setEvents(prevEvents => [...prevEvents, result.event]);
-      
-      // Show success message or handle UI updates
-      // You might want to add a toast notification here
-      console.log('Event created successfully:', result.event);
+      // Ensure the event has an _id before adding it to the state
+      if (result.event && result.event._id) {
+        setEvents(prevEvents => [...prevEvents, result.event]);
+      }
+      setShowEventModal(false);
     } catch (error) {
       console.error('Error creating event:', error);
-      // Handle error (show error message to user)
-      // You might want to add an error toast notification here
+      // You might want to show an error message to the user here
     }
   };
+
+  const handleDeleteEvent = async (eventId: string) => {
+    try {
+      const response = await fetch(`/api/admin/events/${eventId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to delete event');
+      }
+
+      // Refresh the events list
+      await fetchEvents();
+      setIsModalOpen(false);
+      setSelectedEvent(null);
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="loading loading-spinner loading-lg"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-red-500">{error}</div>
+      </div>
+    );
+  }
 
   return (
     <div className="w-full">
@@ -245,9 +297,8 @@ export default function EventsPage() {
       {/* Events Grid/List */}
       <div className={`grid ${isGridView ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'} gap-4`}>
         <AnimatePresence>
-          {displayedEvents.map((event, index) => {
-            // Format event data specifically for Card/Row display
-            const eventForDisplay = formatEventForDisplay(event, index);
+          {displayedEvents.map((event) => {
+            const eventForDisplay = formatEventForDisplay(event);
 
             return (
               <motion.div
@@ -259,27 +310,26 @@ export default function EventsPage() {
               >
                 {isGridView ? (
                   <EventCard
-                    _id={eventForDisplay._id!} // Use non-null assertion if confident _id exists
-                    title={eventForDisplay.name!}
-                    organizer={eventForDisplay.organizer!}
-                    location={eventForDisplay.location!}
-                    date={eventForDisplay.displayDate} // Use simple display date
-                    imageUrl={eventForDisplay.imageUrl!}
-                    onDetailsClick={() => handleEventDetails(event)} // Pass original event data
-                    // Dummy props - ensure these match EventCard's actual props
-                    index={index} 
-                    rsvp={{ enabled: false, options: [] }} 
-                    onClose={() => {}} 
-                    onEditClick={() => {}} 
-                    onDeleteClick={() => {}} 
+                    _id={eventForDisplay._id!}
+                    title={eventForDisplay.name}
+                    organizer={eventForDisplay.organizer}
+                    location={eventForDisplay.location}
+                    date={eventForDisplay.displayDate}
+                    imageUrl={eventForDisplay.imageUrl || ''}
+                    onDetailsClick={() => handleEventDetails(event)}
+                    onEditClick={() => handleEdit(event)}
+                    onDeleteClick={() => console.log("Delete event", event._id)}
+                    onClose={() => {}}
+                    index={0}
+                    rsvp={eventForDisplay.rsvp || { enabled: false, options: [] }}
                   />
                 ) : (
                   <EventRow
-                    title={eventForDisplay.name!}
-                    organizer={eventForDisplay.organizer!}
-                    location={eventForDisplay.location!}
-                    date={eventForDisplay.displayDate} // Use simple display date
-                    onDetailsClick={() => handleEventDetails(event)} // Pass original event data
+                    title={eventForDisplay.name}
+                    organizer={eventForDisplay.organizer}
+                    location={eventForDisplay.location}
+                    date={eventForDisplay.displayDate}
+                    onDetailsClick={() => handleEventDetails(event)}
                   />
                 )}
               </motion.div>
@@ -329,12 +379,22 @@ export default function EventsPage() {
       {/* Event Details Modal */}
       {isModalOpen && selectedEvent && (
         <EventDetails
-          {...selectedEvent}
           _id={selectedEvent._id!}
-          startDate={selectedEvent.startDate!}
-          endDate={selectedEvent.endDate!}
+          name={selectedEvent.name}
+          organizer={selectedEvent.organizer}
+          description={selectedEvent.description}
+          type={selectedEvent.type}
+          startDate={selectedEvent.startDate}
+          endDate={selectedEvent.endDate}
+          location={selectedEvent.location}
+          imageUrl={selectedEvent.imageUrl}
+          sponsorship={selectedEvent.sponsorship}
+          rsvp={selectedEvent.rsvp}
+          wouldGo={selectedEvent.wouldGo}
+          wouldNotGo={selectedEvent.wouldNotGo}
+          wouldMaybeGo={selectedEvent.wouldMaybeGo}
           onEditClick={() => handleEdit(selectedEvent)}
-          onDeleteClick={() => console.log("Delete event", selectedEvent._id)}
+          onDeleteClick={() => handleDeleteEvent(selectedEvent._id!)}
           onClose={handleCloseDetailsModal}
           isOpen={isModalOpen}
         />
