@@ -105,7 +105,7 @@ export default function AlumniPage() {
               <li>
                 <button
                   onClick={() => setSelectedFilter({ ...selectedFilter, role: "" })}
-                  className="block w-full text-left px-4 py-2 hover:bg-gray-200"
+                  className="block w-full text-left px-4 py-2 hover:bg-gray-200 cursor-pointer"
                 >
                   All {selectedFilter.role === "" && "✓"}
                 </button>
@@ -115,7 +115,7 @@ export default function AlumniPage() {
                   onClick={() =>
                     setSelectedFilter({ ...selectedFilter, role: "alumni" })
                   }
-                  className="block w-full text-left px-4 py-2 hover:bg-gray-200"
+                  className="block w-full text-left px-4 py-2 hover:bg-gray-200 cursor-pointer"
                 >
                   Alumni {selectedFilter.role === "alumni" && "✓"}
                 </button>
@@ -128,7 +128,7 @@ export default function AlumniPage() {
                   onClick={() =>
                     setSelectedFilter({ ...selectedFilter, gender: "" })
                   }
-                  className="block w-full text-left px-4 py-2 hover:bg-gray-200"
+                  className="block w-full text-left px-4 py-2 hover:bg-gray-200 cursor-pointer"
                 >
                   All {selectedFilter.gender === "" && "✓"}
                 </button>
@@ -138,7 +138,7 @@ export default function AlumniPage() {
                   onClick={() =>
                     setSelectedFilter({ ...selectedFilter, gender: "Male" })
                   }
-                  className="block w-full text-left px-4 py-2 hover:bg-gray-200"
+                  className="block w-full text-left px-4 py-2 hover:bg-gray-200 cursor-pointer"
                 >
                   Male {selectedFilter.gender === "Male" && "✓"}
                 </button>
@@ -148,7 +148,7 @@ export default function AlumniPage() {
                   onClick={() =>
                     setSelectedFilter({ ...selectedFilter, gender: "Female" })
                   }
-                  className="block w-full text-left px-4 py-2 hover:bg-gray-200"
+                  className="block w-full text-left px-4 py-2 hover:bg-gray-200 cursor-pointer"
                 >
                   Female {selectedFilter.gender === "Female" && "✓"}
                 </button>
@@ -158,7 +158,7 @@ export default function AlumniPage() {
               <li className="p-2">
                 <button
                   onClick={clearFilters}
-                  className="w-full text-left px-4 py-2 bg-red-100 hover:bg-red-200 text-red-600"
+                  className="w-full text-left px-4 py-2 bg-red-100 hover:bg-red-200 text-red-600 cursor-pointer"
                 >
                   Clear Filter
                 </button>
