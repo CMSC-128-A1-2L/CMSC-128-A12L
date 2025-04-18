@@ -33,5 +33,5 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const newPassword: string = body.newPassword;
 
     await changePasswordService.finalizePasswordChange(userId, newPassword);
-    return NextResponse.json(null, { status: 204 });
+    return NextResponse.json({ message: "Password changed successfully." }, { status: 200 });
 }
