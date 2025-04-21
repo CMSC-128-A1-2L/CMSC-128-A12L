@@ -10,11 +10,12 @@ import { UserRole } from "@/entities/user";
 export async function GET(req: NextApiRequest, res: NextApiResponse) {
     const { id } = req.query;
     const session = await getServerSession(authOptions);
-    const donationRepository = getEducationRepository();
     //authorization check: ensure the user is authenticated and has the "ADMIN" role
     if (!session || !session.user.role.includes(UserRole.ADMIN)) {
         return res.status(401).json({ error: "Unauthorized" });
     }
+
+    const donationRepository = getEducationRepository();
 
     try {
         const donation = await donationRepository.getDonationById(id as string);
@@ -31,10 +32,12 @@ export async function GET(req: NextApiRequest, res: NextApiResponse) {
 export async function PUT(req: NextApiRequest, res: NextApiResponse) {
     const { id } = req.query;
     const session = await getServerSession(authOptions);
-    const donationRepository = getEducationRepository();
+
     if (!session || !session.user.role.includes(UserRole.ADMIN)) {
         return res.status(401).json({ error: "Unauthorized" });
     }
+
+    const donationRepository = getEducationRepository();
 
     try {
         const existingDonation = await donationRepository.getDonationById(id as string);
@@ -54,10 +57,11 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse) {
 export async function DELETE(req: NextApiRequest, res: NextApiResponse) {
     const { id } = req.query;
     const session = await getServerSession(authOptions);
-    const donationRepository = getEducationRepository();
     if (!session || !session.user.role.includes(UserRole.ADMIN)) {
         return res.status(401).json({ error: "Unauthorized" });
     }
+
+    const donationRepository = getEducationRepository();
 
     try {
         const existingDonation = await donationRepository.getDonationById(id as string);
