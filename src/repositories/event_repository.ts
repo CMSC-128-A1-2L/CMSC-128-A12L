@@ -53,6 +53,62 @@ export interface EventRepository {
     deleteEvent(id: string): Promise<void>;
 
     /**
+     * * NEW: Adds userID to the wouldGo field of an event from the repository.
+     * 
+     * @param eId The ID of the event to update.
+     * @param uId The ID of the user to enlist to the wouldGo.
+     * @returns A promise that resolves when the event is updated successfully.
+     */
+    addToEventWGo(eId: string, uId: string): Promise<void>
+
+    /**
+     * * NEW: Removes userID from the wouldGo field of an event from the repository.
+     * 
+     * @param eId The ID of the event to update.
+     * @param uId The ID of the user to remove from the wouldGo.
+     * @returns A promise that resolves when the event is updated successfully.
+     */
+    deleteFromEventWGo(eId: string, uId: string): Promise<void>
+
+    /**
+     * * NEW: Adds userID to the wouldNotGo field of an event from the repository.
+     * 
+     * @param eId The ID of the event to update.
+     * @param uId The ID of the user to enlist to the wouldNotGo.
+     * @returns A promise that resolves when the event is updated successfully.
+     */
+    addToEventWNotGo(eId: string, uId: string): Promise<void>
+
+    /**
+     * * NEW: Removes userID from the wouldNotGo field of an event from the repository.
+     * 
+     * @param eId The ID of the event to update.
+     * @param uId The ID of the user to remove from the wouldNotGo.
+     * @returns A promise that resolves when the event is updated successfully.
+     */
+    deleteFromEventWNotGo(eId: string, uId: string): Promise<void>
+
+    /**
+     * * NEW: Adds userID to the wouldMaybeGo field of an event from the repository.
+     * 
+     * @param eId The ID of the event to update.
+     * @param uId The ID of the user to enlist to the wouldMaybeGo.
+     * @returns A promise that resolves when the event is updated successfully.
+     */
+    addToEventWMaybeGo(eId: string, uId: string): Promise<void>
+
+    /**
+     * * NEW: Removes userID from the wouldMaybeGo field of an event from the repository.
+     * 
+     * @param eId The ID of the event to update.
+     * @param uId The ID of the user to remove from the wouldMaybeGo.
+     * @returns A promise that resolves when the event is updated successfully.
+     */
+    deleteFromEventWMaybeGo(eId: string, uId: string): Promise<void>
+
+
+
+    /*
      * Gets the attendees of an event based on RSVP type.
      * 
      * @param eventId The ID of the event to fetch attendees for.
@@ -91,6 +147,35 @@ class MongoDBEventRepository implements EventRepository {
     async deleteEvent(id: string): Promise<void> {
         await this.model.findByIdAndDelete(id);
     }
+    // * NEW
+    async addToEventWGo(eId: string, uId: string): Promise<void> {
+        await this.model.findByIdAndUpdate(eId, { $addToSet: {wouldGo: uId}});
+    }
+
+    // * NEW
+    async deleteFromEventWGo(eId: string, uId: string): Promise<void> {
+        await this.model.findByIdAndUpdate(eId, { $pull: {wouldGo: uId}});
+    }
+
+    // * NEW
+    async addToEventWNotGo(eId: string, uId: string): Promise<void> {
+        await this.model.findByIdAndUpdate(eId, { $addToSet: {wouldNotGo: uId}});
+    }
+
+    // * NEW
+    async deleteFromEventWNotGo(eId: string, uId: string): Promise<void> {
+        await this.model.findByIdAndUpdate(eId, { $pull: {wouldNotGo: uId}});
+    }
+
+    // * NEW
+    async addToEventWMaybeGo(eId: string, uId: string): Promise<void> {
+        await this.model.findByIdAndUpdate(eId, { $addToSet: {wouldMaybeGo: uId}});
+    }
+
+    // * NEW
+    async deleteFromEventWMaybeGo(eId: string, uId: string): Promise<void> {
+        await this.model.findByIdAndUpdate(eId, { $pull: {wouldMaybeGo: uId}});
+    }
 
     async getEventAttendees(eventId: string, rsvpType: RSVPType, userId?: string | null): Promise<User[]> {
         // Find the event and populate the specified RSVP field with user details
@@ -115,7 +200,7 @@ class MongoDBEventRepository implements EventRepository {
         
         return attendeesDtos.map(attendeeDto => mapUserDtoToUser(attendeeDto));
     }
-    
+  
     constructor(connection: Connection) {
         this.connection = connection;
         this.model = connection.models["Event"] ?? connection.model("Event", EventSchema, "events");
