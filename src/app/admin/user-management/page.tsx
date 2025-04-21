@@ -238,7 +238,7 @@ export default function UsersManagement(){
                             <motion.button
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
-                                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center w-full md:w-auto justify-center"
+                                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center w-full md:w-auto justify-center cursor-pointer"
                             >
                                 <Download className="w-4 h-4 mr-2" />
                                 Export
@@ -257,7 +257,7 @@ export default function UsersManagement(){
                                     setRoleFilter(tab);
                                     setCurrentPage(1);
                                 }}
-                                className={`px-4 py-2 mr-2 rounded-lg whitespace-nowrap flex-shrink-0 ${
+                                className={`px-4 py-2 mr-2 rounded-lg whitespace-nowrap flex-shrink-0 cursor-pointer ${
                                     roleFilter === tab 
                                         ? 'bg-blue-600 text-white font-semibold' 
                                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -286,7 +286,7 @@ export default function UsersManagement(){
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => setIsModalOpen(true)}
-                                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center w-full md:w-auto justify-center"
+                                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center w-full md:w-auto justify-center cursor-pointer"
                             >
                                 Filters
                             </motion.button>

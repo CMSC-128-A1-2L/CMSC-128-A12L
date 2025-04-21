@@ -1,4 +1,3 @@
-
 import { v2 as cloudinary } from "cloudinary";
 import dotenv from "dotenv";
 
@@ -51,23 +50,33 @@ const uploader = cloudinary.uploader;
 //     }
 // }
 
-async function uploadImage(fileBuffer: Buffer) {
-    console.log("Uploading image to cloudinary.");
-
-
-    let tags = {
-        "tags": ["ARTMS"]
-    };
+export async function uploadEventImage(fileBuffer: Buffer, fileName: string) {
+    console.log("Uploading image to Cloudinary.");
 
     try {
-      
-    
+        // Convert buffer to base64
+        const base64File = fileBuffer.toString('base64');
+        const dataURI = `data:image/jpeg;base64,${base64File}`;
+
+        // Upload to Cloudinary
+        const result = await uploader.upload(dataURI, {
+            resource_type: 'image',
+            folder: 'event_images',
+            public_id: fileName.split('.')[0], // Remove extension for public_id
+            tags: ["EVENT_IMAGES"]
+        });
+
+        console.log("Successfully uploaded image to Cloudinary.");
+        return {
+            success: true,
+            url: result.secure_url,
+            public_id: result.public_id
+        };
     } catch (err) {
         console.log("There was an error uploading the image:", err);
-        return(err);
+        return {
+            success: false,
+            error: err
+        };
     }
-}
-
-export {
-  uploadImage
 }

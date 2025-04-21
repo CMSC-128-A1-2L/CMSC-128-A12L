@@ -8,6 +8,7 @@ import {
   Bell,
   Users,
   SwitchCamera,
+  Settings,
 } from "lucide-react";
 import { RefObject } from "react";
 import Link from "next/link";
@@ -73,6 +74,11 @@ export default function AlumniSidebar({
         name: "Alumni Network",
         icon: <Users size={20} />,
         path: "/alumni/network",
+      },
+      {
+        name: "Settings",
+        icon: <Settings size={20} />,
+        path: "/alumni/settings",
       },
     ],
   };

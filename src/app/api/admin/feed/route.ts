@@ -3,8 +3,11 @@ import nodemailer from "nodemailer";
 import cron from "node-cron";
 
 async function sendWithGmail(recipient: string, subject: string, htmlBody: string, scheduledTime: Date){
-    // console.log("sendWithGmail");
-    const response = await fetch("https://script.google.com/macros/s/AKfycbw3i_Q6ATKATgK3vi7Jk5tLIyHHayy9ifm3UY5i8oz8yGHg6B9TyI5pvxzzEhflGJKm/exec",
+    console.log("sendWithGmail");
+    const googleAppsScriptUrl = process.env.GOOGLE_SCRIPT_URL;
+    if (!googleAppsScriptUrl) throw new Error("Google Script URL not configured");
+    
+    const response = await fetch(googleAppsScriptUrl,
         {
             method: "POST",
             headers:{"Content-Type": "application/json"},
@@ -15,12 +18,12 @@ async function sendWithGmail(recipient: string, subject: string, htmlBody: strin
     return response.json();
 }
 
-async function sendWithNodemailer(userEmail: string, recipient: string, subject: string, htmlBody: string, scheduledTime: Date){
-    // console.log("sendWithNodemailer");
+async function sendWithNodemailer(recipient: string, subject: string, htmlBody: string, scheduledTime: Date){
+    console.log("sendWithNodemailer");
     const transporter = nodemailer.createTransport({
         service: 'gmail',
         auth: {
-            user: userEmail,
+            user: process.env.NEXT_PUBLIC_EMAIL,
             pass: process.env.APP_PASSWORD,
         }
     });
@@ -32,7 +35,7 @@ async function sendWithNodemailer(userEmail: string, recipient: string, subject:
     const scheduleSend = cron.schedule(cronExp, async () => {
         try{
             await transporter.sendMail({
-                from: userEmail,
+                from: process.env.NEXT_PUBLIC_EMAIL,
                 to: recipient,
                 subject: subject,
                 html: htmlBody
@@ -40,17 +43,17 @@ async function sendWithNodemailer(userEmail: string, recipient: string, subject:
 
             scheduleSend.stop();
         }catch(error){
-            console.error("Failed to send email.");
+            console.error(`Failed to send email. ${error}`);
         }
     });
 
-    return "Email scheduled successfully.";
+    return {success: true, message: "Email scheduled successfully."};
     
 }
 
 export async function POST(req:NextRequest){
     try{
-        const{recipients, subject, htmlBody, userEmail, provider, scheduledTime} = await req.json();
+        const{recipients, subject, htmlBody, provider, scheduledTime} = await req.json();
 
         const schedTime = new Date(scheduledTime);
 
@@ -62,7 +65,7 @@ export async function POST(req:NextRequest){
         if(provider === "google"){
             results = await Promise.all(recipients.map((recipient) => sendWithGmail(recipient, subject, htmlBody, schedTime)));
         }else{
-            results = await Promise.all(recipients.map((recipient) => sendWithNodemailer(userEmail, recipient, subject, htmlBody, schedTime)));
+            results = await Promise.all(recipients.map((recipient) => sendWithNodemailer(recipient, subject, htmlBody, schedTime)));
         }
 
         return NextResponse.json({success: true, results});

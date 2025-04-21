@@ -3,6 +3,7 @@ import { UserCredentials } from "@/entities/user_credentials";
 import { mapUserCredentialsDtoToUserCredentials, mapUserCredentialsToUserCredentialsDto } from "@/mappers/user_credentials";
 import { UserCredentialsDto, UserCredentialsSchema } from "@/models/user_credentials";
 import { Connection, Model } from "mongoose";
+import { compare } from "bcrypt";
 
 /**
  * The interface for a repository containing user credentials.
@@ -60,6 +61,15 @@ export interface UserCredentialsRepository {
      * @return A promise that resolves when the credentials are deleted successfully.
      */
     deleteUserCredentials(id: string): Promise<void>;
+
+    /**
+     * Validates user credentials.
+     * 
+     * @param email The email of the user.
+     * @param password The password of the user.
+     * @return A promise that resolves to a boolean value indicating whether the credentials are valid.
+     */
+    validateUserCredentials(email: string, password: string): Promise<boolean>;
 }
 
 class MongoDbUserCredentialsRepository implements UserCredentialsRepository {
@@ -93,6 +103,14 @@ class MongoDbUserCredentialsRepository implements UserCredentialsRepository {
 
     async deleteUserCredentials(id: string): Promise<void> {
         await this.model.deleteOne({ id: id });
+    }
+
+    async validateUserCredentials(email: string, password: string): Promise<boolean> {
+        const userCredentialsDto = await this.model.findOne({ email: email });
+        if (!userCredentialsDto || !userCredentialsDto.password) return false;
+        console.log("The password in usercredentials is: ", userCredentialsDto.password.encryptedValue);
+        console.log("The current password is: ", password);
+        return await compare(password, String(userCredentialsDto.password.encryptedValue));
     }
 
     constructor(connection: Connection) {

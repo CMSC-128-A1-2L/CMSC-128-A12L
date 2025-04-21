@@ -27,25 +27,24 @@ const EventCard: React.FC<EventCardProps> = ({
   onApplyClick,
 }) => {
   return (
-    <div className="card bg-[#1e2433] rounded-xl overflow-hidden hover:bg-[#242937] transition-all duration-200">
+    <div className="card bg-white hover:bg-white rounded-xl overflow-hidden transition-all duration-200 h-[500px] shadow-lg">
       <figure className="relative h-48">
         <img 
           src={imageUrl} 
           alt={`${company} job banner`} 
           className="w-full h-full object-cover" 
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
       </figure>
 
-      <div className="card-body p-4">
-        <h2 className="card-title text-lg font-semibold text-white mb-1">{title}</h2>
-        <p className="text-sm text-gray-400 mb-3">
+      <div className="card-body p-4 flex flex-col h-[calc(500px-12rem)]">
+        <h2 className="card-title text-lg font-semibold text-gray-800 mb-1 line-clamp-2">{title}</h2>
+        <p className="text-sm text-gray-600 mb-3 line-clamp-1">
           {company} • {location}
         </p>
         <div className="flex flex-col gap-2 mt-auto">
           <button
             onClick={onDetailsClick}
-            className="btn btn-sm btn-ghost bg-[#242937] hover:bg-[#2a3041] text-white rounded-lg w-full"
+            className="btn btn-sm btn-ghost bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg w-full"
           >
             Details
           </button>

@@ -4,10 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { UserRole } from "@/entities/user";
 
-// * NOTE: Possibly disable clicking of other correspondence buttons until/unless previously clicked is unclicked. 
-
-
-// MARKS an event as interested
+// MARKS possible attendance to event (wouldMaybeGo)
 export async function POST(req: NextRequest, { params }: { params: {id: string}}) {
     try {
         // get session info
@@ -21,25 +18,25 @@ export async function POST(req: NextRequest, { params }: { params: {id: string}}
 
         // URL Query Ver
         // const qParams = req.nextUrl.searchParams;
-        // const interest = qParams.get('interest'); 
-        // if(interest === 'true'){
+        // const maybegoing = qParams.get('maybe-going'); 
+        // if(maybegoing === 'true'){
         
         // marking as interested
         if(req.body){
-            return await eventRepository.addToEventWGo(id, session.user.id)
-            .then(() => new NextResponse("Successfully added interest to event", {status: 200}))
-            .catch(() => new NextResponse("Failed to mark event interest", {status: 500}));
+            return await eventRepository.addToEventWMaybeGo(id, session.user.id)
+            .then(() => new NextResponse("Successfully confirmed possible attendance to event", {status: 200}))
+            .catch(() => new NextResponse("Failed to mark event possible attendance", {status: 500}));
         }else{
-        // toggle user INTEREST to false, remove user from wouldGo
-            return await eventRepository.deleteFromEventWGo(id, session.user.id)
-            .then(() => new NextResponse("Successfully removed interest to event", {status: 200}))
-            .catch(() => new NextResponse("Failed to remove event interest", {status: 500}));
+        // toggle user MAYBEGOING to false, remove user from wouldMaybeGo
+            return await eventRepository.deleteFromEventWMaybeGo(id, session.user.id)
+            .then(() => new NextResponse("Successfully removed possible attendance to event", {status: 200}))
+            .catch(() => new NextResponse("Failed to remove event possible attendance", {status: 500}));
         }
         
     } catch (error) {
-        console.log("Failed to mark as interested: ", error);
+        console.log("Failed to mark possible attendance: ", error);
         return NextResponse.json(
-            { error: "Failed to mark as interested"},
+            { error: "Failed to mark possible attendance"},
             { status: 500 }
         );
     }
