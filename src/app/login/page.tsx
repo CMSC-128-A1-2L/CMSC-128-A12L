@@ -10,7 +10,7 @@ import { redirect, useRouter } from "next/navigation";
 import { Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { useSession } from "next-auth/react";
 import MobileLogin from "@/app/login/mobile-login";
-
+// Login page
 export default function Login() {
 	const router = useRouter();
 	const { data: session } = useSession();
