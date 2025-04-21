@@ -28,7 +28,7 @@ export default function AdminSidebar({
   role,
 }: SidebarProps) {
   const sidebarItems = [
-    { name: "Dashboard", icon: <LayoutDashboardIcon size={20} />, path: "/admin/dashboard" },
+    { name: "Dashboard", icon: <LayoutDashboardIcon size={20} />, path: "/admin" },
     { name: "Manage Users", icon: <Users size={20} />, path: "/admin/user-management" },
     { name: "Job Opportunities", icon: <Briefcase size={20} />, path: "/admin/opportunities" },
     { name: "Events", icon: <CalendarCogIcon size={20} />, path: "/admin/events" },
