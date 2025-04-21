@@ -65,6 +65,42 @@ export interface EventRepository {
      */
     deleteFromEventWGo(eId: string, uId: string): Promise<void>
 
+    /**
+     * * NEW: Adds userID to the wouldNotGo field of an event from the repository.
+     * 
+     * @param eId The ID of the event to update.
+     * @param uId The ID of the user to enlist to the wouldNotGo.
+     * @returns A promise that resolves when the event is updated successfully.
+     */
+    addToEventWNotGo(eId: string, uId: string): Promise<void>
+
+    /**
+     * * NEW: Removes userID from the wouldNotGo field of an event from the repository.
+     * 
+     * @param eId The ID of the event to update.
+     * @param uId The ID of the user to remove from the wouldNotGo.
+     * @returns A promise that resolves when the event is updated successfully.
+     */
+    deleteFromEventWNotGo(eId: string, uId: string): Promise<void>
+
+    /**
+     * * NEW: Adds userID to the wouldMaybeGo field of an event from the repository.
+     * 
+     * @param eId The ID of the event to update.
+     * @param uId The ID of the user to enlist to the wouldMaybeGo.
+     * @returns A promise that resolves when the event is updated successfully.
+     */
+    addToEventWMaybeGo(eId: string, uId: string): Promise<void>
+
+    /**
+     * * NEW: Removes userID from the wouldMaybeGo field of an event from the repository.
+     * 
+     * @param eId The ID of the event to update.
+     * @param uId The ID of the user to remove from the wouldMaybeGo.
+     * @returns A promise that resolves when the event is updated successfully.
+     */
+    deleteFromEventWMaybeGo(eId: string, uId: string): Promise<void>
+
 
 
 }
@@ -106,6 +142,26 @@ class MongoDBEventRepository implements EventRepository {
     // * NEW
     async deleteFromEventWGo(eId: string, uId: string): Promise<void> {
         await this.model.findByIdAndUpdate(eId, { $pull: {wouldGo: uId}});
+    }
+
+    // * NEW
+    async addToEventWNotGo(eId: string, uId: string): Promise<void> {
+        await this.model.findByIdAndUpdate(eId, { $addToSet: {wouldNotGo: uId}});
+    }
+
+    // * NEW
+    async deleteFromEventWNotGo(eId: string, uId: string): Promise<void> {
+        await this.model.findByIdAndUpdate(eId, { $pull: {wouldNotGo: uId}});
+    }
+
+    // * NEW
+    async addToEventWMaybeGo(eId: string, uId: string): Promise<void> {
+        await this.model.findByIdAndUpdate(eId, { $addToSet: {wouldMaybeGo: uId}});
+    }
+
+    // * NEW
+    async deleteFromEventWMaybeGo(eId: string, uId: string): Promise<void> {
+        await this.model.findByIdAndUpdate(eId, { $pull: {wouldMaybeGo: uId}});
     }
 
     constructor(connection: Connection) {

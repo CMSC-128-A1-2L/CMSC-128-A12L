@@ -4,10 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { UserRole } from "@/entities/user";
 
-// * NOTE: Possibly disable clicking of other correspondence buttons until/unless previously clicked is unclicked. 
-
-
-// MARKS an event as interested
+// MARKS non-attendance to an event (WouldNotGo)
 export async function POST(req: NextRequest, { params }: { params: {id: string}}) {
     try {
         // get session info
@@ -21,25 +18,25 @@ export async function POST(req: NextRequest, { params }: { params: {id: string}}
 
         // URL Query Ver
         // const qParams = req.nextUrl.searchParams;
-        // const interest = qParams.get('interest'); 
-        // if(interest === 'true'){
+        // const notgoing = qParams.get('not-going'); 
+        // if(notgoing === 'true'){
         
         // marking as interested
         if(req.body){
-            return await eventRepository.addToEventWGo(id, session.user.id)
-            .then(() => new NextResponse("Successfully added interest to event", {status: 200}))
-            .catch(() => new NextResponse("Failed to mark event interest", {status: 500}));
+            return await eventRepository.addToEventWNotGo(id, session.user.id)
+            .then(() => new NextResponse("Successfully confirmed non-attendance to event", {status: 200}))
+            .catch(() => new NextResponse("Failed to mark event non-attendance", {status: 500}));
         }else{
-        // toggle user INTEREST to false, remove user from wouldGo
-            return await eventRepository.deleteFromEventWGo(id, session.user.id)
-            .then(() => new NextResponse("Successfully removed interest to event", {status: 200}))
-            .catch(() => new NextResponse("Failed to remove event interest", {status: 500}));
+        // toggle user NOTGOING to false, remove user from wouldNotGo
+            return await eventRepository.deleteFromEventWNotGo(id, session.user.id)
+            .then(() => new NextResponse("Successfully removed non-attendance to event", {status: 200}))
+            .catch(() => new NextResponse("Failed to remove event non-attendance", {status: 500}));
         }
         
     } catch (error) {
-        console.log("Failed to mark as interested: ", error);
+        console.log("Failed to mark non-attendance: ", error);
         return NextResponse.json(
-            { error: "Failed to mark as interested"},
+            { error: "Failed to mark non-attendance"},
             { status: 500 }
         );
     }
