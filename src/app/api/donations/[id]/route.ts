@@ -5,12 +5,12 @@ import { getEducationRepository } from "@/repositories/donation_repository";
 import { Donation } from "@/entities/donation";
 import { UserRole } from "@/entities/user";  
 
-const donationRepository = getEducationRepository();
+
 
 export async function GET(req: NextApiRequest, res: NextApiResponse) {
     const { id } = req.query;
     const session = await getServerSession(authOptions);
-
+    const donationRepository = getEducationRepository();
     //authorization check: ensure the user is authenticated and has the "ADMIN" role
     if (!session || !session.user.role.includes(UserRole.ADMIN)) {
         return res.status(401).json({ error: "Unauthorized" });
@@ -31,7 +31,7 @@ export async function GET(req: NextApiRequest, res: NextApiResponse) {
 export async function PUT(req: NextApiRequest, res: NextApiResponse) {
     const { id } = req.query;
     const session = await getServerSession(authOptions);
-
+    const donationRepository = getEducationRepository();
     if (!session || !session.user.role.includes(UserRole.ADMIN)) {
         return res.status(401).json({ error: "Unauthorized" });
     }
@@ -54,7 +54,7 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse) {
 export async function DELETE(req: NextApiRequest, res: NextApiResponse) {
     const { id } = req.query;
     const session = await getServerSession(authOptions);
-
+    const donationRepository = getEducationRepository();
     if (!session || !session.user.role.includes(UserRole.ADMIN)) {
         return res.status(401).json({ error: "Unauthorized" });
     }

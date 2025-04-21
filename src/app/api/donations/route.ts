@@ -9,6 +9,7 @@ import { UserRole } from "@/entities/user";
 const donationRepository = getEducationRepository();
 
 export async function GET(req: NextApiRequest, res: NextApiResponse) {
+    const donationRepository = getEducationRepository();
     const session = await getServerSession(authOptions);
     if (!session || !session.user.role.includes(UserRole.ADMIN)) {
         return res.status(401).json({ error: "Unauthorized" });
@@ -24,6 +25,7 @@ export async function GET(req: NextApiRequest, res: NextApiResponse) {
 
 export async function POST(req: NextApiRequest, res: NextApiResponse) {
     const session = await getServerSession(authOptions);
+    const donationRepository = getEducationRepository();
     if (!session || !session.user.role.includes(UserRole.ADMIN)) {
         return res.status(401).json({ error: "Unauthorized" });
     }
