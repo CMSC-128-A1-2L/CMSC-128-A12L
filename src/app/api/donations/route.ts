@@ -6,8 +6,6 @@ import { Donation } from "@/entities/donation";
 import { UserRole } from "@/entities/user";  
 
 
-const donationRepository = getEducationRepository();
-
 export async function GET(req: NextApiRequest, res: NextApiResponse) {
     const session = await getServerSession(authOptions);
     if (!session || !session.user.role.includes(UserRole.ADMIN)) {
