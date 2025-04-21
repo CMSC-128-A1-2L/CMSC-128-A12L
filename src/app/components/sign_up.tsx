@@ -1,11 +1,13 @@
 "use client";
 import { useState, useEffect } from 'react';
-import { redirect } from 'next/navigation';
+import { redirect, useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import SignIn from './sign_in';
 import ConstellationBackground from './constellation_background';
+import { ArrowLeft } from 'lucide-react';
 
 export default function SignUp() {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -162,7 +164,18 @@ export default function SignUp() {
       </div>
 
       {/* Right Panel - Light */}
-      <div className="w-full lg:w-1/2 bg-[#f8f9fc] flex items-center justify-center p-4 lg:p-8">
+      <div className="w-full lg:w-1/2 bg-[#f8f9fc] flex items-center justify-center p-4 lg:p-8 relative">
+        {/* Back Button - Positioned in upper left */}
+        <motion.button
+          onClick={() => router.push('/')}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          className="absolute top-6 left-6 flex items-center gap-3 text-gray-600 hover:text-gray-900 transition-colors duration-200 bg-white/50 hover:bg-white/80 px-4 py-2 rounded-lg"
+        >
+          <ArrowLeft className="h-5 w-5" />
+          <span className="text-base font-medium">Back to Home</span>
+        </motion.button>
+
         <motion.div
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}

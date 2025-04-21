@@ -1,15 +1,7 @@
 "use client";
 
-import { useState, useRef } from "react";
-
-import EventCard from "@/app/components/eventContentCard";
-import EventRow from "@/app/components/eventContentRow";
-import EventDetails from "@/app/components/eventDetails";
-import EditJobListComponent from "@/app/components/editJobList";
-import eventData from "@/dummy_data/event.json";
-// Refactor add event list and edit event to use modal than page
-import EditEventModal from "@/app/components/editEvent";
-
+import { useState, useRef, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Search,
   LayoutGrid,
@@ -17,291 +9,406 @@ import {
   ChevronRight,
   ChevronLeft,
   Plus,
-  Filter,
+  Image as ImageIcon,
 } from "lucide-react";
-import { motion } from "framer-motion";
+import EventCard from "@/app/components/eventContentCard";
+import EventRow from "@/app/components/eventContentRow";
+import EventDetails from "@/app/components/eventDetails";
+import EditJobListComponent from "@/app/components/editJobList";
+import EditEventModal from "@/app/components/editEvent";
+import CreateEventModal from "@/app/components/createEvent";
+import { Event } from "@/entities/event";
 
-export default function JobListings() {
-  // Add Event modal state
+export default function EventsPage() {
+  // State management
   const [showEventModal, setShowEventModal] = useState(false);
-  
-  // Sidebar state
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const menuButtonRef = useRef<HTMLButtonElement>(null);
-  const sidebarRef = useRef<HTMLDivElement>(null);
-
-  // Search state
   const [search, setSearch] = useState("");
-
-  // Event details/Edit event details modal state
-  const [selectedEvent, setSelectedEvent] = useState<any>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
-  
-  // View toggle state
   const [isGridView, setIsGridView] = useState(true);
-  const toggleView = () => {
-    setIsGridView(!isGridView);
-  };
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [eventToEdit, setEventToEdit] = useState<Event | null>(null);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Apply search/filters
-  const filteredEvents = eventData.filter((event) => {
-    // Search filter
-    const searchMatch =
-      event.title.toLowerCase().includes(search.toLowerCase());
-
-    // // Job Type filter
-    // const jobTypeFiltersActive =
-    //   activeFilters.jobType.fullTime ||
-    //   activeFilters.jobType.partTime ||
-    //   activeFilters.jobType.contract;
-
-    // const jobTypeMatch =
-    //   !jobTypeFiltersActive ||
-    //   (activeFilters.jobType.fullTime && job.job_type === "Full-time") ||
-    //   (activeFilters.jobType.partTime && job.job_type === "Part-time") ||
-    //   (activeFilters.jobType.contract && job.job_type === "Contract");
-
-    // Work Type filter
-    // const workTypeFiltersActive =
-    //   activeFilters.workType.onSite ||
-    //   activeFilters.workType.remote ||
-    //   activeFilters.workType.hybrid;
-
-    // const workTypeMatch =
-    //   !workTypeFiltersActive ||
-    //   (activeFilters.workType.onSite && job.work_type === "On-site") ||
-    //   (activeFilters.workType.remote && job.work_type === "Remote") ||
-    //   (activeFilters.workType.hybrid && job.work_type === "Hybrid");
-
-    return searchMatch;
-    // && jobTypeMatch && workTypeMatch;
+  // Form state
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    type: "",
+    startDate: "",
+    endDate: "",
+    location: "",
+    monetaryValue: 0,
+    image: null as File | null,
   });
 
-  // Handle Pagination
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 12;
+  // Fetch events on component mount
+  useEffect(() => {
+    fetchEvents();
+  }, []);
 
+  const fetchEvents = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch('/api/admin/events');
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch events');
+      }
+
+      const data = await response.json();
+      setEvents(data);
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching events:', err);
+      setError('Failed to load events. Please try again later.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Filter events based on search
+  const filteredEvents = events.filter((event) =>
+    (event.name || "").toLowerCase().includes(search.toLowerCase())
+  );
+
+  // Pagination
+  const itemsPerPage = 12;
   const totalPages = Math.ceil(filteredEvents.length / itemsPerPage);
   const displayedEvents = filteredEvents.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
 
-  // Handle event details modal
-  const handleEventDetails = (event: any) => {
-    setSelectedEvent(event);
-    setIsModalOpen(true);
-  };
-  
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
-  };
-
-  // Handle Apply to Job button click
-  const handleApply = (jobTitle: string) => {
-    console.log(`Applying for ${jobTitle}`);
-  };
-
-  // Handle Edit Job button click
-  const handleEdit = (job: any) => {
-    setSelectedEvent(job);
-    // Use the DaisyUI modal show method
-    const modal = document.getElementById(
-      "edit_job_modal"
-    ) as HTMLDialogElement;
-    if (modal) {
-      modal.showModal();
-      setIsModalOpen(true);
+  // Handle image upload
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFormData({ ...formData, image: file });
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
-  function handleFilterChange(arg0: { jobType: { fullTime: boolean; partTime: boolean; contract: boolean; }; workType: { onSite: boolean; remote: boolean; hybrid: boolean; }; }): void {
-    throw new Error("Function not implemented.");
+  const handleRemoveImage = () => {
+    setPreviewImage(null);
+    setFormData({ ...formData, image: null });
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  // Handle form submission
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Here you would typically handle the form submission
+    console.log("Form submitted:", formData);
+    setShowEventModal(false);
+    setFormData({
+      name: "",
+      description: "",
+      type: "",
+      startDate: "",
+      endDate: "",
+      location: "",
+      monetaryValue: 0,
+      image: null,
+    });
+    setPreviewImage(null);
+  };
+
+  // Helper to safely format event data for display components
+  const formatEventForDisplay = (event: Event): Event & { displayDate: string } => {
+    return {
+      ...event,
+      displayDate: new Date(event.startDate).toLocaleDateString(),
+    };
+  };
+
+  // Handle event details modal open/close
+  const handleEventDetails = (eventData: Event) => {
+    const formattedEvent = formatEventForDisplay(eventData);
+    setSelectedEvent(formattedEvent);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseDetailsModal = () => {
+    setIsModalOpen(false);
+    setSelectedEvent(null);
+  };
+
+  // Handle edit modal open/close
+  const handleEdit = (event: Event) => {
+    setEventToEdit(event);
+    setIsEditModalOpen(true);
+    setIsModalOpen(false);
+  };
+
+  const handleCloseEditModal = () => {
+    setIsEditModalOpen(false);
+    setEventToEdit(null);
+  };
+
+  const handleSaveEditedEvent = async (updatedEvent: Event) => {
+    try {
+      const response = await fetch(`/api/admin/events/${updatedEvent._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...updatedEvent,
+          startDate: updatedEvent.startDate.toISOString(),
+          endDate: updatedEvent.endDate.toISOString(),
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to update event');
+      }
+
+      // Refresh the events list
+      await fetchEvents();
+      handleCloseEditModal();
+    } catch (error) {
+      console.error('Error updating event:', error);
+      // You might want to show an error message to the user here
+    }
+  };
+
+  // Handle form submission
+  const handleCreateEvent = async (eventData: Partial<Event>) => {
+    try {
+      const response = await fetch('/api/admin/events', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(eventData),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to create event');
+      }
+
+      const result = await response.json();
+      // Ensure the event has an _id before adding it to the state
+      if (result.event && result.event._id) {
+        setEvents(prevEvents => [...prevEvents, result.event]);
+      }
+      setShowEventModal(false);
+    } catch (error) {
+      console.error('Error creating event:', error);
+      // You might want to show an error message to the user here
+    }
+  };
+
+  const handleDeleteEvent = async (eventId: string) => {
+    try {
+      const response = await fetch(`/api/admin/events/${eventId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to delete event');
+      }
+
+      // Refresh the events list
+      await fetchEvents();
+      setIsModalOpen(false);
+      setSelectedEvent(null);
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="loading loading-spinner loading-lg"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-red-500">{error}</div>
+      </div>
+    );
   }
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#151821]">
-      {/* Main container */}
-      <div className="flex-1 container mx-auto px-6">
-        {/* Toolbar */}
-        <div className="flex items-center gap-4 py-4">
-          {/* Left section */}
-          <div className="flex items-center gap-3">
-          
-            <button
-              onClick={() => setShowEventModal(true)}
-              className="btn btn-primary btn-sm rounded-lg"
-            >
-              <Plus size={18} /> Add Event
-            </button>
-          </div>
+    <div className="w-full">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
+        <h1 className="text-2xl font-bold text-gray-800">Events Management</h1>
+        <button
+          onClick={() => setShowEventModal(true)}
+          className="btn btn-primary gap-2"
+        >
+          <Plus size={20} />
+          Create Event
+        </button>
+      </div>
 
-          {/* Search bar - center */}
-          <div className="flex-1 max-w-2xl mx-auto">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-              <input
-                type="search"
-                placeholder="Search events"
-                className="input input-bordered w-full pl-10 pr-16 bg-[#1e2433] border-gray-700 text-gray-200"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-              <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
-                <kbd className="kbd kbd-sm">ctrl</kbd>
-                <kbd className="kbd kbd-sm">K</kbd>
-              </div>
-            </div>
+      {/* Search and View Toggle */}
+      <div className="flex flex-col md:flex-row gap-4 mb-6">
+        <div className="flex-1">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-800 z-10" size={20} />
+            <input
+              type="search"
+              placeholder="Search events..."
+              className="input input-bordered w-full pl-10 bg-white border-gray-200 text-gray-500"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
           </div>
-
-          {/* View toggle - right */}
-          <button onClick={toggleView} className="btn btn-ghost btn-sm rounded-lg text-gray-300">
-            {isGridView ? (
-              <>
-                <LayoutList size={18} /> List
-              </>
-            ) : (
-              <>
-                <LayoutGrid size={18} /> Grid
-              </>
-            )}
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setIsGridView(true)}
+            className={`btn ${isGridView ? 'btn-primary' : 'btn-ghost'}`}
+          >
+            <LayoutGrid size={20} className="text-gray-800"/>
+          </button>
+          <button
+            onClick={() => setIsGridView(false)}
+            className={`btn ${!isGridView ? 'btn-primary' : 'btn-ghost'}`}
+          >
+            <LayoutList size={20} className="text-gray-800"/>
           </button>
         </div>
-
-        {/* Content area */}
-        <div className="flex gap-6 mt-6">
-  
-
-          <main className="flex-1">
-            {/* Active filters */}
-            <div className="flex flex-wrap items-center gap-2 mb-4">
-            
-
-              {/* Results count */}
-              {filteredEvents.length > 0 && (
-                <div className="ml-auto text-sm text-gray-400">
-                  Showing {filteredEvents.length} results
-                </div>
-              )}
-            </div>
-
-            {/* Grid/List View */}
-            <div className={`grid ${isGridView ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'} gap-4`}>
-              {displayedEvents.length > 0 ? (
-                displayedEvents.map((event, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.3 }}
-                    className="hover:bg-gray-700 transition-colors"
-                  >
-                    {isGridView ? (
-                      <EventCard
-                        key={index}
-                        title={event.title}
-                        organizer={event.organizer}
-                        location={event.location}
-                        date={event.date}
-                        onDetailsClick={() =>
-                           handleEventDetails(event)} _id={""} index={0} imageUrl={""} rsvp={{
-                          enabled: false,
-                          options: []
-                        }}  onClose={function (): void {
-                          throw new Error("Function not implemented.");
-                        } } onEditClick={function (): void {
-                          throw new Error("Function not implemented.");
-                        } } onDeleteClick={function (): void {
-                          throw new Error("Function not implemented.");
-                        } }                      />
-                    ) : (
-                      <EventRow
-                        key={index}
-                        title={event.title}
-                        organizer={event.organizer}
-                        location={event.location}
-                        date={event.date}
-                        onDetailsClick={() => handleEventDetails(event)}
-                      />
-                    )}
-                  </motion.div>
-                ))
-              ) : (
-                <div className="col-span-full text-center py-8">
-                  <p className="text-white">
-                    No events found matching your filters.
-                  </p>
-                  <button
-                    className="btn btn-error rounded-lg mt-4"
-                    onClick={() =>
-                      handleFilterChange({
-                        jobType: {
-                          fullTime: false,
-                          partTime: false,
-                          contract: false,
-                        },
-                        workType: {
-                          onSite: false,
-                          remote: false,
-                          hybrid: false,
-                        },
-                      })
-                    }
-                  >
-                    Clear all filters
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Job Details Modal */}
-            {isModalOpen && selectedEvent && (
-            <EventDetails
-              _id={selectedEvent._id}
-              index={selectedEvent.index}
-              title={selectedEvent.title}
-              organizer={selectedEvent.organizer}
-              location={selectedEvent.location}
-              date={selectedEvent.date}
-          
-           
-              description={selectedEvent.description}
-              contactInfo={selectedEvent.contactInfo}
-              onEditClick={() => handleEdit(selectedEvent)}
-              onDeleteClick={() => console.log("Delete event")}
-              onClose={handleCloseModal}
-              isOpen={true}
-            />
-          )}
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex justify-center items-center space-x-4 my-4 px-6 w-full select-none">
-                <button
-                  onClick={() => setCurrentPage(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  className="btn btn-sqr"
-                >
-                  <ChevronLeft />
-                </button>
-                <span>
-                  {currentPage} / {totalPages}
-                </span>
-                <button
-                  onClick={() => setCurrentPage(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  className="btn btn-sqr"
-                >
-                  <ChevronRight />
-                </button>
-              </div>
-            )}
-          </main>
-        </div>
       </div>
+
+      {/* Events Grid/List */}
+      <div className={`grid ${isGridView ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'} gap-4`}>
+        <AnimatePresence>
+          {displayedEvents.map((event) => {
+            const eventForDisplay = formatEventForDisplay(event);
+
+            return (
+              <motion.div
+                key={eventForDisplay._id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.3 }}
+              >
+                {isGridView ? (
+                  <EventCard
+                    _id={eventForDisplay._id!}
+                    title={eventForDisplay.name}
+                    organizer={eventForDisplay.organizer}
+                    location={eventForDisplay.location}
+                    date={eventForDisplay.displayDate}
+                    imageUrl={eventForDisplay.imageUrl || ''}
+                    onDetailsClick={() => handleEventDetails(event)}
+                    onEditClick={() => handleEdit(event)}
+                    onDeleteClick={() => console.log("Delete event", event._id)}
+                    onClose={() => {}}
+                    index={0}
+                    rsvp={eventForDisplay.rsvp || { enabled: false, options: [] }}
+                  />
+                ) : (
+                  <EventRow
+                    title={eventForDisplay.name}
+                    organizer={eventForDisplay.organizer}
+                    location={eventForDisplay.location}
+                    date={eventForDisplay.displayDate}
+                    onDetailsClick={() => handleEventDetails(event)}
+                  />
+                )}
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
+      </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex justify-center gap-2 mt-6">
+          <button
+            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            disabled={currentPage === 1}
+            className="btn btn-ghost btn-sm"
+          >
+            <ChevronLeft size={16} />
+          </button>
+          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+            <button
+              key={page}
+              onClick={() => setCurrentPage(page)}
+              className={`btn btn-sm ${currentPage === page ? 'btn-primary' : 'btn-ghost'}`}
+            >
+              {page}
+            </button>
+          ))}
+          <button
+            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+            disabled={currentPage === totalPages}
+            className="btn btn-ghost btn-sm"
+          >
+            <ChevronRight size={16} />
+          </button>
+        </div>
+      )}
+
+      {/* Create Event Modal */}
+      {showEventModal && (
+        <CreateEventModal
+          isOpen={showEventModal}
+          onClose={() => setShowEventModal(false)}
+          onSubmit={handleCreateEvent}
+        />
+      )}
+
+      {/* Event Details Modal */}
+      {isModalOpen && selectedEvent && (
+        <EventDetails
+          _id={selectedEvent._id!}
+          name={selectedEvent.name}
+          organizer={selectedEvent.organizer}
+          description={selectedEvent.description}
+          type={selectedEvent.type}
+          startDate={selectedEvent.startDate}
+          endDate={selectedEvent.endDate}
+          location={selectedEvent.location}
+          imageUrl={selectedEvent.imageUrl}
+          sponsorship={selectedEvent.sponsorship}
+          rsvp={selectedEvent.rsvp}
+          wouldGo={selectedEvent.wouldGo}
+          wouldNotGo={selectedEvent.wouldNotGo}
+          wouldMaybeGo={selectedEvent.wouldMaybeGo}
+          onEditClick={() => handleEdit(selectedEvent)}
+          onDeleteClick={() => handleDeleteEvent(selectedEvent._id!)}
+          onClose={handleCloseDetailsModal}
+          isOpen={isModalOpen}
+        />
+      )}
+
+      {/* Edit Event Modal */}
+      {isEditModalOpen && eventToEdit && (
+        <EditEventModal
+          isOpen={isEditModalOpen}
+          onClose={handleCloseEditModal}
+          onSave={handleSaveEditedEvent}
+          event={eventToEdit}
+        />
+      )}
     </div>
   );
 }

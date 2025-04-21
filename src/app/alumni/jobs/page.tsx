@@ -147,27 +147,11 @@ export default function JobListings() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#1a1f2e]">
+    <div className="flex flex-col min-h-screen bg-gray-100">
       {/* Main container */}
       <div className="flex-1 container mx-auto px-6">
-        {/* Toolbar */}
+        {/* Search bar and View toggle */}
         <div className="flex items-center gap-4 py-4">
-          {/* Left section */}
-          <div className="flex items-center gap-3">
-            <button
-              className="btn btn-ghost btn-sm rounded-lg"
-              onClick={() => setFilterSidebarOpen(!filterSidebarOpen)}
-            >
-              <Filter size={18} />
-            </button>
-            <button
-              onClick={() => setShowModal(true)}
-              className="btn btn-primary btn-sm rounded-lg"
-            >
-              <Plus size={18} /> Add Job
-            </button>
-          </div>
-
           {/* Search bar - center */}
           <div className="flex-1 max-w-2xl mx-auto">
             <div className="relative">
@@ -175,7 +159,7 @@ export default function JobListings() {
               <input
                 type="search"
                 placeholder="Search jobs"
-                className="input input-bordered w-full pl-10 pr-16 bg-[#242937] border-gray-700 text-gray-200"
+                className="input input-bordered w-full pl-10 pr-16 bg-white border-gray-300 text-gray-800"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
@@ -203,12 +187,26 @@ export default function JobListings() {
         {/* Content area */}
         <div className="flex gap-6 mt-6">
           {/* Sidebar */}
-          <aside className={`w-64 flex-shrink-0 ${filterSidebarOpen ? 'block' : 'hidden'} lg:block`}>
-              <FilterSidebar
-                isOpen={filterSidebarOpen}
-                setIsOpen={setFilterSidebarOpen}
-                onFilterChange={handleFilterChange}
-              />
+          <aside className={`w-64 flex-shrink-0 ${filterSidebarOpen ? 'block' : 'hidden'} lg:block -mt-[13px]`}>
+            <div className="flex items-center gap-3 mb-4">
+              <button
+                className="btn btn-ghost btn-sm rounded-lg"
+                onClick={() => setFilterSidebarOpen(!filterSidebarOpen)}
+              >
+                <Filter size={18} />
+              </button>
+              <button
+                onClick={() => setShowModal(true)}
+                className="btn btn-primary btn-sm rounded-lg"
+              >
+                <Plus size={18} /> Add Job
+              </button>
+            </div>
+            <FilterSidebar
+              isOpen={filterSidebarOpen}
+              setIsOpen={setFilterSidebarOpen}
+              onFilterChange={handleFilterChange}
+            />
           </aside>
 
           {/* Main content */}

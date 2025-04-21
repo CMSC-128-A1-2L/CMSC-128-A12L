@@ -163,27 +163,11 @@ export default function JobListings() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#151821]">
+    <div className="flex flex-col min-h-screen bg-gray-100">
       {/* Main container */}
       <div className="flex-1 container mx-auto px-6">
-        {/* Toolbar */}
+        {/* Search bar and View toggle */}
         <div className="flex items-center gap-4 py-4">
-          {/* Left section */}
-          <div className="flex items-center gap-3">
-            <button
-              className="btn btn-ghost btn-sm rounded-lg"
-              onClick={() => setFilterSidebarOpen(!filterSidebarOpen)}
-            >
-              <Filter size={18} />
-            </button>
-            <button
-              onClick={() => setShowEventModal(true)}
-              className="btn btn-primary btn-sm rounded-lg"
-            >
-              <Plus size={18} /> Add Event
-            </button>
-          </div>
-
           {/* Search bar - center */}
           <div className="flex-1 max-w-2xl mx-auto">
             <div className="relative">
@@ -191,7 +175,7 @@ export default function JobListings() {
               <input
                 type="search"
                 placeholder="Search events"
-                className="input input-bordered w-full pl-10 pr-16 bg-[#1e2433] border-gray-700 text-gray-200"
+                className="input input-bordered w-full pl-10 pr-16 bg-white border-gray-300 text-gray-800"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
@@ -203,7 +187,7 @@ export default function JobListings() {
           </div>
 
           {/* View toggle - right */}
-          <button onClick={toggleView} className="btn btn-ghost btn-sm rounded-lg text-gray-300">
+          <button onClick={toggleView} className="btn btn-ghost btn-sm rounded-lg">
             {isGridView ? (
               <>
                 <LayoutList size={18} /> List
@@ -219,12 +203,26 @@ export default function JobListings() {
         {/* Content area */}
         <div className="flex gap-6 mt-6">
           {/* Sidebar */}
-          <aside className={`w-64 flex-shrink-0 ${filterSidebarOpen ? 'block' : 'hidden'} lg:block`}>
-              <FilterSidebar
-                isOpen={filterSidebarOpen}
-                setIsOpen={setFilterSidebarOpen}
-                onFilterChange={handleFilterChange}
-              />
+          <aside className={`w-64 flex-shrink-0 ${filterSidebarOpen ? 'block' : 'hidden'} lg:block -mt-[13px]`}>
+            <div className="flex items-center gap-3 mb-4">
+              <button
+                className="btn btn-ghost btn-sm rounded-lg"
+                onClick={() => setFilterSidebarOpen(!filterSidebarOpen)}
+              >
+                <Filter size={18} />
+              </button>
+              <button
+                onClick={() => setShowEventModal(true)}
+                className="btn btn-primary btn-sm rounded-lg"
+              >
+                <Plus size={18} /> Add Event
+              </button>
+            </div>
+            <FilterSidebar
+              isOpen={filterSidebarOpen}
+              setIsOpen={setFilterSidebarOpen}
+              onFilterChange={handleFilterChange}
+            />
           </aside>
 
           <main className="flex-1">
@@ -234,7 +232,7 @@ export default function JobListings() {
                 value ? (
                   <div
                     key={key}
-                    className="badge badge-lg gap-2 px-3 py-3 bg-[#1e2433] text-white border-none"
+                    className="badge badge-lg gap-2 px-3 py-3 bg-[#242937] text-white border-none"
                   >
                     {key === "fullTime"
                       ? "Full-time"
@@ -282,7 +280,7 @@ export default function JobListings() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.3 }}
-                    className="hover:bg-gray-700 transition-colors"
+                    className="transition-colors"
                   >
                     {isGridView ? (
                       <EventCard

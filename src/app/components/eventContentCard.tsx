@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import { Calendar, MapPin, Users } from "lucide-react";
 
 interface EventCardProps {
     _id: string;
@@ -36,22 +37,33 @@ const EventCard: React.FC<EventCardProps> = ({
     onDetailsClick
 }) => {
   return (
-    <div className="card bg-[#1e2433] rounded-xl overflow-hidden hover:bg-[#242937] transition-all duration-200">
-      <figure className="relative h-48">
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
-      </figure>
-
+    <div className="card bg-white shadow-sm hover:shadow-md transition-all duration-200 rounded-lg overflow-hidden">
       <div className="card-body p-4">
-        <h2 className="card-title text-lg font-semibold text-white mb-1">{title}</h2>
-        <p className="text-sm text-gray-400 mb-3">
-          {organizer} • {location}
-        </p>
-        <div className="flex flex-col gap-2 mt-auto">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1">
+            <h2 className="card-title text-lg font-semibold text-gray-800 mb-2">{title}</h2>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Users size={16} className="text-gray-400" />
+                <span>{organizer}</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <MapPin size={16} className="text-gray-400" />
+                <span>{location}</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Calendar size={16} className="text-gray-400" />
+                <span>{date}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="card-actions justify-end mt-4">
           <button
             onClick={onDetailsClick}
-            className="btn btn-sm btn-ghost bg-[#242937] hover:bg-[#2a3041] text-white rounded-lg w-full"
+            className="btn btn-sm btn-primary"
           >
-            Details
+            View Details
           </button>
         </div>
       </div>
