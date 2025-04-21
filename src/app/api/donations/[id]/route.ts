@@ -15,9 +15,8 @@ export async function GET(req: NextApiRequest, res: NextApiResponse) {
         return res.status(401).json({ error: "Unauthorized" });
     }
 
-    const donationRepository = getEducationRepository();
-
     try {
+        const donationRepository = getEducationRepository();
         const donation = await donationRepository.getDonationById(id as string);
         if (donation) {
             res.status(200).json(donation);
@@ -37,9 +36,8 @@ export async function PUT(req: NextApiRequest, res: NextApiResponse) {
         return res.status(401).json({ error: "Unauthorized" });
     }
 
-    const donationRepository = getEducationRepository();
-
     try {
+        const donationRepository = getEducationRepository();
         const existingDonation = await donationRepository.getDonationById(id as string);
         if (existingDonation) {
             const donationData: Donation = req.body;
@@ -61,9 +59,8 @@ export async function DELETE(req: NextApiRequest, res: NextApiResponse) {
         return res.status(401).json({ error: "Unauthorized" });
     }
 
-    const donationRepository = getEducationRepository();
-
     try {
+        const donationRepository = getEducationRepository();
         const existingDonation = await donationRepository.getDonationById(id as string);
         if (existingDonation) {
             await donationRepository.deleteDonation(id as string);

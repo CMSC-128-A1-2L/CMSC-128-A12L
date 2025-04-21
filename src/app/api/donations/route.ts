@@ -14,8 +14,9 @@ export async function GET(req: NextApiRequest, res: NextApiResponse) {
         return res.status(401).json({ error: "Unauthorized" });
     }
 
-    const donationRepository = getEducationRepository();
+    
     try {
+        const donationRepository = getEducationRepository();
         const donations = await donationRepository.getAllDonations();
         res.status(200).json(donations);
     } catch (error) {
@@ -29,8 +30,9 @@ export async function POST(req: NextApiRequest, res: NextApiResponse) {
         return res.status(401).json({ error: "Unauthorized" });
     }
 
-    const donationRepository = getEducationRepository();
+    
     try {
+        const donationRepository = getEducationRepository();
         const donationData: Donation = req.body;
         const donationId = await donationRepository.createDonation(donationData);
         res.status(201).json({ message: "Donation created successfully", id: donationId });
