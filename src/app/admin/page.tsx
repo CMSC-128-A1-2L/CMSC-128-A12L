@@ -67,26 +67,26 @@ export default function AdminDashboard() {
 
       <div className="grid grid-cols-4 gap-6 mb-6">
         <div className="bg-white rounded-xl p-4 shadow-md">
-          <h2 className="text-xl font-semibold mb-2">Total Alumni</h2>
-          <p className="text-3xl font-bold text-[#1a1f4d]">1,234</p>
+          <h2 className="text-xl font-semibold mb-2 text-black">Total Alumni</h2>
+          <p className="text-3xl font-bold text-black">1,234</p>
         </div>
         <div className="bg-white rounded-xl p-4 shadow-md">
-          <h2 className="text-xl font-semibold mb-2">Active Jobs</h2>
-          <p className="text-3xl font-bold text-[#1a1f4d]">45</p>
+          <h2 className="text-xl font-semibold mb-2 text-black">Active Jobs</h2>
+          <p className="text-3xl font-bold text-black">45</p>
         </div>
         <div className="bg-white rounded-xl p-4 shadow-md">
-          <h2 className="text-xl font-semibold mb-2">Upcoming Events</h2>
-          <p className="text-3xl font-bold text-[#1a1f4d]">89</p>
+          <h2 className="text-xl font-semibold mb-2 text-black">Upcoming Events</h2>
+          <p className="text-3xl font-bold text-black">89</p>
         </div>
         <div className="bg-white rounded-xl p-4 shadow-md">
-          <h2 className="text-xl font-semibold mb-2">New Users</h2>
-          <p className="text-3xl font-bold text-[#1a1f4d]">32</p>
+          <h2 className="text-xl font-semibold mb-2 text-black">New Users</h2>
+          <p className="text-3xl font-bold text-black">32</p>
         </div>
       </div>
 
       <div className="grid grid-cols-2 gap-6">
         <div className="bg-white rounded-xl p-4 shadow-md h-[400px]">
-          <h2 className="text-2xl font-semibold mb-4">Quick Actions</h2>
+          <h2 className="text-2xl font-semibold mb-4 text-black">Quick Actions</h2>
           <div className="border-b-2 border-gray-800 mb-4"></div>
           <div className="space-y-4">
             <button className="w-full bg-[#1a1f4d] hover:bg-[#0d47a1] text-white rounded-lg p-4 text-left flex items-center justify-between transition-colors cursor-pointer">
@@ -104,7 +104,7 @@ export default function AdminDashboard() {
           </div>
         </div>
         <div className="bg-white rounded-xl p-4 shadow-md flex flex-col h-[400px]">
-          <h2 className="text-2xl font-semibold mb-4">Recent Activity</h2>
+          <h2 className="text-2xl font-semibold mb-4 text-black">Recent Activity</h2>
           <div className="border-b-2 border-gray-800 mb-4"></div>
           <div className="flex flex-col space-y-4 overflow-y-auto h-[300px]">
             {activities.map((activity) => (
@@ -115,9 +115,9 @@ export default function AdminDashboard() {
               >
                 <div className="flex items-center space-x-3">
                   <div className={`w-2 h-2 rounded-full ${activity.color}`}></div>
-                  <p className="text-sm font-medium">{activity.title}</p>
+                  <p className="text-sm font-medium text-black">{activity.title}</p>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">{activity.timestamp}</p>
+                <p className="text-xs text-black mt-1">{activity.timestamp}</p>
               </div>
             ))}
           </div>
