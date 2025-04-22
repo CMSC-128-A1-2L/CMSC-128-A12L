@@ -310,7 +310,7 @@ export default function JobListings() {
             </div>
 
             {/* Grid/List View */}
-            <div className={`grid ${isGridView ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'} gap-4`}>
+            <div className={`grid ${isGridView ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4' : 'grid-cols-1 gap-2'}`}>
               {displayedJobs.length > 0 ? (
                 displayedJobs.map((job, index) => (
                   <motion.div
@@ -408,7 +408,15 @@ export default function JobListings() {
                   console.log("Save job", jobData);
                   setIsModalOpen(false);
                 }}
-                job={selectedJob}
+                initialJobData={{
+                  title: selectedJob.title,
+                  company: selectedJob.company,
+                  location: selectedJob.location,
+                  jobType: selectedJob.job_type,
+                  workType: selectedJob.work_type,
+                  salary: selectedJob.salary,
+                  description: selectedJob.description
+                }}
               />
             )}
           </main>
