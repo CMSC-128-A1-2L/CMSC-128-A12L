@@ -265,7 +265,7 @@ export default function AlumniPage() {
                           Profile
                         </a>
                       </p>
-                      <button className="btn btn-outline btn-sm">View Profile</button>
+                      <button className="btn btn-outline btn-sm border-black text-black hover:bg-black hover:text-white">View Profile</button>
                     </div>
                   </div>
                 ))
@@ -290,7 +290,7 @@ export default function AlumniPage() {
                 <button
                   onClick={() => setCurrentPage(currentPage - 1)}
                   disabled={currentPage === 1}
-                  className="btn btn-outline btn-sm"
+                  className="btn btn-sm bg-[#1b1f4e] hover:bg-[#15183d] text-white border-none"
                 >
                   <IoIosArrowBack />
                 </button>
@@ -303,12 +303,12 @@ export default function AlumniPage() {
                     max={totalPages}
                     className="w-8 input input-bordered input-sm text-center text-base pl-0 pr-2 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                   />
-                  <span>/ {totalPages}</span>
+                  <span className="text-gray-900">/ {totalPages}</span>
                 </div>
                 <button
                   onClick={() => setCurrentPage(currentPage + 1)}
                   disabled={currentPage === totalPages}
-                  className="btn btn-outline btn-sm"
+                  className="btn btn-sm bg-[#1b1f4e] hover:bg-[#15183d] text-white border-none"
                 >
                   <IoIosArrowForward />
                 </button>
