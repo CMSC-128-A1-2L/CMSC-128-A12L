@@ -1,16 +1,15 @@
 "use client";
 
 import { useState, useRef } from "react";
-import FilterSidebar from "@/app/components/filtersJobListings";
+import FilterSidebar from "@/app/components/filtersEventListings";
 import EventCard from "@/app/components/alumniEventCard";
 import EventRow from "@/app/components/alumniEventRow";
-import JobDetails from "@/app/components/jobDetails";
+import EventDetails from "@/app/components/eventDetails";
 import SponsorshipsModal from "@/app/components/sponsorshipsModal";
-import EditJobListComponent from "@/app/components/editJobList";
-import jobData from "@/dummy_data/job.json";
+import eventData from "@/dummy_data/event.json";
+import { Event } from "@/entities/event";
 
 import CreateEvent from "@/pages/createEvent";
-// Refactor add event list and edit event to use modal than page
 import EditEventModal from "@/app/components/editEvent";
 
 import {
@@ -24,7 +23,31 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 
-export default function JobListings() {
+// Convert JSON data to match Event interface
+const convertEventData = (data: any): Event => ({
+  _id: data._id,
+  name: data.title,
+  organizer: data.organizer,
+  description: data.description,
+  type: "social", // Default value since it's not in JSON
+  startDate: new Date(data.date),
+  endDate: new Date(data.date), // Using same date since end date is not in JSON
+  location: data.location,
+  imageUrl: data.imageUrl,
+  sponsorship: {
+    enabled: data.sponsorship?.enabled || false,
+    sponsors: data.sponsorship?.requests?.map((r: any) => r.companyName) || []
+  },
+  rsvp: {
+    enabled: data.rsvp?.enabled || false,
+    options: data.rsvp?.options || []
+  },
+  wouldGo: [],
+  wouldNotGo: [],
+  wouldMaybeGo: []
+});
+
+export default function EventListings() {
   // Add Event modal state
   const [showEventModal, setShowEventModal] = useState(false);
 
@@ -39,9 +62,11 @@ export default function JobListings() {
   // Search state
   const [search, setSearch] = useState("");
 
-  // Job details/Edit job details modal state
-  const [selectedJob, setSelectedJob] = useState<any>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  // Modal states
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showSponsorModal, setShowSponsorModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   // View toggle state
   const [isGridView, setIsGridView] = useState(true);
@@ -51,114 +76,136 @@ export default function JobListings() {
 
   // Add filter state
   const [activeFilters, setActiveFilters] = useState({
-    jobType: {
-      fullTime: false,
-      partTime: false,
-      contract: false,
-    },
-    workType: {
-      onSite: false,
-      remote: false,
-      hybrid: false,
-    },
+    eventType: {
+      social: false,
+      academic: false,
+      career: false,
+      other: false
+    }
   });
 
   // Handle filter changes from FilterSidebar
   const handleFilterChange = (filters: any) => {
-    setActiveFilters(filters);
-    setCurrentPage(1); // Reset to first page when filters change
+    // Create a new object reference to ensure React detects the change
+    const newFilters = JSON.parse(JSON.stringify(filters));
+    setActiveFilters(newFilters);
+    setCurrentPage(1);
   };
 
   // Apply search/filters
-  const filteredJobs = jobData.filter((job) => {
-    // Search filter
-    const searchMatch =
-      job.title.toLowerCase().includes(search.toLowerCase()) ||
-      job.company.toLowerCase().includes(search.toLowerCase()) ||
-      job.description.toLowerCase().includes(search.toLowerCase());
+  const filteredEvents = eventData
+    .map(convertEventData)
+    .filter((event) => {
+      // Search filter
+      const searchMatch =
+        event.name.toLowerCase().includes(search.toLowerCase()) ||
+        event.organizer.toLowerCase().includes(search.toLowerCase()) ||
+        event.description.toLowerCase().includes(search.toLowerCase());
 
-    // Job Type filter
-    const jobTypeFiltersActive =
-      activeFilters.jobType.fullTime ||
-      activeFilters.jobType.partTime ||
-      activeFilters.jobType.contract;
+      // Event Type filter
+      const eventTypeFiltersActive =
+        activeFilters.eventType.social ||
+        activeFilters.eventType.academic ||
+        activeFilters.eventType.career ||
+        activeFilters.eventType.other;
 
-    const jobTypeMatch =
-      !jobTypeFiltersActive ||
-      (activeFilters.jobType.fullTime && job.job_type === "Full-time") ||
-      (activeFilters.jobType.partTime && job.job_type === "Part-time") ||
-      (activeFilters.jobType.contract && job.job_type === "Contract");
+      const eventTypeMatch =
+        !eventTypeFiltersActive ||
+        (activeFilters.eventType.social && event.type === "social") ||
+        (activeFilters.eventType.academic && event.type === "academic") ||
+        (activeFilters.eventType.career && event.type === "career") ||
+        (activeFilters.eventType.other && event.type === "other");
 
-    // Work Type filter
-    const workTypeFiltersActive =
-      activeFilters.workType.onSite ||
-      activeFilters.workType.remote ||
-      activeFilters.workType.hybrid;
-
-    const workTypeMatch =
-      !workTypeFiltersActive ||
-      (activeFilters.workType.onSite && job.work_type === "On-site") ||
-      (activeFilters.workType.remote && job.work_type === "Remote") ||
-      (activeFilters.workType.hybrid && job.work_type === "Hybrid");
-
-    return searchMatch && jobTypeMatch && workTypeMatch;
-  });
+      return searchMatch && eventTypeMatch;
+    });
 
   // Handle Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
 
-  const totalPages = Math.ceil(filteredJobs.length / itemsPerPage);
-  const displayedJobs = filteredJobs.slice(
+  const totalPages = Math.ceil(filteredEvents.length / itemsPerPage);
+  const displayedEvents = filteredEvents.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
 
-  // Handle job details modal
-  const handleJobDetails = (job: any) => {
-    setSelectedJob(job);
-    // Use the DaisyUI modal show method
+  // Handle event details modal
+  const handleEventDetails = (event: Event) => {
+    setSelectedEvent(event);
     const modal = document.getElementById(
       "job_details_modal"
     ) as HTMLDialogElement;
     if (modal) {
       modal.showModal();
-      setIsModalOpen(true);
+      setShowDetailsModal(true);
     }
   };
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
+  const handleCloseDetailsModal = () => {
+    setShowDetailsModal(false);
   };
 
-  // Handle Apply to Job button click
-  const handleApply = (jobTitle: string) => {
-    console.log(`Applying for ${jobTitle}`);
+  // Handle Respond to Event button click
+  const handleRespond = (eventTitle: string) => {
+    console.log(`Responding to ${eventTitle}`);
   };
 
   // Handle Sponsor Details button click
-  const handleSponsor = (job:any) => {
-    setSelectedJob(job);
-    // Use the DaisyUI modal show method
+  const handleSponsor = (event: Event) => {
+    setSelectedEvent(event);
     const modal = document.getElementById(
       "sponsor_details_modal"
     ) as HTMLDialogElement;
     if (modal) {
       modal.showModal();
-      setIsModalOpen(true);
+      setShowSponsorModal(true);
     }
-  };  
+  };
 
-  // Handle Edit Job button click
-  const handleEdit = (job: any) => {
-    setSelectedJob(job);
-    // Use the DaisyUI modal show method
+  const handleCloseSponsorModal = () => {
+    setShowSponsorModal(false);
+  };
+
+  // Handle Edit Event button click
+  const handleEdit = (event: Event) => {
+    setSelectedEvent(event);
+    // Close the details modal first
+    const detailsModal = document.getElementById(
+      "job_details_modal"
+    ) as HTMLDialogElement;
+    if (detailsModal) {
+      detailsModal.close();
+      setShowDetailsModal(false);
+    }
+    // Then open the edit modal after a short delay to ensure smooth transition
+    setTimeout(() => {
+      const editModal = document.getElementById(
+        "edit_event_modal"
+      ) as HTMLDialogElement;
+      if (editModal) {
+        editModal.showModal();
+        setShowEditModal(true);
+      }
+    }, 100);
+  };
+
+  const handleCloseEditModal = () => {
+    setShowEditModal(false);
+  };
+
+  // Handle Delete Event
+  const handleDelete = (eventId: string) => {
+    console.log("Delete event", eventId);
+    // TODO: Implement delete functionality
+  };
+
+  // Handle Add Event button click
+  const handleAddEvent = () => {
     const modal = document.getElementById(
-      "edit_job_modal"
+      "create_event_modal"
     ) as HTMLDialogElement;
     if (modal) {
       modal.showModal();
-      setIsModalOpen(true);
     }
   };
 
@@ -187,7 +234,7 @@ export default function JobListings() {
           </div>
 
           {/* View toggle - right */}
-          <button onClick={toggleView} className="btn btn-ghost btn-sm rounded-lg">
+          <button onClick={toggleView} className="btn btn-sm rounded-lg bg-[#605dff] text-white hover:bg-[#4f4ccc]">
             {isGridView ? (
               <>
                 <LayoutList size={18} /> List
@@ -206,54 +253,42 @@ export default function JobListings() {
           <aside className={`w-64 flex-shrink-0 ${filterSidebarOpen ? 'block' : 'hidden'} lg:block -mt-[13px]`}>
             <div className="flex items-center gap-3 mb-4">
               <button
-                className="btn btn-ghost btn-sm rounded-lg"
+                className="btn btn-sm rounded-lg bg-[#605dff] text-white hover:bg-[#4f4ccc]"
                 onClick={() => setFilterSidebarOpen(!filterSidebarOpen)}
               >
                 <Filter size={18} />
-              </button>
-              <button
-                onClick={() => setShowEventModal(true)}
-                className="btn btn-primary btn-sm rounded-lg"
-              >
-                <Plus size={18} /> Add Event
               </button>
             </div>
             <FilterSidebar
               isOpen={filterSidebarOpen}
               setIsOpen={setFilterSidebarOpen}
               onFilterChange={handleFilterChange}
+              showModal={handleAddEvent}
+              activeFilters={activeFilters}
             />
           </aside>
 
           <main className="flex-1">
             {/* Active filters */}
             <div className="flex flex-wrap items-center gap-2 mb-4">
-              {Object.entries({...activeFilters.jobType, ...activeFilters.workType}).map(([key, value]) =>
+              {Object.entries(activeFilters.eventType).map(([key, value]) =>
                 value ? (
                   <div
                     key={key}
                     className="badge badge-lg gap-2 px-3 py-3 bg-[#242937] text-white border-none"
                   >
-                    {key === "fullTime"
-                      ? "Full-time"
-                      : key === "partTime"
-                      ? "Part-time"
-                      : key === "contract"
-                      ? "Contract"
-                      : key === "onSite"
-                      ? "On-site"
-                      : key === "remote"
-                      ? "Remote"
-                      : "Hybrid"}
+                    {key === "social"
+                      ? "Social"
+                      : key === "academic"
+                      ? "Academic"
+                      : key === "career"
+                      ? "Career"
+                      : "Other"}
                     <button
-                      className="opacity-60 hover:opacity-100"
+                      className="opacity-60 hover:opacity-100 cursor-pointer"
                       onClick={() => {
                         const newFilters = { ...activeFilters };
-                        if (key in newFilters.jobType) {
-                          newFilters.jobType[key as keyof typeof newFilters.jobType] = false;
-                        } else if (key in newFilters.workType) {
-                          newFilters.workType[key as keyof typeof newFilters.workType] = false;
-                        }
+                        newFilters.eventType[key as keyof typeof newFilters.eventType] = false;
                         handleFilterChange(newFilters);
                       }}
                     >
@@ -264,19 +299,19 @@ export default function JobListings() {
               )}
 
               {/* Results count */}
-              {filteredJobs.length > 0 && (
+              {filteredEvents.length > 0 && (
                 <div className="ml-auto text-sm text-gray-400">
-                  Showing {filteredJobs.length} results
+                  Showing {filteredEvents.length} results
                 </div>
               )}
             </div>
 
             {/* Grid/List View */}
             <div className={`grid ${isGridView ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'} gap-4`}>
-              {displayedJobs.length > 0 ? (
-                displayedJobs.map((job, index) => (
+              {displayedEvents.length > 0 ? (
+                displayedEvents.map((event, index) => (
                   <motion.div
-                    key={index}
+                    key={event._id}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.3 }}
@@ -284,54 +319,46 @@ export default function JobListings() {
                   >
                     {isGridView ? (
                       <EventCard
-                        key={index}
-                        title={job.title}
-                        company={job.company}
-                        location={job.location}
-                        jobType={job.job_type}
-                        workType={job.work_type}
-                        description={job.description}
-                        imageUrl={job.imageUrl}
-                        onDetailsClick={() => handleJobDetails(job)}
-                        onSponsorClick={() => handleSponsor(job)}
-                        onApplyClick={() => handleApply(job.title)}
+                        title={event.name}
+                        organizer={event.organizer}
+                        location={event.location}
+                        date={event.startDate.toISOString()}
+                        description={event.description}
+                        imageUrl={event.imageUrl || ''}
+                        onDetailsClick={() => handleEventDetails(event)}
+                        onSponsorClick={() => handleSponsor(event)}
+                        onApplyClick={() => handleRespond(event.name)}
                       />
                     ) : (
                       <EventRow
-                        key={index}
-                        title={job.title}
-                        company={job.company}
-                        location={job.location}
-                        jobType={job.job_type}
-                        workType={job.work_type}
-                        description={job.description}
-                        imageUrl={job.imageUrl}
-                        onDetailsClick={() => handleJobDetails(job)}
-                        onSponsorClick={() => handleSponsor(job)}
-                        onApplyClick={() => handleApply(job.title)}
+                        title={event.name}
+                        organizer={event.organizer}
+                        location={event.location}
+                        date={event.startDate.toISOString()}
+                        description={event.description}
+                        imageUrl={event.imageUrl || ''}
+                        onDetailsClick={() => handleEventDetails(event)}
+                        onSponsorClick={() => handleSponsor(event)}
+                        onApplyClick={() => handleRespond(event.name)}
                       />
                     )}
                   </motion.div>
                 ))
               ) : (
                 <div className="col-span-full text-center py-8">
-                  <p className="text-white">
-                    No jobs found matching your filters.
+                  <p className="text-gray-400">
+                    No events found matching your filters.
                   </p>
                   <button
-                    className="btn btn-error rounded-lg mt-4"
+                    className="btn btn-error btn-sm rounded-lg mt-4"
                     onClick={() =>
                       handleFilterChange({
-                        jobType: {
-                          fullTime: false,
-                          partTime: false,
-                          contract: false,
-                        },
-                        workType: {
-                          onSite: false,
-                          remote: false,
-                          hybrid: false,
-                        },
+                        eventType: {
+                          social: false,
+                          academic: false,
+                          career: false,
+                          other: false
+                        }
                       })
                     }
                   >
@@ -341,41 +368,39 @@ export default function JobListings() {
               )}
             </div>
 
-            {/* Job Details Modal */}
-            {selectedJob && (
-              <JobDetails
-                title={selectedJob.title}
-                company={selectedJob.company}
-                location={selectedJob.location}
-                salary={selectedJob.salary}
-                jobType={selectedJob.job_type}
-                workType={selectedJob.work_type}
-                description={selectedJob.description}
-                isOpen={isModalOpen}
-                onClose={handleCloseModal}
-                onApplyClick={() => handleApply(selectedJob.title)}
-                //   ONLY FOR ADMIN/CREATOR VIEWS WIP
-                onEditClick={() => handleEdit(selectedJob)}
-                onDeleteClick={() => console.log("Delete job")}
+            {/* Event Details Modal */}
+            {selectedEvent && (
+              <EventDetails
+                title={selectedEvent.name}
+                organizer={selectedEvent.organizer}
+                location={selectedEvent.location}
+                date={selectedEvent.startDate.toISOString()}
+                description={selectedEvent.description}
+                isOpen={showDetailsModal}
+                onClose={handleCloseDetailsModal}
+                onRSVPClick={() => handleRespond(selectedEvent.name)}
+                onEditClick={() => handleEdit(selectedEvent)}
+                onDeleteClick={() => handleDelete(selectedEvent._id || '')}
               />
             )}
 
             {/* Sponsorship Details Modal */}
-              {selectedJob && (
-                <SponsorshipsModal
-                  onClose={handleCloseModal}
-              />)}
+            {selectedEvent && (
+              <SponsorshipsModal
+                onClose={handleCloseSponsorModal}
+              />
+            )}
 
-            {/* Edit Job Details Modal */}
-            {selectedJob && (
-              <EditJobListComponent
-                isOpen={false}
-                onClose={function (): void {
-                  throw new Error("Function not implemented.");
+            {/* Edit Event Modal */}
+            {selectedEvent && (
+              <EditEventModal
+                isOpen={showEditModal}
+                onClose={handleCloseEditModal}
+                onSave={(eventData) => {
+                  console.log("Save event", eventData);
+                  setShowEditModal(false);
                 }}
-                onSave={function (jobData: any): void {
-                  throw new Error("Function not implemented.");
-                }}
+                event={selectedEvent}
               />
             )}
 
@@ -404,6 +429,18 @@ export default function JobListings() {
           </main>
         </div>
       </div>
+
+      {/* Create Event Modal */}
+      <CreateEvent
+        onClose={() => {
+          const modal = document.getElementById(
+            "create_event_modal"
+          ) as HTMLDialogElement;
+          if (modal) {
+            modal.close();
+          }
+        }}
+      />
     </div>
   );
 }
