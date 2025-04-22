@@ -35,8 +35,6 @@ export default function AlumniPage() {
   const [pageInput, setPageInput] = useState("1");
   const [showFilter, setShowFilter] = useState(false); // for filter
   const itemsPerPage = 10;
-  const [showModal, setShowModal] = useState(false);
-  const [showEventModal, setShowEventModal] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -317,27 +315,6 @@ export default function AlumniPage() {
           </main>
         </div>
       </div>
-
-      {/* Button for creating a job listing */} 
-      <div className="flex justify-center space-x-4 mt-6">
-      <button
-              onClick={() => setShowModal(true)}
-              className="bg-gray-700 text-white px-4 py-2 rounded cursor-pointer"
-            >
-              Post a job
-      </button>
-      {/* Button for creating event modal */}
-      <button
-        onClick={() => setShowEventModal(true)}
-        className="bg-gray-700 text-white px-4 py-2 rounded cursor-pointer"
-      >
-        Create Event
-      </button>
-      </div>
-              
-
-      {showModal && <CreateJL onClose={() => setShowModal(false)} />}
-      {showEventModal && <CreateEvent onClose={() => setShowEventModal(false)} />}
     </div>
   );
 }
