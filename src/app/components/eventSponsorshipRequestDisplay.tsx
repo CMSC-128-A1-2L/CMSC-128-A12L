@@ -21,6 +21,7 @@ const CustomModal: React.FC<CustomModalProps> = ({
 }) => {
   const [contactNo, setContactNo] = useState("");
   const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
   const [sponsorshipType, setSponsorshipType] = useState<string>("cash");
   const [specificItem, setSpecificItem] = useState("");
   const [amount, setAmount] = useState("");
@@ -63,6 +64,19 @@ const CustomModal: React.FC<CustomModalProps> = ({
             <X size={24} className="text-black" />
           </button>
         </div>
+        <div>
+            <label className="block text-sm font-semibold text-gray-700" htmlFor="email">
+              Name
+            </label>
+            <input
+              type="name"
+              id="name"
+              className="input input-bordered w-full mt-2 bg-gray-50"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          </div>
 
 
         <form onSubmit={handleSubmit} className="space-y-4">
