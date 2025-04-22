@@ -218,6 +218,7 @@ export default function JobListings() {
                 <Plus size={18} /> Add Event
               </button>
             </div>
+            {showEventModal && <CreateEvent onClose={() => setShowEventModal(false)} />}
             <FilterSidebar
               isOpen={filterSidebarOpen}
               setIsOpen={setFilterSidebarOpen}

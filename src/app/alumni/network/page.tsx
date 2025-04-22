@@ -7,7 +7,7 @@ import { FiFilter } from "react-icons/fi";
 import { IoIosArrowForward, IoIosArrowBack } from "react-icons/io";
 import userData from "@/dummy_data/user.json";
 
-import CreateJL from "@/pages/createJL";
+import CreateJL from "@/app/components/createJL";
 import CreateEvent from "@/pages/createEvent"; 
 
 
@@ -317,27 +317,6 @@ export default function AlumniPage() {
           </main>
         </div>
       </div>
-
-      {/* Button for creating a job listing */} 
-      <div className="flex justify-center space-x-4 mt-6">
-      <button
-              onClick={() => setShowModal(true)}
-              className="bg-gray-700 text-white px-4 py-2 rounded cursor-pointer"
-            >
-              Post a job
-      </button>
-      {/* Button for creating event modal */}
-      <button
-        onClick={() => setShowEventModal(true)}
-        className="bg-gray-700 text-white px-4 py-2 rounded cursor-pointer"
-      >
-        Create Event
-      </button>
-      </div>
-              
-
-      {showModal && <CreateJL onClose={() => setShowModal(false)} />}
-      {showEventModal && <CreateEvent onClose={() => setShowEventModal(false)} />}
     </div>
   );
 }
