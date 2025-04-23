@@ -29,4 +29,9 @@ export interface User extends AdapterUser {
      * URL to the user's uploaded document (PDF).
      **/
     documentUrl?: string;
+
+    /**
+     * URL to the user's uploaded image.
+     **/
+    imageUrl?: string;
 };

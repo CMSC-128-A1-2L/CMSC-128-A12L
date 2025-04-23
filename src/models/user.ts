@@ -39,6 +39,7 @@ export interface UserDto {
   suffix?: string,
   alumniStatus?: string,
   documentUrl?: string,
+  imageUrl?: string,
   // gender: string,
   // currentAddress: string,
   // bio: string,
@@ -60,6 +61,7 @@ export const UserSchema = new Schema<UserDto>(
     suffix: { type: String },
     alumniStatus: { type: String, enum: AlumniStatus, default: AlumniStatus.PENDING },
     documentUrl: { type: String },
+    imageUrl: { type: String },
     // currentAddress: { type: String, default: "" },
     // bio : { type: String, default: "" },
     // linkedIn: { type: String, validate: {
