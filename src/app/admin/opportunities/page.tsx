@@ -126,7 +126,7 @@ export default function OpportunitiesTestPage() {
                     <div className="bg-white p-4 sm:p-6 rounded-xl shadow-lg border border-gray-100 text-gray-700">
                         <div className="flex items-center mb-4 sm:mb-6">
                             <div className="bg-blue-100 p-2 rounded-lg mr-3">
-                                <Plus className="h-5 w-5 text-blue-600" />
+                                <Briefcase className="h-5 w-5 text-blue-600" />
                             </div>
                             <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Create New Opportunity</h2>
                         </div>

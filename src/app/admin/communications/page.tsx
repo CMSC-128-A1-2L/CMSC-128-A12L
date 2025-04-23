@@ -28,7 +28,7 @@ export default function CommunicationsPage() {
           recipients,
           subject,
           htmlBody: `<p>${message}</p>`,
-          provider: "nodemailer",
+          provider: "google",
           scheduledTime: sendNow ? new Date().toISOString() : scheduledTime,
         })
       });
