@@ -48,7 +48,7 @@ export default function EmailForm() {
     return emailRegex.test(email);
   };
 
-  const sendBlastEmail = async (e: React.FormEvent) => {
+  const sendBlastEmail = async (e: React.FormEvent, sendNow: boolean = false) => {
     e.preventDefault();
     setStatus("Sending...");
 
@@ -68,7 +68,7 @@ export default function EmailForm() {
           subject,
           htmlBody: `<p>${message}</p>`,
           provider,
-          scheduledTime,
+          scheduledTime: sendNow ? new Date().toISOString() : scheduledTime,
         })
       });
 
@@ -77,7 +77,7 @@ export default function EmailForm() {
       }
 
       const data = await response.json();
-      setStatus("Emails scheduled successfully!");
+      setStatus(sendNow ? "Emails sent successfully!" : "Emails scheduled successfully!");
       // Clear form
       setEmailChips([]);
       setSubject('');
@@ -85,7 +85,7 @@ export default function EmailForm() {
       setTime(new Date().toISOString().slice(0, 16));
     } catch (error) {
       console.error("Error:", error);
-      setStatus("Failed to schedule emails. Please try again.");
+      setStatus("Failed to send emails. Please try again.");
     }
   };
 
@@ -108,7 +108,7 @@ export default function EmailForm() {
           </div>
         </div>
         
-        <form onSubmit={sendBlastEmail} className="space-y-8">
+        <form onSubmit={(e) => sendBlastEmail(e, false)} className="space-y-6">
           {/* Recipients Section */}
           <div className="space-y-3">
             <label htmlFor="recipients" className="block text-sm font-medium text-gray-700">
@@ -196,16 +196,29 @@ export default function EmailForm() {
             </div>
           </div>
 
-          {/* Submit Button */}
-          <motion.button
-            type="submit"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="w-full py-4 px-6 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-all duration-200 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl cursor-pointer"
-          >
-            <Send className="h-5 w-5" />
-            Schedule Emails
-          </motion.button>
+          {/* Buttons Section */}
+          <div className="flex gap-4">
+            <motion.button
+              type="submit"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="flex-1 py-4 px-6 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-all duration-200 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl cursor-pointer"
+            >
+              <Calendar className="h-5 w-5" />
+              Schedule Emails
+            </motion.button>
+            
+            <motion.button
+              type="button"
+              onClick={(e) => sendBlastEmail(e, true)}
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="flex-1 py-4 px-6 bg-green-600 hover:bg-green-700 text-white font-medium rounded-xl transition-all duration-200 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl cursor-pointer"
+            >
+              <Send className="h-5 w-5" />
+              Send Now
+            </motion.button>
+          </div>
         </form>
 
         {/* Status Message */}

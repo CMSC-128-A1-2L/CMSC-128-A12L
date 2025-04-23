@@ -13,9 +13,8 @@ import {
 } from "lucide-react";
 import EventCard from "@/app/components/eventContentCard";
 import EventRow from "@/app/components/eventContentRow";
-import EventDetails from "@/app/components/eventDetails";
-import EditJobListComponent from "@/app/components/editJobList";
-import EditEventModal from "@/app/components/editEvent";
+import AdminEventDetails from "@/app/components/AdminEventDetails";
+import EditEventModal from "@/app/components/AdminEditEvent";
 import CreateEventModal from "@/app/components/createEvent";
 import { Event } from "@/entities/event";
 
@@ -378,7 +377,7 @@ export default function EventsPage() {
 
       {/* Event Details Modal */}
       {isModalOpen && selectedEvent && (
-        <EventDetails
+        <AdminEventDetails
           _id={selectedEvent._id!}
           name={selectedEvent.name}
           organizer={selectedEvent.organizer}
