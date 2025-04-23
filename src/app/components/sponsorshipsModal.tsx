@@ -20,18 +20,23 @@ const SponsorDetails: React.FC<SponsorDetailsProps> = ({
         <h3 className="font-bold text-lg mt-4 text-center text-gray-900">Sponsorship Details</h3>
 
         <div className="pt-4">
-          <p className="font-bold text-left text-gray-800">Contact Details</p>
-          <div className="flex">
-            <p className="px-2 font-bold text-gray-800">Contact Number:</p> 
-            <p className="text-gray-700">Lorem Ipsum</p>
-          </div>
-          <div className="flex">
-            <p className="px-2 font-bold text-gray-800">Email:</p> 
-            <p className="pb-2 text-gray-700">Lorem Ipsum</p>
-          </div>
+            <p className="font-bold text-left text-gray-700">Contact Details</p>
+            <div className="flex">
+              <p className="px-2 font-bold text-gray-700">Name:</p> 
+              <p>Lorem Ipsum</p>
+            </div>
+            <div className="flex">
+              <p className="px-2 font-bold text-gray-700">Contact Number:</p> 
+              <p>Lorem Ipsum</p>
+            </div>
+            <div className="flex">
+              <p className="px-2 font-bold text-gray-700">Email:</p> 
+              <p className="pb-2">Lorem Ipsum</p>
+            </div>
 
-          <p className="font-bold text-left text-gray-800">Sponsorship Options</p>
-          <li className="px-2 text-gray-700">Lorem Ipsum</li>
+            <p className="font-bold text-left text-gray-700">Sponsorship Options</p>
+            <p className="px-2"> Lorem Ipsum </p>
+
         </div>
       </div>
       <form method="dialog" className="modal-backdrop">
