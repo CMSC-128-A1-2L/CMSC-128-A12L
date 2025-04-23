@@ -43,3 +43,5 @@ next-env.d.ts
 
 # testing components
 src/app/test
+
+/.vscode

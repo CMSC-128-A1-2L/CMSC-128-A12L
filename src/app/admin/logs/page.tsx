@@ -7,7 +7,7 @@ import { LogsDto } from "@/models/logs";
 
 export default function AdminLogs() {
   const { data: session } = useSession();
-  const [activeTab, setActiveTab] = useState('all');
+  const [activeTab, setActiveTab] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [dateRange, setDateRange] = useState('last7days');
   const [logs, setLogs] = useState<LogsDto[]>([]);
@@ -40,7 +40,7 @@ export default function AdminLogs() {
     }
 
     // Filter by HTTP method
-    if (activeTab !== 'all') {
+    if (activeTab !== 'ALL') {
       filtered = filtered.filter(log => 
         log.action.startsWith(activeTab)
       );
@@ -127,25 +127,26 @@ export default function AdminLogs() {
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full px-4 md:px-6">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="bg-white/10 backdrop-blur-md shadow-xl rounded-3xl p-6 w-full"
+        className="bg-white/10 backdrop-blur-md shadow-xl rounded-3xl p-4 md:p-6 w-full"
       >
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
           <h2
-            className="text-3xl font-bold text-gray-800 mb-4 md:mb-0"
+            className="text-2xl md:text-3xl font-bold text-gray-800 mb-4 md:mb-0 flex items-center"
             style={{ fontFamily: "Montserrat, sans-serif" }}
           >
+            <Activity className="w-8 h-8 mr-3 text-blue-600" />
             System Logs
           </h2>
           <div className="flex space-x-2">
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center cursor-pointer"
             >
               <Download className="w-4 h-4 mr-2" />
               Export
@@ -153,15 +154,15 @@ export default function AdminLogs() {
           </div>
         </div>
 
-        {/* Tabs */}
-        <div className="flex overflow-x-auto mb-6 pb-2">
-          {['all', 'GET', 'POST', 'PUT', 'DELETE'].map((tab) => (
+        {/* Tabs - Scrollable on mobile */}
+        <div className="flex overflow-x-auto mb-6 pb-2 -mx-4 px-4 md:mx-0 md:px-0">
+          {['ALL', 'GET', 'POST', 'PUT', 'DELETE'].map((tab) => (
             <motion.button
               key={tab}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 mr-2 rounded-lg whitespace-nowrap ${
+              className={`px-4 py-2 mr-2 rounded-lg whitespace-nowrap flex-shrink-0 cursor-pointer ${
                 activeTab === tab 
                   ? 'bg-blue-600 text-white font-semibold' 
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -172,7 +173,7 @@ export default function AdminLogs() {
           ))}
         </div>
 
-        {/* Search and Filter */}
+        {/* Search and Filter - Stack on mobile */}
         <div className="flex flex-col md:flex-row gap-4 mb-6">
           <div className="relative flex-grow">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -202,8 +203,39 @@ export default function AdminLogs() {
           </div>
         </div>
 
-        {/* Logs Table */}
-        <div className="overflow-x-auto rounded-lg border border-gray-200">
+        {/* Mobile Card View */}
+        <div className="md:hidden space-y-4">
+          {currentItems.map((log) => (
+            <motion.div
+              key={log._id}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
+              className="bg-white rounded-lg shadow p-4 space-y-3"
+            >
+              <div className="flex items-center space-x-3">
+                <div className="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
+                  <User className="w-5 h-5 text-gray-600" />
+                </div>
+                <div>
+                  <div className="font-medium text-gray-900">{log.name}</div>
+                  <div className="text-sm text-gray-500">{log.ipAddress}</div>
+                </div>
+              </div>
+              <div className="flex items-center text-sm text-gray-600">
+                <Activity className="w-4 h-4 mr-2" />
+                <span>{log.action}</span>
+              </div>
+              <div className="flex items-center text-sm text-gray-600">
+                <Clock className="w-4 h-4 mr-2" />
+                <span>{new Date(log.timestamp).toLocaleString()}</span>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Desktop Table View */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
@@ -253,9 +285,9 @@ export default function AdminLogs() {
           </table>
         </div>
 
-        {/* Pagination */}
-        <div className="flex justify-between items-center mt-6">
-          <div className="text-gray-600 text-sm">
+        {/* Pagination - Responsive */}
+        <div className="flex flex-col md:flex-row justify-between items-center mt-6 space-y-4 md:space-y-0">
+          <div className="text-gray-600 text-sm text-center md:text-left">
             Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredLogs.length)} of {filteredLogs.length} entries
           </div>
           <div className="flex space-x-2">
@@ -264,7 +296,7 @@ export default function AdminLogs() {
               whileTap={{ scale: 0.95 }}
               onClick={handlePreviousPage}
               disabled={currentPage === 1}
-              className={`px-4 py-2 rounded-lg ${
+              className={`px-3 py-1 md:px-4 md:py-2 rounded-lg cursor-pointer ${
                 currentPage === 1 
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -278,7 +310,7 @@ export default function AdminLogs() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => handlePageChange(number)}
-                className={`px-4 py-2 rounded-lg ${
+                className={`px-3 py-1 md:px-4 md:py-2 rounded-lg cursor-pointer ${
                   currentPage === number
                     ? 'bg-blue-600 text-white font-semibold'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -292,7 +324,7 @@ export default function AdminLogs() {
               whileTap={{ scale: 0.95 }}
               onClick={handleNextPage}
               disabled={currentPage === totalPages}
-              className={`px-4 py-2 rounded-lg ${
+              className={`px-3 py-1 md:px-4 md:py-2 rounded-lg cursor-pointer ${
                 currentPage === totalPages
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'

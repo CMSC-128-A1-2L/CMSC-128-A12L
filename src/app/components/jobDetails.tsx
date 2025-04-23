@@ -1,51 +1,92 @@
-"use client"
-import React, { useState } from 'react';
+"use client";
+import React from "react";
+import {
+  Trash2
+} from "lucide-react";
 
-export default function JobDetails(){
-    const [openModal, setModal] = useState(false);
-    
-    const handleModal = () => {
-        setModal(!openModal)
-    }
-    return(
-        <>
-            <button onClick={handleModal} className="btn bg-[#0c0051] text-white hover:bg-[#12006A]" style={{ fontFamily: "Montserrat, sans-serif", fontSize: "15px", cursor: "pointer"}}>Details</button>
-            {openModal &&
-                <div className="fixed top-0 left-0 visible bg-black/20 w-full h-full flex justify-center items-center">
-                    <div className="max-w-[460px] bg-white shadow-lg py-2 rounded-md">
-                        <div className="relative">
-                            <button type="button" onClick={handleModal} className="text-gray-400 bg-transparent absolute top-3 right-5" style={{cursor: "pointer"}}>
-                                <svg className="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
-                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
-                                </svg>
-                            </button>
-                        </div>
-                        <div className="px-10 py-8" style={{ fontFamily: "Montserrat, sans-serif", fontSize: "24px"}}>
-                            <p className="pb-2 text-center font-medium text-gray-700">Lorem Ipsum</p>
-                            <div className="py-4 pb-4" style={{ fontFamily: "Montserrat, sans-serif", fontSize: "15px"}}>
-                                <p className="font-bold text-left text-gray-700">Qualifications</p>
-                                    <div className="px-4 pb-4">
-                                        <li className="text-justify">Lorem ipsum dolor sit amet, consectetur adipiscing elit. </li>
-                                        <li className="text-justify">Nullam at semper lacus.</li>
-                                        <li className="text-justify">Duis imperdiet, quam ut placerat congue, odio velit ornare elit, id feugiat dui neque eget felis. Sed vestibulum aliquet arc </li>
-                                    </div>
-                                <p className="font-bold text-left text-gray-700">Location</p>
-                                    <div className="px-4 pb-4">
-                                        <li className="text-justify">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</li>
-                                    </div>
-                                <p className="font-bold text-left text-gray-700">Job Type</p>
-                                    <div className="px-4 pb-4">
-                                        <li className="text-justify">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</li>
-                                    </div>
-                                <p className="font-bold text-left text-gray-700">Employment Level</p>
-                                    <div className="px-4 pb-4">
-                                        <li className="text-justify">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</li>
-                                    </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            }
-        </>
-    )
+interface JobDetailsProps {
+  title: string;
+  company: string;
+  location: string;
+  jobType: string;
+  workType: string;
+  salary?: string;
+  description: string;
+  isOpen: boolean;
+  onClose: () => void;
+  onApplyClick: () => void;
+  onEditClick: () => void;
+  onDeleteClick: () => void;
 }
+
+const JobDetails: React.FC<JobDetailsProps> = ({
+  title,
+  company,
+  location,
+  jobType,
+  workType,
+  salary,
+  description,
+  isOpen,
+  onClose,
+  onApplyClick,
+  onEditClick,
+}) => {
+  return (
+    <dialog id="job_details_modal" className="modal">
+      <div className="modal-box rounded-3xl bg-white">
+        <form method="dialog">
+          <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 text-gray-600 hover:bg-[#605dff] hover:text-white">
+            ✕
+          </button>
+        </form>
+
+        <h3 className="font-bold text-xl text-gray-900 mt-4">{title}</h3>
+
+        <div className="pt-4">
+          <p className="font-bold text-left text-gray-800">Job Type</p>
+          <p className="px-2 pb-2 text-gray-700">{jobType}</p>
+
+          <p className="font-bold text-left text-gray-800">Work Type</p>
+          <p className="px-2 pb-2 text-gray-700">{workType}</p>
+
+          <p className="font-bold text-left text-gray-800">Company</p>
+          <p className="px-2 pb-2 text-gray-700">{company}</p>
+
+          <p className="font-bold text-left text-gray-800">Location</p>
+          <p className="px-2 pb-2 text-gray-700">{location}</p>
+
+          <p className="font-bold text-left text-gray-800">Description</p>
+          <p className="px-2 pb-2 text-gray-700">{description}</p>
+
+          {salary && (
+            <>
+              <p className="font-bold text-left text-gray-800">Salary</p>
+              <p className="px-2 pb-2 text-gray-700">{salary}</p>
+            </>
+          )}
+
+          <div className="flex flex-row gap-2 mt-4">
+            <button onClick={onEditClick} className="btn btn-dash flex-grow bg-gray-100 hover:bg-gray-200 text-gray-800">
+              Edit
+            </button>
+            <button onClick={onApplyClick} className="btn btn-dash btn-error btn-sqr">
+              <Trash2 />
+            </button>
+          </div>
+          <button
+            onClick={onApplyClick}
+            className="btn btn-primary btn-block mt-2"
+          >
+            Apply Now
+          </button>
+        </div>
+      </div>
+      <form method="dialog" className="modal-backdrop">
+        <button onClick={onClose}>close</button>
+      </form>
+    </dialog>
+  );
+};
+
+export default JobDetails;

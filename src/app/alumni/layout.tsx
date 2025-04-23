@@ -47,9 +47,9 @@ export default function AlumniLayout({
   }
 
   return (
-    <div className="min-h-screen flex flex-col overflow-hidden bg-gray-50">
+    <div className="min-h-screen flex flex-col overflow-hidden bg-white">
       {/* Subtle gradient background */}
-      <div className="fixed inset-0 bg-gradient-to-br from-[#1a1f4d]/5 to-[#0d47a1]/5 z-0"></div>
+      <div className="fixed inset-0 bg-white z-0"></div>
       
       {/* Content */}
       <div className="relative z-10 flex flex-col min-h-screen">
@@ -70,9 +70,9 @@ export default function AlumniLayout({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.5 }}
-          className={`flex-grow w-full px-4 py-6 transition-all duration-300 ${sidebarOpen ? 'md:ml-64' : ''} overflow-x-hidden`}
+          className={`flex-grow w-full px-1 py-6 transition-all duration-300 ${sidebarOpen ? 'md:ml-64' : ''} overflow-x-hidden`}
         >
-          <div className="max-w-7xl mx-auto flex items-center justify-center min-h-[calc(100vh-64px)]">
+          <div className="max-w-[120rem] mx-auto flex items-center justify-center min-h-[calc(100vh-64px)]">
             <motion.div 
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}

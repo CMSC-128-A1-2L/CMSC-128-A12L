@@ -1,168 +1,458 @@
 "use client";
-import { useState } from "react";
-import { Calendar, Clock, X } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { Event } from "@/entities/event";
+import { Calendar, MapPin, X, Handshake, Info, Users, Image as ImageIcon, ChevronDown } from "lucide-react";
+import { motion } from "framer-motion";
 
-export default function EditEventModal() {
-  const [isOpen, setIsOpen] = useState(true);
+interface EditEventModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (updatedEvent: Event) => void;
+  event: Event | null;
+}
 
-  const [eventTitle, setEventTitle] = useState("");
-  const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
-  const [location, setLocation] = useState("");
-  const [maxParticipants, setMaxParticipants] = useState("");
-  const [sponsorship, setSponsorship] = useState(false);
-  const [contactInfo, setContactInfo] = useState("");
-  const [description, setDescription] = useState("");
+interface SponsorshipChip {
+  id: string;
+  name: string;
+}
 
-  const [errors, setErrors] = useState({
-    eventTitle: "",
-    date: "",
-    time: "",
-    location: "",
-    maxParticipants: "",
+// Helper to format date for datetime-local input
+const formatDateTimeLocal = (date: Date | string | undefined): string => {
+  if (!date) return "";
+  try {
+    const d = new Date(date);
+    // Check if date is valid
+    if (isNaN(d.getTime())) {
+      return "";
+    }
+    // Format: YYYY-MM-DDTHH:mm
+    const year = d.getFullYear();
+    const month = (d.getMonth() + 1).toString().padStart(2, '0');
+    const day = d.getDate().toString().padStart(2, '0');
+    const hours = d.getHours().toString().padStart(2, '0');
+    const minutes = d.getMinutes().toString().padStart(2, '0');
+    return `${year}-${month}-${day}T${hours}:${minutes}`;
+  } catch (error) {
+    console.error("Error formatting date:", error);
+    return ""; // Return empty string on error
+  }
+};
+
+const EditEventModal: React.FC<EditEventModalProps> = ({ isOpen, onClose, onSave, event }) => {
+  const [formData, setFormData] = useState<Partial<Event>>({
+    name: event?.name || "",
+    organizer: event?.organizer || "",
+    description: event?.description || "",
+    type: event?.type || "social",
+    startDate: event?.startDate ? new Date(event.startDate) : new Date(),
+    endDate: event?.endDate ? new Date(event.endDate) : new Date(),
+    location: event?.location || "",
+    imageUrl: event?.imageUrl || "",
+    sponsorship: {
+      enabled: false,
+      sponsors: []
+    },
   });
+  const [sponsorshipInput, setSponsorshipInput] = useState<string>("");
+  const [sponsorshipChips, setSponsorshipChips] = useState<SponsorshipChip[]>([]);
+  const [sponsorshipEnabled, setSponsorshipEnabled] = useState(false);
+  const [rsvpEnabled, setRsvpEnabled] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(event?.imageUrl || null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleSubmit = () => {
-    const newErrors = {
-      eventTitle: eventTitle ? "" : "Event title is required.",
-      date: date ? "" : "Date is required.",
-      time: time ? "" : "Time is required.",
-      location: location ? "" : "Location is required.",
-      maxParticipants: maxParticipants ? "" : "Maximum participants is required.",
-    };
+  useEffect(() => {
+    if (event) {
+      setFormData({
+        ...event,
+        startDate: event.startDate ? new Date(event.startDate) : new Date(),
+        endDate: event.endDate ? new Date(event.endDate) : new Date(),
+      });
+      setSponsorshipEnabled(event.sponsorship?.enabled || false);
+      if (event.sponsorship?.sponsors) {
+        setSponsorshipChips(
+          event.sponsorship.sponsors.map(sponsor => ({
+            id: Date.now().toString() + sponsor,
+            name: sponsor
+          }))
+        );
+      }
+      setRsvpEnabled(event.rsvp?.enabled || false);
+      setPreviewImage(event.imageUrl || null);
+    } else {
+      setFormData({});
+      setSponsorshipEnabled(false);
+      setSponsorshipChips([]);
+      setRsvpEnabled(false);
+      setPreviewImage(null);
+    }
+  }, [event]);
 
-    setErrors(newErrors);
+  useEffect(() => {
+    const modal = document.getElementById("edit_event_modal") as HTMLDialogElement;
+    if (isOpen && modal && !modal.open) {
+      modal.showModal();
+    }
+  }, [isOpen]);
 
-    const hasErrors = Object.values(newErrors).some((e) => e !== "");
-    if (hasErrors) return;
-
-    const eventData = {
-      title: eventTitle,
-      date,
-      time,
-      location,
-      maxParticipants,
-      sponsorship,
-      contactInfo,
-      description,
-    };
-
-    console.log("Saved Event:", eventData);
-    setIsOpen(false);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    
+    if (name === 'startDate' || name === 'endDate') {
+      const dateValue = new Date(value);
+      if (!isNaN(dateValue.getTime())) {
+        setFormData(prev => ({
+          ...prev,
+          [name]: dateValue
+        }));
+      }
+    } else if (name === 'monetaryValue') {
+      setFormData(prev => ({
+        ...prev,
+        monetaryValue: parseFloat(value)
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
   };
 
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, checked } = e.target;
+    setFormData(prev => ({ ...prev, [name]: checked }));
+  };
+
+  const handleSponsorshipInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSponsorshipInput(e.target.value);
+  };
+
+  const handleSponsorshipKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      const sponsor = sponsorshipInput.trim();
+      if (sponsor) {
+        const newChip = { id: Date.now().toString(), name: sponsor };
+        setSponsorshipChips([...sponsorshipChips, newChip]);
+        setFormData(prev => ({
+          ...prev,
+          sponsorship: {
+            enabled: true,
+            sponsors: [...(prev.sponsorship?.sponsors || []), sponsor]
+          }
+        }));
+        setSponsorshipInput('');
+      }
+    }
+  };
+
+  const removeSponsorshipChip = (id: string) => {
+    const chipToRemove = sponsorshipChips.find(chip => chip.id === id);
+    if (chipToRemove) {
+      setSponsorshipChips(sponsorshipChips.filter(chip => chip.id !== id));
+      setFormData(prev => ({
+        ...prev,
+        sponsorship: {
+          enabled: true,
+          sponsors: prev.sponsorship?.sponsors?.filter(s => s !== chipToRemove.name) || []
+        }
+      }));
+    }
+  };
+
+  const handleSponsorshipToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const enabled = e.target.checked;
+    setSponsorshipEnabled(enabled);
+    if (!enabled) {
+      setFormData(prev => ({
+        ...prev,
+        sponsorship: {
+          enabled: false,
+          sponsors: []
+        }
+      }));
+      setSponsorshipChips([]);
+      setSponsorshipInput('');
+    }
+  };
+
+  const handleRsvpToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setRsvpEnabled(e.target.checked);
+    // Add logic here if disabling RSVP should clear wouldGo arrays etc.
+    // For now, just toggles the state.
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewImage(reader.result as string);
+        setFormData(prev => ({ ...prev, imageUrl: reader.result as string }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setPreviewImage(null);
+    setImageFile(null);
+    setFormData(prev => ({ ...prev, imageUrl: "" }));
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.startDate || !formData.endDate) return;
+    
+    const eventData: Partial<Event> = {
+      ...formData,
+      startDate: formData.startDate instanceof Date ? formData.startDate : new Date(formData.startDate),
+      endDate: formData.endDate instanceof Date ? formData.endDate : new Date(formData.endDate),
+    };
+    onSave(eventData as Event);
+    onClose();
+  };
+
+  if (!event) return null;
+
   return (
-    <div className="flex items-center justify-center min-h-screen bg-black bg-opacity-60">
-      {isOpen && (
-        <div className="relative bg-white text-[#0c0051] rounded-2xl p-6 w-11/12 max-w-md shadow-lg">
-          {/* Close Button */}
-          <button onClick={() => setIsOpen(false)} className="absolute top-4 right-4 text-2xl font-light">
-            <X size={20} />
+    <dialog id="edit_event_modal" className="modal">
+      <div className="modal-box rounded-3xl max-w-3xl bg-white">
+        <form method="dialog">
+          <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 text-gray-600 hover:bg-[#605dff] hover:text-white">
+            ✕
           </button>
+        </form>
 
-          {/* Modal Title */}
-          <h2 className="text-xl font-bold text-center" style={{ fontFamily: "Montserrat, sans-serif" }}>
-            Edit Event
-          </h2>
+        <h3 className="font-bold text-xl text-gray-900 mt-4">Edit Event</h3>
 
-          {/* Form Fields */}
-          <div className="mt-4 space-y-3" style={{ fontFamily: "Montserrat, sans-serif" }}>
-            <label>Event title*:</label>
-            <input
-              type="text"
-              className="w-full p-2 rounded-md bg-[#0c0051] text-white"
-              value={eventTitle}
-              onChange={(e) => setEventTitle(e.target.value)}
-            />
-            {errors.eventTitle && <p className="text-red-500 text-sm">{errors.eventTitle}</p>}
+        <form onSubmit={handleSubmit} className="space-y-6 mt-6">
+          {/* Image Upload */}
+          <div className="space-y-2">
+            <label className="font-bold text-left text-gray-800 block">Event Image</label>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <div className="relative w-32 h-32 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-white">
+                {previewImage ? (
+                  <>
+                    <img
+                      src={previewImage}
+                      alt="Preview"
+                      className="w-full h-full object-cover rounded-lg"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleRemoveImage}
+                      className="absolute -top-2 -right-2 btn btn-circle btn-sm btn-error"
+                    >
+                      <X size={16} />
+                    </button>
+                  </>
+                ) : (
+                  <div className="text-center text-gray-600">
+                    <ImageIcon size={32} className="mx-auto mb-1" />
+                    Upload
+                  </div>
+                )}
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleImageChange}
+                  accept="image/*"
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  name="imageFile"
+                />
+              </div>
+              <div className="text-sm text-gray-600">
+                Recommended: 800x600px. Max: 5MB.
+              </div>
+            </div>
+          </div>
 
-            <div className="flex gap-2">
-              <div className="flex-1">
-                <label>Date*:</label>
-                <div className="flex items-center p-2 bg-[#0c0051] text-white rounded-md">
-                  <Calendar className="mr-2" size={16} />
-                  <input
-                    type="date"
-                    className="bg-transparent outline-none flex-1"
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                  />
-                </div>
-                {errors.date && <p className="text-red-500 text-sm">{errors.date}</p>}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Column 1 */}
+            <div className="space-y-4">
+              <div>
+                <label className="font-bold text-left text-gray-800 block">Event Name</label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name || ""}
+                  onChange={handleChange}
+                  className="input w-full mt-1 bg-white border-black text-black"
+                  required
+                />
               </div>
 
-              <div className="flex-1">
-                <label>Time*:</label>
-                <div className="flex items-center p-2 bg-[#0c0051] text-white rounded-md">
-                  <Clock className="mr-2" size={16} />
+              <div>
+                <label className="font-bold text-left text-gray-800 block">Organizer</label>
+                <input
+                  type="text"
+                  name="organizer"
+                  value={formData.organizer || ""}
+                  onChange={handleChange}
+                  className="input w-full mt-1 bg-white border-black text-black"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-left text-gray-800 block">Event Type</label>
+                <select
+                  name="type"
+                  value={formData.type || "social"}
+                  onChange={handleChange}
+                  className="select w-full mt-1 bg-white border-black text-black"
+                  required
+                >
+                  <option value="social">Social</option>
+                  <option value="academic">Academic</option>
+                  <option value="career">Career</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="font-bold text-left text-gray-800 block">Location</label>
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 pointer-events-none z-10" size={18} />
                   <input
-                    type="time"
-                    className="bg-transparent outline-none flex-1"
-                    value={time}
-                    onChange={(e) => setTime(e.target.value)}
+                    type="text"
+                    name="location"
+                    value={formData.location || ""}
+                    onChange={handleChange}
+                    className="input w-full pl-10 bg-white border-black text-black"
+                    required
                   />
                 </div>
-                {errors.time && <p className="text-red-500 text-sm">{errors.time}</p>}
+              </div>
+
+              {/* RSVP Toggle */}
+              <div className="flex items-center gap-2 pt-2">
+                <input
+                  type="checkbox"
+                  checked={rsvpEnabled}
+                  onChange={handleRsvpToggle}
+                  className="checkbox border border-black bg-white [&:checked]:bg-[#242937]"
+                />
+                <label className="font-bold text-left text-gray-800">Enable RSVP</label>
               </div>
             </div>
 
-            <label>Location*:</label>
-            <input
-              type="text"
-              className="w-full p-2 rounded-md bg-[#0c0051] text-white"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-            />
-            {errors.location && <p className="text-red-500 text-sm">{errors.location}</p>}
-
-            <label>Maximum Participant Count*:</label>
-            <input
-              type="number"
-              className="w-full p-2 rounded-md bg-[#0c0051] text-white"
-              value={maxParticipants}
-              onChange={(e) => setMaxParticipants(e.target.value)}
-            />
-            {errors.maxParticipants && <p className="text-red-500 text-sm">{errors.maxParticipants}</p>}
-
-            <label className="flex justify-between items-center">
-              Sponsorship Requests
-              <div className="relative inline-block w-10 align-middle select-none transition duration-200 ease-in">
-                <input
-                  type="checkbox"
-                  checked={sponsorship}
-                  onChange={() => setSponsorship(!sponsorship)}
-                  className="sr-only peer"
-                />
-                <div className="w-10 h-5 bg-white border-2 border-[#0c0051] rounded-full peer-checked:bg-[#0c0051]"></div>
-                <div className="absolute top-0.5 left-0.5 w-4 h-4 bg-[#0c0051] rounded-full transition-transform duration-200 transform peer-checked:translate-x-5 peer-checked:bg-white"></div>
+            {/* Column 2 */}
+            <div className="space-y-4">
+              <div>
+                <label className="font-bold text-left text-gray-800 block">Start Date & Time</label>
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 pointer-events-none z-10" size={18} />
+                  <input
+                    type="datetime-local"
+                    name="startDate"
+                    value={formatDateTimeLocal(formData.startDate)}
+                    onChange={handleChange}
+                    className="input w-full pl-10 pr-10 bg-white border-black text-black appearance-none [&::-webkit-calendar-picker-indicator]:bg-white [&::-webkit-datetime-edit-fields-wrapper]:text-black"
+                    required
+                    style={{ colorScheme: 'light' }}
+                  />
+                </div>
               </div>
-            </label>
 
-            <label>Contact information:</label>
-            <input
-              type="text"
-              className="w-full p-2 rounded-md bg-[#0c0051] text-white"
-              value={contactInfo}
-              onChange={(e) => setContactInfo(e.target.value)}
-            />
+              <div>
+                <label className="font-bold text-left text-gray-800 block">End Date & Time</label>
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 pointer-events-none z-10" size={18} />
+                  <input
+                    type="datetime-local"
+                    name="endDate"
+                    value={formatDateTimeLocal(formData.endDate)}
+                    onChange={handleChange}
+                    className="input w-full pl-10 pr-10 bg-white border-black text-black appearance-none [&::-webkit-calendar-picker-indicator]:bg-white [&::-webkit-datetime-edit-fields-wrapper]:text-black"
+                    required
+                    style={{ colorScheme: 'light' }}
+                  />
+                </div>
+              </div>
 
-            <label>Description:</label>
+              {/* Sponsorship Toggle & Input */}
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={sponsorshipEnabled}
+                    onChange={handleSponsorshipToggle}
+                    className="checkbox border border-black bg-white [&:checked]:bg-[#242937]"
+                  />
+                  <label className="font-bold text-left text-gray-800">Enable Sponsorship</label>
+                </div>
+                {sponsorshipEnabled && (
+                  <div className="space-y-2">
+                    <input
+                      type="text"
+                      value={sponsorshipInput}
+                      onChange={handleSponsorshipInput}
+                      onKeyDown={handleSponsorshipKeyDown}
+                      placeholder="Add sponsors (press Enter)"
+                      className="input w-full bg-white border-black text-black placeholder:text-gray-400"
+                    />
+                    <div className="flex flex-wrap gap-2">
+                      {sponsorshipChips.map(chip => (
+                        <div key={chip.id} className="badge gap-2 bg-[#242937] text-white border-none">
+                          {chip.name}
+                          <button
+                            type="button"
+                            onClick={() => removeSponsorshipChip(chip.id)}
+                            className="btn btn-xs btn-ghost btn-circle hover:bg-[#1b1f4e]"
+                          >
+                            <X size={14} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Description (Full Width) */}
+          <div>
+            <label className="font-bold text-left text-gray-800 block">Description</label>
             <textarea
-              className="w-full p-2 rounded-md bg-[#0c0051] text-white h-24"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            ></textarea>
+              name="description"
+              value={formData.description || ""}
+              onChange={handleChange}
+              className="textarea w-full h-32 mt-1 bg-white border-black text-black"
+              required
+            />
+          </div>
 
-            {/* Post Button */}
+          {/* Action Buttons */}
+          <div className="flex justify-end gap-4 pt-4">
             <button
-              onClick={handleSubmit}
-              className="w-full bg-[#0c0051] text-white mt-4 py-2 rounded-md text-sm font-light"
+              type="button"
+              onClick={onClose}
+              className="btn btn-dash bg-gray-100 hover:bg-gray-200 text-gray-800"
             >
-              Post
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="btn btn-primary"
+            >
+              Save Changes
             </button>
           </div>
-        </div>
-      )}
-    </div>
+        </form>
+      </div>
+      <form method="dialog" className="modal-backdrop">
+        <button onClick={onClose}>close</button>
+      </form>
+    </dialog>
   );
-}
+};
+
+export default EditEventModal;

@@ -1,0 +1,89 @@
+[
+    {
+      "_id": "67f24aa783b5719d2d9af100",
+      "index": 0,
+      "imageUrl": "https://science.nasa.gov/wp-content/uploads/2023/06/webb-flickr-52259221868-30e1c78f0c-4k-jpg.webp",
+      "title": "Excepteur sint occaecat cupidatat non proident sunt in culpa qui officia deserunt mollit.",
+      "organizer": "FANFARE",
+      "location": "841 Hale Avenue, Dargan, Kentucky, 5051",
+      "date": "2025-06-15T09:00:00Z",
+      "rsvp": {
+        "enabled": true,
+        "options": ["Yes", "No", "Maybe"]
+      },
+      "sponsorship": {
+        "enabled": true,
+        "requests": [
+          {
+            "companyName": "StellarTech",
+            "contact": "contact@stellartech.com"
+          }
+        ]
+      },
+      "description": "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident.\r\n",
+      "contact": "events@fanfare.com"
+    },
+    {
+      "_id": "67f24aa7e1d3252622ae2001",
+      "index": 1,
+      "imageUrl": "https://science.nasa.gov/wp-content/uploads/2023/06/webb-flickr-52259221868-30e1c78f0c-4k-jpg.webp",
+      "title": "Lorem ipsum dolor sit amet consectetur adipisicing elit sed do eiusmod tempor.",
+      "organizer": "AVENETRO",
+      "location": "844 Metrotech Court, Como, Louisiana, 8154",
+      "date": "2025-07-20T10:00:00Z",
+      "rsvp": {
+        "enabled": true,
+        "options": ["Yes", "No"]
+      },
+      "sponsorship": {
+        "enabled": false,
+        "requests": []
+      },
+      "description": "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Lorem ipsum dolor sit amet.\r\n",
+      "contact": "green@avenetro.org"
+    },
+    {
+      "_id": "67f24aa7ac6a978b87351abc",
+      "index": 2,
+      "imageUrl": "https://science.nasa.gov/wp-content/uploads/2023/06/webb-flickr-52259221868-30e1c78f0c-4k-jpg.webp",
+      "title": "Incididunt ut labore et dolore magna aliqua quis nostrud exercitation ullamco.",
+      "organizer": "FURNAFIX",
+      "location": "214 Pitkin Avenue, Graball, North Carolina, 1089",
+      "date": "2025-08-01T08:00:00Z",
+      "rsvp": {
+        "enabled": true,
+        "options": ["Attending", "Not Attending"]
+      },
+      "sponsorship": {
+        "enabled": true,
+        "requests": []
+      },
+      "description": "Laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.\r\n",
+      "contact": "devbootcamp@furnafix.io"
+    },
+    {
+      "_id": "67f24aa7a9d8f82d412b0456",
+      "index": 3,
+      "imageUrl": "https://science.nasa.gov/wp-content/uploads/2023/06/webb-flickr-52259221868-30e1c78f0c-4k-jpg.webp",
+      "title": "Sunt in culpa qui officia deserunt mollit anim id est laborum consectetur adipiscing.",
+      "organizer": "GORGANIC",
+      "location": "289 Hill Street, Winfred, Virginia, 6057",
+      "date": "2025-09-10T14:00:00Z",
+      "rsvp": {
+        "enabled": false,
+        "options": []
+      },
+      "sponsorship": {
+        "enabled": true,
+        "requests": [
+          {
+            "companyName": "SheTech",
+            "contact": "sponsor@shetech.org"
+          }
+        ]
+      },
+      "description": "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae.\r\n",
+      "contact": "leadership@gorganic.com"
+    }
+  ]
+  

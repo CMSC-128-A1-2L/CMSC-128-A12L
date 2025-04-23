@@ -30,7 +30,7 @@ export default function AdminSidebar({
   const sidebarItems = [
     { name: "Dashboard", icon: <LayoutDashboardIcon size={20} />, path: "/admin" },
     { name: "Manage Users", icon: <Users size={20} />, path: "/admin/user-management" },
-    { name: "Job Listings", icon: <Briefcase size={20} />, path: "/admin/job-listings" },
+    { name: "Job Opportunities", icon: <Briefcase size={20} />, path: "/admin/opportunities" },
     { name: "Events", icon: <CalendarCogIcon size={20} />, path: "/admin/events" },
     { name: "Communications", icon: <Phone size={20} />, path: "/admin/communications" },
     { name: "Reports", icon: <MessageCircleWarningIcon size={20} />, path: "/admin/reports" },
@@ -71,10 +71,10 @@ export default function AdminSidebar({
           ))}
         </ul>
 
-        {role === "admin" && (
+        {role == "admin" && (
           <div className="mt-auto border-t pt-2 px-2 pb-4">
             <Link
-              href="/alumni-landing"
+              href="/alumni"
               onClick={() => setSidebarOpen(false)}
               className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer group"
             >

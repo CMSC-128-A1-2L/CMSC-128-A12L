@@ -44,7 +44,7 @@ export default function JobListingsSidebar({
       } transition-transform duration-300 ease-in-out`}
     >
       <div className="p-4 flex justify-between items-center border-b">
-        <h2 className="text-lg font-bold text-gray-800">Job Listings Sidebar</h2>
+        <h2 className="text-lg font-bold text-gray-800">Job Listings</h2>
         <button
           onClick={() => setSidebarOpen(false)}
           className="focus:outline-none cursor-pointer"

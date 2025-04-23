@@ -4,11 +4,52 @@ import userData from "@/dummy_data/user.json";
 import PromoteUser from "../../components/promoteUser";
 import DeleteUser from "../../components/deleteUser";
 import { useSession } from "next-auth/react";
-import { Search, ChevronLeft, ChevronRight, Download, User, Mail, Shield } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, Download, User, Mail, Shield, Users, FileCheck, ChevronDown } from "lucide-react";
 import { useState, useEffect } from "react";
 import FilterModal from "../../components/filterModal";
 import { motion } from 'framer-motion';
 import { UserDto } from "@/models/user";
+import ScrollIndicator from "../../components/ScrollIndicator";
+
+interface PendingVerification {
+    name: string;
+    email: string;
+    document: string;
+}
+
+const sampleUserData = [
+    {
+        name: "John Doe",
+        email: "john.doe@example.com",
+        document: "alumni_verification.pdf"
+    },
+    {
+        name: "Jane Smith",
+        email: "jane.smith@example.com",
+        document: "graduation_cert.pdf"
+    },
+    {
+        name: "Mike Johnson",
+        email: "mike.j@example.com",
+        document: "diploma.pdf"
+    },
+    {
+        name: "Sarah Williams",
+        email: "sarah.w@example.com",
+        document: "transcript.pdf"
+    },
+    {
+        name: "David Brown",
+        email: "david.b@example.com",
+        document: "certificate.pdf"
+    },
+    {
+        name: "Emily Davis",
+        email: "emily.d@example.com",
+        document: "diploma_verification.pdf"
+    }
+]
+
 
 export default function UsersManagement(){
     const { data: session } = useSession();
@@ -18,19 +59,88 @@ export default function UsersManagement(){
     const [roleFilter, setRoleFilter] = useState("All");
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [alumniUsers, setAlumniUsers] = useState<UserDto[]>([]);
+    const [pendingVerificationUsers, setPendingVerificationUsers] = useState<UserDto[]>([]);
+
+    const handleAccept = async (userId: string) => {
+        console.log(userId);
+        const response = await fetch(`/api/admin/users/${userId}`, {
+            method: "PUT",
+            body: JSON.stringify({
+                role: ["alumni"],
+                alumniStatus: "verified"
+            })
+        });
+
+        if (response.ok) {
+            console.log("User accepted");
+            setPendingVerificationUsers(pendingVerificationUsers.filter((user) => user.id !== userId));
+        }
+    }
+
+    const handleDecline = async (userId: string) => {
+        console.log(userId);
+        const response = await fetch(`/api/admin/users/${userId}`, {
+            method: "PUT",
+            body: JSON.stringify({
+                alumniStatus: "rejected"
+            })
+        });
+        if (response.ok) {
+            console.log("User declined");
+            setPendingVerificationUsers(pendingVerificationUsers.filter((user) => user.id !== userId));
+        }
+    }
+
+    const handleDocumentDownload = async (url: string, fileName: string) => {
+        try {
+            // Show loading state if needed
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('Network response was not ok');
+            
+            // Get the blob from the response
+            const blob = await response.blob();
+            
+            // Create a blob URL
+            const blobUrl = window.URL.createObjectURL(blob);
+            
+            // Create a temporary link element
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = `${fileName}.pdf`; // Force .pdf extension
+            
+            // Append to body, click, and remove
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            window.URL.revokeObjectURL(blobUrl);
+        } catch (error) {
+            console.error('Error downloading document:', error);
+        }
+    };
+
     useEffect(() => {
         const fetchAlumniUsers = async () => {
             const response = await fetch("/api/admin/users");
             const data = await response.json();
-            data.forEach((datas) => {
-                console.log(datas)
-            })
+            data.forEach((item: UserDto) => {
+                console.log(item);
+            });
             setAlumniUsers(data);
         }
         fetchAlumniUsers();
     }, []);
 
-   
+    useEffect(() => {
+        const fetchPendingVerificationUsers = async () => {
+            const response = await fetch("/api/admin/users/pending-verification");
+            const data = await response.json();
+            setPendingVerificationUsers(data);
+            console.log(data);
+        }
+        fetchPendingVerificationUsers();
+    }, []);
+
     // Pagination state
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 20;
@@ -105,207 +215,379 @@ export default function UsersManagement(){
         
         return pageNumbers;
     };
-    
-    return(
-        <div className="w-full">
-            <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-                className="bg-white/10 backdrop-blur-md shadow-xl rounded-3xl p-6 w-full"
-            >
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
-                    <h2
-                        className="text-3xl font-bold text-gray-800 mb-4 md:mb-0"
-                        style={{ fontFamily: "Montserrat, sans-serif" }}
-                    >
-                        User Management
-                    </h2>
-                    <div className="flex space-x-2">
-                        <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center"
-                        >
-                            <Download className="w-4 h-4 mr-2" />
-                            Export
-                        </motion.button>
-                    </div>
-                </div>
 
-                {/* Tabs */}
-                <div className="flex overflow-x-auto mb-6 pb-2">
-                    {['All', 'admin', 'alumni', 'alumniadmin'].map((tab) => (
-                        <motion.button
-                            key={tab}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => {
-                                setRoleFilter(tab);
-                                setCurrentPage(1);
-                            }}
-                            className={`px-4 py-2 mr-2 rounded-lg whitespace-nowrap ${
-                                roleFilter === tab 
-                                    ? 'bg-blue-600 text-white font-semibold' 
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            }`}
+    return (
+        <div className="w-full px-4 md:px-10">
+            <div className="flex flex-col lg:flex-row gap-6">
+                {/* User Management Card */}
+                <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5 }}
+                    className="bg-white/10 backdrop-blur-md shadow-xl rounded-3xl p-4 md:p-6 w-full lg:w-2/3"
+                >
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                        <h2
+                            className="text-2xl md:text-3xl font-bold text-gray-800 mb-4 md:mb-0 flex items-center"
+                            style={{ fontFamily: "Montserrat, sans-serif" }}
                         >
-                            {tab}
-                        </motion.button>
-                    ))}
-                </div>
-
-                <div className="flex flex-col md:flex-row gap-4 mb-6">
-                    <div className="relative flex-grow">
-                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                        <input
-                            type="text"
-                            placeholder="Search users..."
-                            value={tempQuery}
-                            onChange={(e) => setTempQuery(e.target.value)}
-                            onKeyDown={handleSearch}
-                            className="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-100 text-gray-800 placeholder-gray-500 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        />
-                    </div>
-                    <div className="flex space-x-2">
-                        <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => setIsModalOpen(true)}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center"
-                        >
-                            Filters
-                        </motion.button>
-                    </div>
-                </div>
-                
-                <FilterModal 
-                    isOpen={isModalOpen}
-                    onClose={() => setIsModalOpen(false)}
-                    selectedRole={roleFilter}
-                    onSelectRole={(role) => {
-                        setRoleFilter(role);
-                        setCurrentPage(1); // Reset to first page when changing filters
-                    }}
-                />
-                
-                <div className="overflow-x-auto rounded-lg border border-gray-200">
-                    <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
-                            <tr>
-                                <th 
-                                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                                    onClick={toggleSortOrder}
-                                >
-                                    Name {sortOrder === "asc" ? "▲" : sortOrder === "desc" ? "▼" : ""}
-                                </th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                                <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
-                            {currentUsers.map((user, index) => (
-                                <motion.tr 
-                                    key={index}
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    transition={{ duration: 0.3 }}
-                                    className="hover:bg-gray-50 transition-colors"
-                                >
-                                    <td className="px-6 py-4 whitespace-nowrap text-gray-800">
-                                        <div className="flex items-center">
-                                            <div className="flex-shrink-0 h-8 w-8 bg-gray-200 rounded-full flex items-center justify-center">
-                                                <User className="w-4 h-4 text-gray-600" />
-                                            </div>
-                                            <div className="ml-3">
-                                                <div className="text-sm font-medium">{user.name}</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-gray-800">
-                                        <div className="flex items-center">
-                                            <Shield className="w-4 h-4 mr-2 text-gray-600" />
-                                            <span>{user.role}</span>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-gray-800">
-                                        <div className="flex items-center">
-                                            <Mail className="w-4 h-4 mr-2 text-gray-600" />
-                                            <span>{user.email || "N/A"}</span>
-                                        </div>
-                                    </td>
-                                    <td className="px-6 py-4 whitespace-nowrap text-center">
-                                        <div className="flex justify-center space-x-2">
-                                            {user.role[0] === "alumni" ? <PromoteUser person={user} /> : <span className="pt-1 text-gray-500 font-bold">Promoted</span>}
-                                            {user.role[0] !== "admin" ? <DeleteUser person={user} deleteSuccess={deleteSuccess} /> : null}
-                                        </div>
-                                    </td>
-                                </motion.tr>
-                            ))}
-                        </tbody>
-                    </table>
-                    {filteredUsers.length === 0 && (
-                        <div className="text-center py-8">
-                            <p className="text-gray-500">No users found</p>
+                            <Users className="w-8 h-8 mr-3 text-blue-600" />
+                            User Management
+                        </h2>
+                        <div className="flex space-x-2 w-full md:w-auto">
+                            <motion.button
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center w-full md:w-auto justify-center cursor-pointer"
+                            >
+                                <Download className="w-4 h-4 mr-2" />
+                                Export
+                            </motion.button>
                         </div>
-                    )}
-                </div>
-                
-                {/* Pagination Controls */}
-                {filteredUsers.length > 0 && (
-                    <div className="flex justify-between items-center mt-6">
-                        <div className="text-gray-600 text-sm">
-                            Showing {startIndex + 1} to {Math.min(endIndex, filteredUsers.length)} of {filteredUsers.length} users
+                    </div>
+
+                    {/* Tabs - Scrollable on mobile */}
+                    <div className="flex overflow-x-auto mb-6 pb-2 -mx-4 px-4 md:mx-0 md:px-0">
+                        {['All', 'admin', 'alumni', 'alumniadmin'].map((tab) => (
+                            <motion.button
+                                key={tab}
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
+                                onClick={() => {
+                                    setRoleFilter(tab);
+                                    setCurrentPage(1);
+                                }}
+                                className={`px-4 py-2 mr-2 rounded-lg whitespace-nowrap flex-shrink-0 cursor-pointer ${
+                                    roleFilter === tab 
+                                        ? 'bg-blue-600 text-white font-semibold' 
+                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                }`}
+                            >
+                                {tab}
+                            </motion.button>
+                        ))}
+                    </div>
+
+                    {/* Search and Filter - Stack on mobile */}
+                    <div className="flex flex-col md:flex-row gap-4 mb-6">
+                        <div className="relative flex-grow">
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                            <input
+                                type="text"
+                                placeholder="Search users..."
+                                value={tempQuery}
+                                onChange={(e) => setTempQuery(e.target.value)}
+                                onKeyDown={handleSearch}
+                                className="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-100 text-gray-800 placeholder-gray-500 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            />
                         </div>
                         <div className="flex space-x-2">
                             <motion.button
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
-                                onClick={() => goToPage(currentPage - 1)}
-                                disabled={currentPage === 1}
-                                className={`px-4 py-2 rounded-lg ${
-                                    currentPage === 1
-                                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                }`}
+                                onClick={() => setIsModalOpen(true)}
+                                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center w-full md:w-auto justify-center cursor-pointer"
                             >
-                                Previous
-                            </motion.button>
-                            
-                            {getPageNumbers().map((page, index) => (
-                                <motion.button
-                                    key={index}
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    onClick={() => goToPage(page)}
-                                    className={`px-4 py-2 rounded-lg ${
-                                        currentPage === page
-                                            ? 'bg-blue-600 text-white font-semibold'
-                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                    }`}
-                                >
-                                    {page}
-                                </motion.button>
-                            ))}
-                            
-                            <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => goToPage(currentPage + 1)}
-                                disabled={currentPage === totalPages}
-                                className={`px-4 py-2 rounded-lg ${
-                                    currentPage === totalPages
-                                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                }`}
-                            >
-                                Next
+                                Filters
                             </motion.button>
                         </div>
                     </div>
-                )}
-            </motion.div>
+
+                    {/* Mobile Card View */}
+                    <div className="md:hidden space-y-4">
+                        {currentUsers.map((user, index) => (
+                            <motion.div
+                                key={index}
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                transition={{ duration: 0.3 }}
+                                className="bg-white rounded-lg shadow p-4 space-y-3"
+                            >
+                                <div className="flex items-center space-x-3">
+                                    <div className="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
+                                        <User className="w-5 h-5 text-gray-600" />
+                                    </div>
+                                    <div>
+                                        <div className="font-medium text-gray-900">{user.name}</div>
+                                        <div className="text-sm text-gray-500">{user.email}</div>
+                                    </div>
+                                </div>
+                                <div className="flex items-center text-sm text-gray-600">
+                                    <Shield className="w-4 h-4 mr-2" />
+                                    {/* bruh, don't mind these errors, it's just a type error */}
+                                    <span>{user.role[0] ? (user.role[0].charAt(0).toUpperCase() + user.role[0].slice(1)) : "Pending Verification"}</span>
+                                </div>
+                                <div className="flex justify-end space-x-2 pt-2">
+                                {user.role[0] ? (
+                                                user.role[0] === "alumni" ? (
+                                                    <PromoteUser person={user} />
+                                                ) : (
+                                                    <span className="text-gray-500 text-sm">Promoted</span>
+                                                )
+                                            ) : (
+                                                <span className="text-gray-500 text-sm">Pending Verification</span>
+                                            )}
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
+
+                    {/* Desktop Table View */}
+                    <div className="hidden md:block overflow-y-auto max-h-[calc(100vh-300px)] rounded-lg border border-gray-200 [&::-webkit-scrollbar]:hidden">
+                        <div className="grid grid-cols-1 gap-4 p-4">
+                            {currentUsers.map((user, index) => (
+                                <motion.div
+                                    key={index}
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ duration: 0.3 }}
+                                    className="bg-white rounded-lg shadow p-4"
+                                >
+                                    <div className="flex flex-col space-y-3">
+                                        <div className="flex items-center space-x-3">
+                                            <div className="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
+                                                <User className="w-5 h-5 text-gray-600" />
+                                            </div>
+                                            <div>
+                                                <div className="font-medium text-gray-900">{user.name}</div>
+                                                <div className="text-sm text-gray-500">{user.email || "N/A"}</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="flex items-center text-sm text-gray-600">
+                                            <Shield className="w-4 h-4 mr-2" />
+                                            <span>{user.role[0] ? (user.role[0].charAt(0).toUpperCase() + user.role[0].slice(1)) : "Pending Verification"}</span>
+                                        </div>
+                                        
+                                        <div className="flex justify-end space-x-2 pt-2">
+                                            {user.role[0] ? (
+                                                user.role[0] === "alumni" ? (
+                                                    <PromoteUser person={user} />
+                                                ) : (
+                                                    <span className="text-gray-500 text-sm">Promoted</span>
+                                                )
+                                            ) : (
+                                                <span className="text-gray-500 text-sm">Pending Verification</span>
+                                            )}
+                                            {user.role[0] && user.role[0] !== "admin" && (
+                                                <DeleteUser person={user} deleteSuccess={deleteSuccess} />
+                                            )}
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            ))}
+                            {filteredUsers.length === 0 && (
+                                <div className="text-center py-8">
+                                    <p className="text-gray-500">No users found</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Pagination - Responsive */}
+                    {filteredUsers.length > 0 && (
+                        <div className="flex flex-col md:flex-row justify-between items-center mt-6 space-y-4 md:space-y-0">
+                            <div className="text-gray-600 text-sm text-center md:text-left">
+                                Showing {startIndex + 1} to {Math.min(endIndex, filteredUsers.length)} of {filteredUsers.length} users
+                            </div>
+                            <div className="flex space-x-2">
+                                <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => goToPage(currentPage - 1)}
+                                    disabled={currentPage === 1}
+                                    className={`px-3 py-1 md:px-4 md:py-2 rounded-lg ${
+                                        currentPage === 1
+                                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    }`}
+                                >
+                                    Previous
+                                </motion.button>
+                                
+                                {getPageNumbers().map((page, index) => (
+                                    <motion.button
+                                        key={index}
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={() => goToPage(page)}
+                                        className={`px-3 py-1 md:px-4 md:py-2 rounded-lg ${
+                                            currentPage === page
+                                                ? 'bg-blue-600 text-white font-semibold'
+                                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                        }`}
+                                    >
+                                        {page}
+                                    </motion.button>
+                                ))}
+                                
+                                <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => goToPage(currentPage + 1)}
+                                    disabled={currentPage === totalPages}
+                                    className={`px-3 py-1 md:px-4 md:py-2 rounded-lg ${
+                                        currentPage === totalPages
+                                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    }`}
+                                >
+                                    Next
+                                </motion.button>
+                            </div>
+                        </div>
+                    )}
+                </motion.div>
+
+                {/* Pending Verifications Card - Mobile Friendly */}
+                <motion.div 
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.2 }}
+                    className="bg-white/10 backdrop-blur-md shadow-xl rounded-3xl p-4 md:p-6 w-full lg:w-1/3 h-fit"
+                >
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                        <h2
+                            className="text-2xl md:text-3xl font-bold text-gray-800 mb-4 md:mb-0 flex items-center"
+                            style={{ fontFamily: "Montserrat, sans-serif" }}
+                        >
+                            <FileCheck className="w-8 h-8 mr-3 text-green-600" />
+                            Pending Verifications
+                        </h2>
+                    </div>
+
+                    {/* Mobile Card View for Pending Verifications */}
+                    <div className="md:hidden space-y-4">
+                        {pendingVerificationUsers.length > 0 ? (
+                            pendingVerificationUsers.map((user: UserDto, index) => (
+                                <motion.div
+                                    key={index}
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ duration: 0.3 }}
+                                    className="bg-white rounded-lg shadow p-4 space-y-3"
+                                >
+                                    <div className="flex items-center space-x-3">
+                                        <div className="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
+                                            <User className="w-5 h-5 text-gray-600" />
+                                        </div>
+                                        <div>
+                                            <div className="font-medium text-gray-900">{user.name}</div>
+                                            <div className="text-sm text-gray-500">{user.email}</div>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center text-sm text-gray-600">
+                                        <a 
+                                            href="#" 
+                                            className="text-blue-600 hover:text-blue-800 underline flex items-center"
+                                            onClick={(e) => {
+                                                e.preventDefault();
+                                                const fileName = user.documentUrl?.split("/").pop()?.split(".")[0] || "document";
+                                                handleDocumentDownload(user.documentUrl, fileName);
+                                            }}
+                                        >
+                                            <span className="mr-2">View Document:</span>
+                                            {user.documentUrl?.split("/").pop()}
+                                        </a>
+                                    </div>
+                                    <div className="flex justify-end space-x-2 pt-2">
+                                        <motion.button
+                                            whileHover={{ scale: 1.05 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm"
+                                            onClick={() => handleAccept(user.id)}
+                                        >
+                                            Accept
+                                        </motion.button>
+                                        <motion.button
+                                            whileHover={{ scale: 1.05 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm"
+                                            onClick={() => handleDecline(user.id)}
+                                        >
+                                            Decline
+                                        </motion.button>
+                                    </div>
+                                </motion.div>
+                            ))
+                        ) : (
+                            <div className="bg-white rounded-lg shadow p-6 text-center">
+                                <p className="text-gray-500 text-lg">No pending verifications</p>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Desktop Table View for Pending Verifications */}
+                    <div className="hidden md:block overflow-y-auto max-h-[calc(100vh-300px)] rounded-lg border border-gray-200 [&::-webkit-scrollbar]:hidden">
+                        <div className="grid grid-cols-1 gap-4 p-4">
+                            {pendingVerificationUsers.length > 0 ? (
+                                pendingVerificationUsers.map((user: UserDto, index) => (
+                                    <motion.div
+                                        key={index}
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        transition={{ duration: 0.3 }}
+                                        className="bg-white rounded-lg shadow p-4"
+                                    >
+                                        <div className="flex flex-col space-y-3">
+                                            <div className="flex items-center space-x-3">
+                                                <div className="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
+                                                    <User className="w-5 h-5 text-gray-600" />
+                                                </div>
+                                                <div>
+                                                    <div className="font-medium text-gray-900">{user.name}</div>
+                                                    <div className="text-sm text-gray-500">{user.email}</div>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="flex items-center text-sm text-gray-600">
+                                                <span className="mr-2">View Document:</span>
+                                                <a 
+                                                    href="#" 
+                                                    className="text-blue-600 hover:text-blue-800 underline flex items-center"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        const fileName = user.documentUrl?.split("/").pop()?.split(".")[0] || "document";
+                                                        handleDocumentDownload(user.documentUrl, fileName);
+                                                    }}
+                                                >
+                                                    {user.documentUrl?.split("/").pop()}    
+                                                </a>
+                                            </div>
+                                            
+                                            <div className="flex justify-end space-x-2 pt-2">
+                                                <motion.button
+                                                    whileHover={{ scale: 1.05 }}
+                                                    whileTap={{ scale: 0.95 }}
+                                                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg"
+                                                    onClick={() => handleAccept(user.id)}
+                                                >
+                                                    Accept
+                                                </motion.button>
+                                                <motion.button
+                                                    whileHover={{ scale: 1.05 }}
+                                                    whileTap={{ scale: 0.95 }}
+                                                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
+                                                    onClick={() => handleDecline(user.id)}
+                                                >
+                                                    Decline
+                                                </motion.button>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                ))
+                            ) : (
+                                <div className="bg-white rounded-lg shadow p-6 text-center">
+                                    <p className="text-gray-500 text-lg">No pending verifications</p>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </motion.div>
+            </div>
+            
+            {/* Page Scroll Indicator */}
+            <ScrollIndicator className="hidden md:block" />
         </div>
     );
 }
