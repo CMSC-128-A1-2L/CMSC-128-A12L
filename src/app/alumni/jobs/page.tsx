@@ -7,7 +7,7 @@ import JobRow from "@/app/components/jobContentRow";
 import JobDetails from "@/app/components/jobDetails";
 import EditJobListComponent from "@/app/components/editJobList";
 import jobData from "@/dummy_data/job.json";
-import CreateJL from "@/pages/createJL";
+import CreateJL from "@/app/components/createJL";
 // Refactor add job list to use modal than page
 
 import {

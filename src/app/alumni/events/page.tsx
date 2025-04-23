@@ -259,6 +259,7 @@ export default function EventListings() {
                 <Filter size={18} />
               </button>
             </div>
+            {showEventModal && <CreateEvent onClose={() => setShowEventModal(false)} />}
             <FilterSidebar
               isOpen={filterSidebarOpen}
               setIsOpen={setFilterSidebarOpen}

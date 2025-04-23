@@ -7,7 +7,7 @@ import { FiFilter } from "react-icons/fi";
 import { IoIosArrowForward, IoIosArrowBack } from "react-icons/io";
 import userData from "@/dummy_data/user.json";
 
-import CreateJL from "@/pages/createJL";
+import CreateJL from "@/app/components/createJL";
 import CreateEvent from "@/pages/createEvent"; 
 
 
