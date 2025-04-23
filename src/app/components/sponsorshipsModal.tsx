@@ -23,19 +23,19 @@ const SponsorDetails: React.FC<SponsorDetailsProps> = ({
             <p className="font-bold text-left text-gray-700">Contact Details</p>
             <div className="flex">
               <p className="px-2 font-bold text-gray-700">Name:</p> 
-              <p>Lorem Ipsum</p>
+              <p className="text-black">Lorem Ipsum</p>
             </div>
             <div className="flex">
               <p className="px-2 font-bold text-gray-700">Contact Number:</p> 
-              <p>Lorem Ipsum</p>
+              <p className="text-black">Lorem Ipsum</p>
             </div>
             <div className="flex">
               <p className="px-2 font-bold text-gray-700">Email:</p> 
-              <p className="pb-2">Lorem Ipsum</p>
+              <p className="pb-2 text-black">Lorem Ipsum</p>
             </div>
 
             <p className="font-bold text-left text-gray-700">Sponsorship Options</p>
-            <p className="px-2"> Lorem Ipsum </p>
+            <p className="px-2 text-black">Lorem Ipsum</p>
 
         </div>
       </div>
