@@ -212,15 +212,7 @@ export default function JobListings() {
               >
                 <Filter size={18} />
               </button>
-              <button
-                onClick={() => setShowModal(true)}
-                className="btn btn-primary btn-sm rounded-lg"
-              >
-                <Plus size={18} /> Add Job
-              </button>
-
             </div>
-            {showModal && <CreateJL onClose={() => setShowModal(false)} />}
             <FilterSidebar
               isOpen={filterSidebarOpen}
               setIsOpen={setFilterSidebarOpen}
