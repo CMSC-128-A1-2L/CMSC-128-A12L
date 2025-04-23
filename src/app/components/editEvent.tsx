@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import { Event } from "@/entities/event";
-import { Calendar, MapPin, X, Handshake, Info, Users, Image as ImageIcon } from "lucide-react";
+import { Calendar, MapPin, X, Handshake, Info, Users, Image as ImageIcon, ChevronDown } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface EditEventModalProps {
@@ -319,7 +319,7 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ isOpen, onClose, onSave
               <div>
                 <label className="font-bold text-left text-gray-800 block">Location</label>
                 <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600" size={18} />
+                  <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 pointer-events-none z-10" size={18} />
                   <input
                     type="text"
                     name="location"
@@ -348,14 +348,15 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ isOpen, onClose, onSave
               <div>
                 <label className="font-bold text-left text-gray-800 block">Start Date & Time</label>
                 <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600" size={18} />
+                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 pointer-events-none z-10" size={18} />
                   <input
                     type="datetime-local"
                     name="startDate"
                     value={formatDateTimeLocal(formData.startDate)}
                     onChange={handleChange}
-                    className="input w-full pl-10 bg-white border-black text-black"
+                    className="input w-full pl-10 pr-10 bg-white border-black text-black appearance-none [&::-webkit-calendar-picker-indicator]:bg-white [&::-webkit-datetime-edit-fields-wrapper]:text-black"
                     required
+                    style={{ colorScheme: 'light' }}
                   />
                 </div>
               </div>
@@ -363,14 +364,15 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ isOpen, onClose, onSave
               <div>
                 <label className="font-bold text-left text-gray-800 block">End Date & Time</label>
                 <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600" size={18} />
+                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 pointer-events-none z-10" size={18} />
                   <input
                     type="datetime-local"
                     name="endDate"
                     value={formatDateTimeLocal(formData.endDate)}
                     onChange={handleChange}
-                    className="input w-full pl-10 bg-white border-black text-black"
+                    className="input w-full pl-10 pr-10 bg-white border-black text-black appearance-none [&::-webkit-calendar-picker-indicator]:bg-white [&::-webkit-datetime-edit-fields-wrapper]:text-black"
                     required
+                    style={{ colorScheme: 'light' }}
                   />
                 </div>
               </div>
@@ -398,12 +400,12 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ isOpen, onClose, onSave
                     />
                     <div className="flex flex-wrap gap-2">
                       {sponsorshipChips.map(chip => (
-                        <div key={chip.id} className="badge gap-2 bg-[#605dff] text-white border-none">
+                        <div key={chip.id} className="badge gap-2 bg-[#242937] text-white border-none">
                           {chip.name}
                           <button
                             type="button"
                             onClick={() => removeSponsorshipChip(chip.id)}
-                            className="btn btn-xs btn-ghost btn-circle hover:bg-[#4f4ccc]"
+                            className="btn btn-xs btn-ghost btn-circle hover:bg-[#1b1f4e]"
                           >
                             <X size={14} />
                           </button>
