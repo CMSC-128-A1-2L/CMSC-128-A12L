@@ -44,7 +44,7 @@ const JobRow: React.FC<JobCardProps> = ({
         <div className="flex flex-row  items-center card-actions">
           <button
             onClick={onDetailsClick}
-            className="btn btn-soft rounded-lg"
+            className="btn btn-soft rounded-lg bg-[#2B3139] text-white"
           >
             Details
           </button>

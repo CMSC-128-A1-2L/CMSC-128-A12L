@@ -41,10 +41,10 @@ const EventRow: React.FC<EventCardProps> = ({
           </p>
         </div>
 
-        <div className="flex flex-row items-center card-actions">
+        <div className="flex flex-row items-center card-actions gap-2">
           <button
             onClick={onDetailsClick}
-            className="btn btn-soft rounded-lg"
+            className="btn btn-ghost bg-[#2B3139] text-white rounded-lg w-24 shadow-md hover:shadow-lg transition-shadow"
           >
             Details
           </button>
@@ -52,7 +52,7 @@ const EventRow: React.FC<EventCardProps> = ({
             onClick={() => {
               onSponsorClick();
             }}
-            className="btn btn-sm btn-primary rounded-lg w-full"
+            className="btn btn-primary rounded-lg w-24"
           >
             Sponsor
           </button>
@@ -61,7 +61,7 @@ const EventRow: React.FC<EventCardProps> = ({
               e.stopPropagation();
               onApplyClick();
             }}
-            className="btn btn-primary rounded-lg"
+            className="btn btn-primary rounded-lg w-24"
           >
             Respond
           </button>
