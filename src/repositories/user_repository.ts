@@ -1,7 +1,7 @@
 import { connectDB } from "@/databases/mongodb";
-import { User } from "@/entities/user";
+import { User, UserRole } from "@/entities/user";
 import { mapUserDtoToUser, mapUserToUserDto } from "@/mappers/user";
-import { UserDto, UserSchema } from "@/models/user";
+import { UserDto, UserRoleDto, UserSchema } from "@/models/user";
 import { Connection, Model } from "mongoose";
 import { getUserCredentialRepository } from "./user_credentials_repository";
 
@@ -58,6 +58,13 @@ export interface UserRepository {
      * @returns A promise that is resolved when the user is deleted successfully
      **/
     deleteUser(id: string): Promise<void>;
+
+    /**
+     * Gets all alumni users from the repository.
+     * 
+     * @returns A promise that resolves to an array of alumni users.
+     */
+    getAllAlumni(): Promise<User[]>;
 }
 
 class MongoDBUserRepository implements UserRepository {
@@ -120,6 +127,13 @@ class MongoDBUserRepository implements UserRepository {
         } catch (error) {
             console.error(error);
         }
+    }
+
+    async getAllAlumni(): Promise<User[]> {
+        const userDtos = await this.model.find({
+            role: { $bitsAllSet: UserRoleDto.ALUMNI }
+        });
+        return userDtos.map(mapUserDtoToUser);
     }
 
     constructor(connection: Connection) {

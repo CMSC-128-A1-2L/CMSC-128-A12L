@@ -5,68 +5,109 @@ export default function CreateEvent({ onClose }: { onClose: () => void }) {
   const [sponsorship, setSponsorship] = useState(false);
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
-      <div className="bg-gray-100 p-6 rounded-lg shadow-lg w-full max-w-lg relative">
-        <button
-          onClick={onClose}
-          className="absolute top-2 right-3 text-xl font-bold"
-        >
-          ✕
-        </button>
-        <h2 className="text-xl mb-4 text-center font-semibold">Create new event</h2>
-        <form className="space-y-4">
+    <dialog id="create_event_modal" className="modal">
+      <div className="modal-box rounded-3xl bg-white max-w-lg">
+        <form method="dialog">
+          <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 text-gray-600 hover:bg-[#605dff] hover:text-white">
+            ✕
+          </button>
+        </form>
+
+        <h3 className="font-bold text-xl text-gray-900 mt-4">Create new event</h3>
+
+        <form className="space-y-4 mt-6">
           {/* Event Title */}
-          <label className="font-bold">Event title*:</label>
-          <input type="text" className="w-full border rounded p-2 bg-gray-300" />
+          <div>
+            <p className="font-bold text-left text-gray-800">Event title*</p>
+            <input 
+              type="text" 
+              className="w-full p-2 border border-gray-300 rounded-md bg-white text-gray-800 focus:border-[#605dff] focus:ring-1 focus:ring-[#605dff]" 
+              required 
+            />
+          </div>
 
           {/* Date and Time */}
-          <div className="flex space-x-2">
-            <div className="w-1/2">
-              <label className="font-bold">Date*:</label>
-              <input type="date" className="w-full border rounded p-2 bg-gray-300" />
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="font-bold text-left text-gray-800">Date*</p>
+              <input 
+                type="date" 
+                className="w-full p-2 border border-gray-300 rounded-md bg-white text-gray-800 focus:border-[#605dff] focus:ring-1 focus:ring-[#605dff] [color-scheme:light]" 
+                required 
+              />
             </div>
-            <div className="w-1/2">
-              <label className="font-bold">Time*:</label>
-              <input type="time" className="w-full border rounded p-2 bg-gray-300" />
+            <div>
+              <p className="font-bold text-left text-gray-800">Time*</p>
+              <input 
+                type="time" 
+                className="w-full p-2 border border-gray-300 rounded-md bg-white text-gray-800 focus:border-[#605dff] focus:ring-1 focus:ring-[#605dff] [color-scheme:light]" 
+                required 
+              />
             </div>
           </div>
 
           {/* Location */}
-          <label className="font-bold">Location*:</label>
-          <input type="text" className="w-full border rounded p-2 bg-gray-300" />
+          <div>
+            <p className="font-bold text-left text-gray-800">Location*</p>
+            <input 
+              type="text" 
+              className="w-full p-2 border border-gray-300 rounded-md bg-white text-gray-800 focus:border-[#605dff] focus:ring-1 focus:ring-[#605dff]" 
+              required 
+            />
+          </div>
 
           {/* Max Participant Count */}
-          <label className="font-bold">Maximum Participant Count*:</label>
-          <input type="number" className="w-full border rounded p-2 bg-gray-300" />
+          <div>
+            <p className="font-bold text-left text-gray-800">Maximum Participant Count*</p>
+            <input 
+              type="number" 
+              min="0"
+              className="w-full p-2 border border-gray-300 rounded-md bg-white text-gray-800 focus:border-[#605dff] focus:ring-1 focus:ring-[#605dff]" 
+              required 
+            />
+          </div>
 
           {/* Sponsorship Toggle */}
           <div className="flex items-center justify-between">
-            <label className="font-bold">Sponsorship Requests</label>
+            <p className="font-bold text-left text-gray-800">Sponsorship Requests</p>
             <input
               type="checkbox"
               checked={sponsorship}
               onChange={() => setSponsorship(!sponsorship)}
-              className="w-5 h-5"
+              className="checkbox checkbox-primary"
             />
           </div>
 
           {/* Contact Info */}
-          <label className="font-bold">Contact information:</label>
-          <input type="text" className="w-full border rounded p-2 bg-gray-300" />
+          <div>
+            <p className="font-bold text-left text-gray-800">Contact information</p>
+            <input 
+              type="text" 
+              className="w-full p-2 border border-gray-300 rounded-md bg-white text-gray-800 focus:border-[#605dff] focus:ring-1 focus:ring-[#605dff]" 
+            />
+          </div>
 
           {/* Description */}
-          <label className="font-bold">Description:</label>
-          <textarea rows={4} className="w-full border rounded p-2 bg-gray-300" />
+          <div>
+            <p className="font-bold text-left text-gray-800">Description</p>
+            <textarea 
+              rows={4} 
+              className="w-full p-2 border border-gray-300 rounded-md bg-white text-gray-800 focus:border-[#605dff] focus:ring-1 focus:ring-[#605dff] resize-none" 
+            />
+          </div>
 
           {/* Submit Button */}
           <button
             type="submit"
-            className="bg-gray-400 text-white px-4 py-2 rounded mx-auto block"
+            className="btn btn-primary btn-block mt-6"
           >
             Post
           </button>
         </form>
       </div>
-    </div>
+      <form method="dialog" className="modal-backdrop">
+        <button onClick={onClose}>close</button>
+      </form>
+    </dialog>
   );
 }

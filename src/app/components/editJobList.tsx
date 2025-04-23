@@ -69,50 +69,50 @@ const EditJobModal: React.FC<EditJobModalProps> = ({
 
   return (
     <dialog id="edit_job_modal" className="modal">
-      <div className="modal-box rounded-3xl">
+      <div className="modal-box rounded-3xl bg-white">
         <form method="dialog">
           <button 
-            className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+            className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 text-gray-600 hover:bg-[#605dff] hover:text-white"
             onClick={onClose}
           >
             ✕
           </button>
         </form>
 
-        <h3 className="font-bold text-lg mt-4">Edit Job Post</h3>
+        <h3 className="font-bold text-xl text-gray-900 mt-4">Edit Job Post</h3>
 
         <div className="pt-4 space-y-4">
           <div>
-            <p className="font-bold text-left text-gray-700">Job Title</p>
+            <p className="font-bold text-left text-gray-800">Job Title</p>
             <input
               type="text"
               name="title"
               value={jobData.title}
               onChange={handleChange}
-              className="w-full p-2 border rounded-md"
+              className="w-full p-2 border rounded-md bg-white text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
             />
             {errors.title && <p className="text-red-500 text-sm">{errors.title}</p>}
           </div>
 
           <div>
-            <p className="font-bold text-left text-gray-700">Company</p>
+            <p className="font-bold text-left text-gray-800">Company</p>
             <input
               type="text"
               name="company"
               value={jobData.company}
               onChange={handleChange}
-              className="w-full p-2 border rounded-md"
+              className="w-full p-2 border rounded-md bg-white text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
             />
             {errors.company && <p className="text-red-500 text-sm">{errors.company}</p>}
           </div>
 
           <div>
-            <p className="font-bold text-left text-gray-700">Job Type</p>
+            <p className="font-bold text-left text-gray-800">Job Type</p>
             <select
               name="jobType"
               value={jobData.jobType}
               onChange={handleChange}
-              className="w-full p-2 border rounded-md"
+              className="w-full p-2 border rounded-md bg-white text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
             >
               <option value="Full-time">Full-time</option>
               <option value="Part-time">Part-time</option>
@@ -122,12 +122,12 @@ const EditJobModal: React.FC<EditJobModalProps> = ({
           </div>
 
           <div>
-            <p className="font-bold text-left text-gray-700">Work Type</p>
+            <p className="font-bold text-left text-gray-800">Work Type</p>
             <select
               name="workType"
               value={jobData.workType}
               onChange={handleChange}
-              className="w-full p-2 border rounded-md"
+              className="w-full p-2 border rounded-md bg-white text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
             >
               <option value="On-site">On-site</option>
               <option value="Remote">Remote</option>
@@ -137,50 +137,51 @@ const EditJobModal: React.FC<EditJobModalProps> = ({
           </div>
 
           <div>
-            <p className="font-bold text-left text-gray-700">Location</p>
+            <p className="font-bold text-left text-gray-800">Location</p>
             <input
               type="text"
               name="location"
               value={jobData.location}
               onChange={handleChange}
-              className="w-full p-2 border rounded-md"
+              className="w-full p-2 border rounded-md bg-white text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
             />
             {errors.location && <p className="text-red-500 text-sm">{errors.location}</p>}
           </div>
 
           <div>
-            <p className="font-bold text-left text-gray-700">Description</p>
+            <p className="font-bold text-left text-gray-800">Description</p>
             <textarea
               name="description"
               value={jobData.description}
               onChange={handleChange}
-              className="textarea w-full p-2 border rounded-md h-24"
+              className="w-full p-2 border border-gray-300 rounded-md h-24 bg-white text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none"
             ></textarea>
             {errors.description && <p className="text-red-500 text-sm">{errors.description}</p>}
           </div>
 
           <div>
-            <p className="font-bold text-left text-gray-700">Salary (Optional)</p>
+            <p className="font-bold text-left text-gray-800">Salary (Optional)</p>
             <input
               type="text"
               name="salary"
               value={jobData.salary}
               onChange={handleChange}
-              className="w-full p-2 border rounded-md"
+              className="w-full p-2 border rounded-md bg-white text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               placeholder="e.g. $50,000 - $70,000"
             />
           </div>
 
-          <div className="flex flex-col gap-2 pt-6">
-            <button
-              onClick={handleSubmit}
-              className="btn btn-primary btn-block"
-            >
-              Save Changes
-            </button>
-          </div>
+          <button
+            onClick={handleSubmit}
+            className="btn btn-primary btn-block mt-6"
+          >
+            Save Changes
+          </button>
         </div>
       </div>
+      <form method="dialog" className="modal-backdrop">
+        <button onClick={onClose}>close</button>
+      </form>
     </dialog>
   );
 };

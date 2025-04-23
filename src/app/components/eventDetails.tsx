@@ -1,157 +1,92 @@
-import React, { useState } from "react";
-import { Trash2, Edit2, Calendar, MapPin, Users, Mail, Info, Handshake, X, Clock } from "lucide-react";
-import CustomModal from "./eventSponsorshipRequestDisplay";
-import { motion } from "framer-motion";
-import { Event } from "@/entities/event";
+"use client";
+import React from "react";
+import {
+  Trash2,
+  Calendar,
+  MapPin,
+  Users,
+  Building
+} from "lucide-react";
 
-interface EventDetailsProps extends Omit<Event, '_id'> {
-  _id: string;
+interface EventDetailsProps {
+  title: string;
+  organizer: string;
+  location: string;
+  date: string;
+  description: string;
   isOpen: boolean;
   onClose: () => void;
+  onRSVPClick: () => void;
   onEditClick: () => void;
   onDeleteClick: () => void;
 }
 
 const EventDetails: React.FC<EventDetailsProps> = ({
-  _id,
-  name,
-  description,
-  type,
-  startDate,
-  endDate,
+  title,
+  organizer,
   location,
-  imageUrl,
-  wouldGo,
-  wouldNotGo,
-  wouldMaybeGo,
+  date,
+  description,
   isOpen,
   onClose,
+  onRSVPClick,
   onEditClick,
   onDeleteClick,
 }) => {
-  const [isSponsorModalOpen, setSponsorModalOpen] = useState(false);
-
-  const handleCloseDetails = () => {
-    onClose();
-  };
-
-
-  const handleSponsorClose = () => {
-    setSponsorModalOpen(false);
-  };
-
-  const formatDate = (date: Date) => {
-    return new Date(date).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
-
-  if (!isOpen) return null;
+  // Format the date
+  const formattedDate = new Date(date).toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
 
   return (
-    <>
-      <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.9 }}
-          className="bg-gray-50 rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-xl border border-gray-200"
-        >
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-800">Event Details</h2>
-            <button
-              onClick={handleCloseDetails}
-              className="btn btn-circle bg-gray-100 hover:bg-gray-300 transition-colors duration-200"
-            >
-              <X size={24} className="text-black" />
+    <dialog id="job_details_modal" className="modal">
+      <div className="modal-box rounded-3xl bg-white">
+        <form method="dialog">
+          <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 text-gray-600 hover:bg-[#605dff] hover:text-white">
+            ✕
+          </button>
+        </form>
+
+        <h3 className="font-bold text-xl text-gray-900 mt-4">{title}</h3>
+
+        <div className="pt-4">
+          <p className="font-bold text-left text-gray-800">Date & Time</p>
+          <p className="px-2 pb-2 text-gray-700">{formattedDate}</p>
+
+          <p className="font-bold text-left text-gray-800">Organizer</p>
+          <p className="px-2 pb-2 text-gray-700">{organizer}</p>
+
+          <p className="font-bold text-left text-gray-800">Location</p>
+          <p className="px-2 pb-2 text-gray-700">{location}</p>
+
+          <p className="font-bold text-left text-gray-800">Description</p>
+          <p className="px-2 pb-2 text-gray-700 whitespace-pre-wrap">{description}</p>
+
+          <div className="flex flex-row gap-2 mt-4">
+            <button onClick={onEditClick} className="btn btn-dash flex-grow bg-gray-100 hover:bg-gray-200 text-gray-800">
+              Edit
+            </button>
+            <button onClick={onDeleteClick} className="btn btn-dash btn-error btn-sqr">
+              <Trash2 />
             </button>
           </div>
-
-          <div className="space-y-6">
-            {imageUrl && (
-              <div className="w-full aspect-video rounded-lg overflow-hidden bg-gray-100">
-                <img src={imageUrl} alt={name} className="w-full h-full object-cover" />
-              </div>
-            )}
-
-            <div>
-              <h3 className="text-2xl font-bold text-gray-800 mb-2">{name}</h3>
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <Calendar size={16} className="text-gray-500" />
-                <span>{formatDate(startDate)}</span>
-              </div>
-              {startDate !== endDate && (
-                <div className="flex items-center gap-2 text-sm text-gray-600 mt-1">
-                  <Clock size={16} className="text-gray-500" />
-                  <span>Until {formatDate(endDate)}</span>
-                </div>
-              )}
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm text-gray-700">
-                  <Info size={16} className="text-gray-500" />
-                  <span className="font-medium">Type:</span>
-                  <span className="capitalize">{type}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-gray-700">
-                  <MapPin size={16} className="text-gray-500" />
-                  <span className="font-medium">Location:</span>
-                  <span>{location}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-gray-700">
-                  <Users size={16} className="text-gray-500" />
-                  <span className="font-medium">Interest:</span>
-                  <span>{wouldGo.length} Going • {wouldMaybeGo.length} Maybe • {wouldNotGo.length} Not Going</span>
-                </div>
-              </div>
-            </div>
-
-            {description && (
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm text-gray-700">
-                  <Info size={16} className="text-gray-500" />
-                  <span className="font-medium">Description:</span>
-                </div>
-                <p className="text-sm text-gray-600 pl-6">{description}</p>
-              </div>
-            )}
-
-            <div className="space-y-4">
-              <div className="flex justify-end gap-2">
-                <button onClick={onEditClick} className="btn btn-primary gap-2 bg-blue-600 hover:bg-blue-700">
-                  <Edit2 size={16} />
-                  Edit
-                </button>
-                <button onClick={onDeleteClick} className="btn btn-error gap-2">
-                  <Trash2 size={16} />
-                  Delete
-                </button>
-              </div>
-            </div>
-          </div>
-        </motion.div>
+          <button
+            onClick={onRSVPClick}
+            className="btn btn-primary btn-block mt-2"
+          >
+            RSVP Now
+          </button>
+        </div>
       </div>
-
-      {isSponsorModalOpen && (
-        <CustomModal
-          modalId="custom_modal"
-          title="Sponsorship Request"
-          isOpen={isSponsorModalOpen}
-          onClose={handleSponsorClose}
-          onSubmit={() => {
-            handleSponsorClose();
-            onClose();
-          }}
-          eventName={name}
-        />
-      )}
-    </>
+      <form method="dialog" className="modal-backdrop">
+        <button onClick={onClose}>close</button>
+      </form>
+    </dialog>
   );
 };
 

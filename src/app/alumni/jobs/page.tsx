@@ -58,12 +58,19 @@ export default function JobListings() {
       remote: false,
       hybrid: false,
     },
+    experienceLevel: {
+      entry: false,
+      midLevel: false,
+      senior: false,
+    }
   });
 
   // Handle filter changes from FilterSidebar
   const handleFilterChange = (filters: any) => {
-    setActiveFilters(filters);
-    setCurrentPage(1); // Reset to first page when filters change
+    // Create a new object reference to ensure React detects the change
+    const newFilters = JSON.parse(JSON.stringify(filters));
+    setActiveFilters(newFilters);
+    setCurrentPage(1);
   };
 
   // Apply search/filters
@@ -82,9 +89,9 @@ export default function JobListings() {
 
     const jobTypeMatch =
       !jobTypeFiltersActive ||
-      (activeFilters.jobType.fullTime && job.job_type === "Full-time") ||
-      (activeFilters.jobType.partTime && job.job_type === "Part-time") ||
-      (activeFilters.jobType.contract && job.job_type === "Contract");
+      (activeFilters.jobType.fullTime && job.job_type === "full-time") ||
+      (activeFilters.jobType.partTime && job.job_type === "part-time") ||
+      (activeFilters.jobType.contract && job.job_type === "contract");
 
     // Work Type filter
     const workTypeFiltersActive =
@@ -94,11 +101,21 @@ export default function JobListings() {
 
     const workTypeMatch =
       !workTypeFiltersActive ||
-      (activeFilters.workType.onSite && job.work_type === "On-site") ||
-      (activeFilters.workType.remote && job.work_type === "Remote") ||
-      (activeFilters.workType.hybrid && job.work_type === "Hybrid");
+      (activeFilters.workType.onSite && job.work_type === "on-site") ||
+      (activeFilters.workType.remote && job.work_type === "remote") ||
+      (activeFilters.workType.hybrid && job.work_type === "hybrid");
 
-    return searchMatch && jobTypeMatch && workTypeMatch;
+    // Experience Level filter
+    const experienceLevelFiltersActive =
+      activeFilters.experienceLevel.entry ||
+      activeFilters.experienceLevel.midLevel ||
+      activeFilters.experienceLevel.senior;
+
+    // Since we don't have experience_level in the data yet, we'll return true
+    // This can be updated once the experience_level field is added to the data
+    const experienceLevelMatch = !experienceLevelFiltersActive;
+
+    return searchMatch && jobTypeMatch && workTypeMatch && experienceLevelMatch;
   });
 
   // Handle Pagination
@@ -171,7 +188,7 @@ export default function JobListings() {
           </div>
 
           {/* View toggle - right */}
-          <button onClick={toggleView} className="btn btn-ghost btn-sm rounded-lg">
+          <button onClick={toggleView} className="btn btn-sm rounded-lg bg-[#605dff] text-white hover:bg-[#4f4ccc]">
             {isGridView ? (
               <>
                 <LayoutList size={18} /> List
@@ -190,7 +207,7 @@ export default function JobListings() {
           <aside className={`w-64 flex-shrink-0 ${filterSidebarOpen ? 'block' : 'hidden'} lg:block -mt-[13px]`}>
             <div className="flex items-center gap-3 mb-4">
               <button
-                className="btn btn-ghost btn-sm rounded-lg"
+                className="btn btn-sm rounded-lg bg-[#605dff] text-white hover:bg-[#4f4ccc]"
                 onClick={() => setFilterSidebarOpen(!filterSidebarOpen)}
               >
                 <Filter size={18} />
@@ -208,6 +225,8 @@ export default function JobListings() {
               isOpen={filterSidebarOpen}
               setIsOpen={setFilterSidebarOpen}
               onFilterChange={handleFilterChange}
+              showModal={() => setShowModal(true)}
+              activeFilters={activeFilters}
             />
           </aside>
 
@@ -227,10 +246,60 @@ export default function JobListings() {
                       ? "Part-time"
                       : "Contract"}
                     <button
-                      className="opacity-60 hover:opacity-100"
+                      className="opacity-60 hover:opacity-100 cursor-pointer"
                       onClick={() => {
                         const newFilters = { ...activeFilters };
                         newFilters.jobType[key as keyof typeof newFilters.jobType] = false;
+                        handleFilterChange(newFilters);
+                      }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ) : null
+              )}
+
+              {Object.entries(activeFilters.workType).map(([key, value]) =>
+                value ? (
+                  <div
+                    key={key}
+                    className="badge badge-lg gap-2 px-3 py-3 bg-[#242937] text-white border-none"
+                  >
+                    {key === "onSite"
+                      ? "On-site"
+                      : key === "remote"
+                      ? "Remote"
+                      : "Hybrid"}
+                    <button
+                      className="opacity-60 hover:opacity-100 cursor-pointer"
+                      onClick={() => {
+                        const newFilters = { ...activeFilters };
+                        newFilters.workType[key as keyof typeof newFilters.workType] = false;
+                        handleFilterChange(newFilters);
+                      }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ) : null
+              )}
+
+              {Object.entries(activeFilters.experienceLevel).map(([key, value]) =>
+                value ? (
+                  <div
+                    key={key}
+                    className="badge badge-lg gap-2 px-3 py-3 bg-[#242937] text-white border-none"
+                  >
+                    {key === "entry"
+                      ? "Entry Level"
+                      : key === "midLevel"
+                      ? "Mid-Level"
+                      : "Senior"}
+                    <button
+                      className="opacity-60 hover:opacity-100 cursor-pointer"
+                      onClick={() => {
+                        const newFilters = { ...activeFilters };
+                        newFilters.experienceLevel[key as keyof typeof newFilters.experienceLevel] = false;
                         handleFilterChange(newFilters);
                       }}
                     >
@@ -249,7 +318,7 @@ export default function JobListings() {
             </div>
 
             {/* Grid/List View */}
-            <div className={`grid ${isGridView ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'} gap-4`}>
+            <div className={`grid ${isGridView ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4' : 'grid-cols-1 gap-2'}`}>
               {displayedJobs.length > 0 ? (
                 displayedJobs.map((job, index) => (
                   <motion.div
@@ -306,6 +375,11 @@ export default function JobListings() {
                           remote: false,
                           hybrid: false,
                         },
+                        experienceLevel: {
+                          entry: false,
+                          midLevel: false,
+                          senior: false,
+                        }
                       })
                     }
                   >
@@ -314,9 +388,55 @@ export default function JobListings() {
                 </div>
               )}
             </div>
+
+            {/* Job Details Modal */}
+            {selectedJob && (
+              <JobDetails
+                title={selectedJob.title}
+                company={selectedJob.company}
+                location={selectedJob.location}
+                jobType={selectedJob.job_type}
+                workType={selectedJob.work_type}
+                salary={selectedJob.salary}
+                description={selectedJob.description}
+                isOpen={isModalOpen}
+                onClose={handleCloseModal}
+                onApplyClick={() => handleApply(selectedJob.title)}
+                onEditClick={() => handleEdit(selectedJob)}
+                onDeleteClick={() => {}}
+              />
+            )}
+
+            {/* Edit Job Modal */}
+            {selectedJob && (
+              <EditJobListComponent
+                isOpen={isModalOpen}
+                onClose={handleCloseModal}
+                onSave={(jobData) => {
+                  console.log("Save job", jobData);
+                  setIsModalOpen(false);
+                }}
+                initialJobData={{
+                  title: selectedJob.title,
+                  company: selectedJob.company,
+                  location: selectedJob.location,
+                  jobType: selectedJob.job_type,
+                  workType: selectedJob.work_type,
+                  salary: selectedJob.salary,
+                  description: selectedJob.description
+                }}
+              />
+            )}
           </main>
         </div>
       </div>
+
+      {/* Create Job Modal */}
+      {showModal && (
+        <CreateJL
+          onClose={() => setShowModal(false)}
+        />
+      )}
     </div>
   );
 }
