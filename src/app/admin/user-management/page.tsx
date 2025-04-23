@@ -476,37 +476,50 @@ export default function UsersManagement(){
                                             <div className="text-sm text-gray-500">{user.email}</div>
                                         </div>
                                     </div>
-                                    <div className="flex items-center text-sm text-gray-600">
-                                        <a 
-                                            href="#" 
-                                            className="text-blue-600 hover:text-blue-800 underline flex items-center"
-                                            onClick={(e) => {
-                                                e.preventDefault();
-                                                const fileName = user.documentUrl?.split("/").pop()?.split(".")[0] || "document";
-                                                handleDocumentDownload(user.documentUrl, fileName);
-                                            }}
-                                        >
-                                            <span className="mr-2">View Document:</span>
-                                            {user.documentUrl?.split("/").pop()}
-                                        </a>
-                                    </div>
-                                    <div className="flex justify-end space-x-2 pt-2">
-                                        <motion.button
-                                            whileHover={{ scale: 1.05 }}
-                                            whileTap={{ scale: 0.95 }}
-                                            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm"
-                                            onClick={() => handleAccept(user.id)}
-                                        >
-                                            Accept
-                                        </motion.button>
-                                        <motion.button
-                                            whileHover={{ scale: 1.05 }}
-                                            whileTap={{ scale: 0.95 }}
-                                            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm"
-                                            onClick={() => handleDecline(user.id)}
-                                        >
-                                            Decline
-                                        </motion.button>
+                                    
+                                    <div className="flex flex-col space-y-2">
+                                        {user.documentUrl ? (
+                                            <div className="flex items-center text-sm text-gray-600">
+                                                <FileCheck className="w-4 h-4 mr-2 text-blue-500" />
+                                                <a 
+                                                    href="#" 
+                                                    className="text-blue-600 hover:text-blue-800 underline flex items-center"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        const fileName = user.documentUrl?.split("/").pop()?.split(".")[0] || "document";
+                                                        handleDocumentDownload(user.documentUrl, fileName);
+                                                    }}
+                                                >
+                                                    View Verification Document
+                                                </a>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center text-sm text-gray-600 bg-yellow-50 p-3 rounded-lg">
+                                                <FileCheck className="w-4 h-4 mr-2 text-yellow-500" />
+                                                <span className="text-yellow-700">{user.name} has not submitted a verification document</span>
+                                            </div>
+                                        )}
+                                        
+                                        {user.documentUrl && (
+                                            <div className="flex justify-end space-x-2 pt-2">
+                                                <motion.button
+                                                    whileHover={{ scale: 1.05 }}
+                                                    whileTap={{ scale: 0.95 }}
+                                                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm"
+                                                    onClick={() => handleAccept(user.id)}
+                                                >
+                                                    Accept
+                                                </motion.button>
+                                                <motion.button
+                                                    whileHover={{ scale: 1.05 }}
+                                                    whileTap={{ scale: 0.95 }}
+                                                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm"
+                                                    onClick={() => handleDecline(user.id)}
+                                                >
+                                                    Decline
+                                                </motion.button>
+                                            </div>
+                                        )}
                                     </div>
                                 </motion.div>
                             ))
@@ -518,7 +531,7 @@ export default function UsersManagement(){
                     </div>
 
                     {/* Desktop Table View for Pending Verifications */}
-                    <div className="hidden md:block overflow-y-auto max-h-[calc(100vh-300px)] rounded-lg border border-gray-200 [&::-webkit-scrollbar]:hidden">
+                    <div className="hidden md:block">
                         <div className="grid grid-cols-1 gap-4 p-4">
                             {pendingVerificationUsers.length > 0 ? (
                                 pendingVerificationUsers.map((user: UserDto, index) => (
@@ -540,38 +553,49 @@ export default function UsersManagement(){
                                                 </div>
                                             </div>
                                             
-                                            <div className="flex items-center text-sm text-gray-600">
-                                                <span className="mr-2">View Document:</span>
-                                                <a 
-                                                    href="#" 
-                                                    className="text-blue-600 hover:text-blue-800 underline flex items-center"
-                                                    onClick={(e) => {
-                                                        e.preventDefault();
-                                                        const fileName = user.documentUrl?.split("/").pop()?.split(".")[0] || "document";
-                                                        handleDocumentDownload(user.documentUrl, fileName);
-                                                    }}
-                                                >
-                                                    {user.documentUrl?.split("/").pop()}    
-                                                </a>
-                                            </div>
-                                            
-                                            <div className="flex justify-end space-x-2 pt-2">
-                                                <motion.button
-                                                    whileHover={{ scale: 1.05 }}
-                                                    whileTap={{ scale: 0.95 }}
-                                                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg"
-                                                    onClick={() => handleAccept(user.id)}
-                                                >
-                                                    Accept
-                                                </motion.button>
-                                                <motion.button
-                                                    whileHover={{ scale: 1.05 }}
-                                                    whileTap={{ scale: 0.95 }}
-                                                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
-                                                    onClick={() => handleDecline(user.id)}
-                                                >
-                                                    Decline
-                                                </motion.button>
+                                            <div className="flex flex-col space-y-2">
+                                                {user.documentUrl ? (
+                                                    <div className="flex items-center text-sm text-gray-600">
+                                                        <FileCheck className="w-4 h-4 mr-2 text-blue-500" />
+                                                        <a 
+                                                            href="#" 
+                                                            className="text-blue-600 hover:text-blue-800 underline flex items-center"
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                const fileName = user.documentUrl?.split("/").pop()?.split(".")[0] || "document";
+                                                                handleDocumentDownload(user.documentUrl, fileName);
+                                                            }}
+                                                        >
+                                                            View Verification Document
+                                                        </a>
+                                                    </div>
+                                                ) : (
+                                                    <div className="flex items-center text-sm text-gray-600 bg-yellow-50 p-3 rounded-lg">
+                                                        <FileCheck className="w-4 h-4 mr-2 text-yellow-500" />
+                                                        <span className="text-yellow-700">{user.name} has not submitted a verification document</span>
+                                                    </div>
+                                                )}
+                                                
+                                                {user.documentUrl && (
+                                                    <div className="flex justify-end space-x-2 pt-2">
+                                                        <motion.button
+                                                            whileHover={{ scale: 1.05 }}
+                                                            whileTap={{ scale: 0.95 }}
+                                                            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg"
+                                                            onClick={() => handleAccept(user.id)}
+                                                        >
+                                                            Accept
+                                                        </motion.button>
+                                                        <motion.button
+                                                            whileHover={{ scale: 1.05 }}
+                                                            whileTap={{ scale: 0.95 }}
+                                                            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
+                                                            onClick={() => handleDecline(user.id)}
+                                                        >
+                                                            Decline
+                                                        </motion.button>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     </motion.div>
