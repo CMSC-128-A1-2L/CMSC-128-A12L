@@ -3,10 +3,9 @@ import React from "react";
 
 interface EventCardProps {
   title: string;
-  company: string;
+  organizer: string;
   location: string;
-  jobType: string;
-  workType: string;
+  date: string;
   description: string;
   imageUrl: string;
   onDetailsClick: () => void;
@@ -16,10 +15,9 @@ interface EventCardProps {
 
 const EventRow: React.FC<EventCardProps> = ({
   title,
-  company,
+  organizer,
   location,
-  jobType,
-  workType,
+  date,
   description,
   imageUrl,
   onDetailsClick,
@@ -31,19 +29,19 @@ const EventRow: React.FC<EventCardProps> = ({
       {/* <figure>
         <img
           src={imageUrl}
-          alt={`${company} job banner`}
+          alt={`${title} event banner`}
           className="w-full h-40 object-cover rounded-box"
         />
       </figure> */}
       <div className="flex list-col-grow gap-6">
         <div className="flex-1">
-          <h2 className="card-title list-col-wrap">{title}</h2>
-          <p>
-            {company} • {location}
+          <h2 className="card-title list-col-wrap text-gray-900">{title}</h2>
+          <p className="text-gray-800">
+            {organizer} • {location} • {new Date(date).toLocaleDateString()}
           </p>
         </div>
 
-        <div className="flex flex-row  items-center card-actions">
+        <div className="flex flex-row items-center card-actions">
           <button
             onClick={onDetailsClick}
             className="btn btn-soft rounded-lg"
@@ -65,7 +63,7 @@ const EventRow: React.FC<EventCardProps> = ({
             }}
             className="btn btn-primary rounded-lg"
           >
-            Apply
+            Respond
           </button>
         </div>
       </div>

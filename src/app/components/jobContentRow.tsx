@@ -35,8 +35,8 @@ const JobRow: React.FC<JobCardProps> = ({
       </figure> */}
       <div className="flex list-col-grow gap-6">
         <div className="flex-1">
-          <h2 className="card-title list-col-wrap">{title}</h2>
-          <p>
+          <h2 className="card-title list-col-wrap text-gray-900">{title}</h2>
+          <p className="text-gray-800">
             {company} • {location}
           </p>
         </div>
