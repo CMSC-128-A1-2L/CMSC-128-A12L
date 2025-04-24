@@ -3,9 +3,6 @@
  * api/reports/recent-activity/route.ts
  * 
  * DESCRIPTION:
- * fetch 10 recent logs with the status field having either "POST" or "PUT" 
-*  and action field being a string "^[POST OR PUT] /api/admin/[events/users/opportunities][/optional id]*"
- * the response body should have three fields
  * 
  * 1. Classifier: 1 if events, 2 if users, or 3 if opportunities (for frontend labeling purposes)
  * 2. Heading: string 
@@ -22,18 +19,18 @@
  * action = "POST /api/admin/users"
  * Heading = "New Job Posting"
  * Message = "A new user has signed up."
- * * if action = "PUT/api/admin/opportunities/[id]" 
+ *
+ *  action = "PUT/api/admin/opportunities/[id]" 
  * Heading = "Job Posting Edit" 
  * Message = "'[name field ()]' has edited '[job.title]''s job details."
 
- * if action = "PUT/api/admin/users/[id]" 
+ * action = "PUT/api/admin/users/[id]" 
  * Heading = "User Profile Edit" 
  * Message = "'[name field ()]' has edited '[user.name]' 's userdetails."
 
- * if action = "PUT/api/admin/events/[id]" 
+ * action = "PUT/api/admin/events/[id]" 
  * Heading = "User Profile Edit" 
  * Message = "'[name field ()]' has edited '[events.name]' 's userdetails."
-
  */
 
  // api/reports/recent-activity/route.ts
