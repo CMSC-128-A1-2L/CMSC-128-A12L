@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import { Event } from "@/entities/event";
-import { Calendar, MapPin, X, Handshake, Info, Users, Image as ImageIcon, ChevronDown } from "lucide-react";
+import { Calendar, MapPin, X, Handshake, Info, Users, Image as ImageIcon } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface EditEventModalProps {
@@ -87,13 +87,6 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ isOpen, onClose, onSave
       setPreviewImage(null);
     }
   }, [event]);
-
-  useEffect(() => {
-    const modal = document.getElementById("edit_event_modal") as HTMLDialogElement;
-    if (isOpen && modal && !modal.open) {
-      modal.showModal();
-    }
-  }, [isOpen]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -218,214 +211,226 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ isOpen, onClose, onSave
     onClose();
   };
 
-  if (!event) return null;
+  if (!isOpen || !event) return null;
 
   return (
-    <dialog id="edit_event_modal" className="modal">
-      <div className="modal-box rounded-3xl max-w-3xl bg-white">
-        <form method="dialog">
-          <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 text-gray-600 hover:bg-[#605dff] hover:text-white">
-            ✕
+    <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 text-gray-500">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.9 }}
+        className="bg-gray-50 rounded-lg p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-xl border border-gray-200"
+      >
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-2xl font-bold text-gray-800">Edit Event</h2>
+          <button
+            onClick={onClose}
+            className="btn btn-circle bg-gray-100 hover:bg-gray-300 transition-colors duration-200"
+          >
+            <X size={24} className="text-black" />
           </button>
-        </form>
+        </div>
 
-        <h3 className="font-bold text-xl text-gray-900 mt-4">Edit Event</h3>
-
-        <form onSubmit={handleSubmit} className="space-y-6 mt-6">
-          {/* Image Upload */}
-          <div className="space-y-2">
-            <label className="font-bold text-left text-gray-800 block">Event Image</label>
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-              <div className="relative w-32 h-32 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-white">
-                {previewImage ? (
-                  <>
-                    <img
-                      src={previewImage}
-                      alt="Preview"
-                      className="w-full h-full object-cover rounded-lg"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleRemoveImage}
-                      className="absolute -top-2 -right-2 btn btn-circle btn-sm btn-error"
-                    >
-                      <X size={16} />
-                    </button>
-                  </>
-                ) : (
-                  <div className="text-center text-gray-600">
-                    <ImageIcon size={32} className="mx-auto mb-1" />
-                    Upload
-                  </div>
-                )}
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleImageChange}
-                  accept="image/*"
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  name="imageFile"
-                />
-              </div>
-              <div className="text-sm text-gray-600">
-                Recommended: 800x600px. Max: 5MB.
+        <form onSubmit={handleSubmit} className="space-y-6">
+           {/* Image Upload */}
+           <div className="space-y-2">
+              <label className="block text-sm font-medium text-gray-700">Event Image</label>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                <div className="relative w-32 h-32 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-white">
+                  {previewImage ? (
+                    <>
+                      <img
+                        src={previewImage}
+                        alt="Preview"
+                        className="w-full h-full object-cover rounded-lg"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleRemoveImage}
+                        className="absolute -top-2 -right-2 btn btn-circle btn-sm btn-error"
+                      >
+                        <X size={16} />
+                      </button>
+                    </>
+                  ) : (
+                    <div className="text-center text-gray-400">
+                      <ImageIcon size={32} className="mx-auto mb-1" />
+                      Upload
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleImageChange}
+                    accept="image/*"
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    name="imageFile" // Name matches state if storing file object
+                  />
+                </div>
+                <div className="text-sm text-gray-500">
+                  Recommended: 800x600px. Max: 5MB.
+                </div>
               </div>
             </div>
-          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Column 1 */}
             <div className="space-y-4">
               <div>
-                <label className="font-bold text-left text-gray-800 block">Event Name</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Event Name</label>
                 <input
                   type="text"
                   name="name"
-                  value={formData.name || ""}
+                  value={formData.name || ''}
                   onChange={handleChange}
-                  className="input w-full mt-1 bg-white border-black text-black"
+                  className="input input-bordered w-full bg-white"
                   required
                 />
               </div>
 
               <div>
-                <label className="font-bold text-left text-gray-800 block">Organizer</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Organizer</label>
                 <input
                   type="text"
                   name="organizer"
-                  value={formData.organizer || ""}
+                  value={formData.organizer || ''}
                   onChange={handleChange}
-                  className="input w-full mt-1 bg-white border-black text-black"
+                  className="input input-bordered w-full bg-white"
                   required
                 />
               </div>
 
               <div>
-                <label className="font-bold text-left text-gray-800 block">Event Type</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Event Type</label>
                 <select
                   name="type"
-                  value={formData.type || "social"}
+                  value={formData.type || ''}
                   onChange={handleChange}
-                  className="select w-full mt-1 bg-white border-black text-black"
+                  className="select select-bordered w-full bg-white"
                   required
                 >
-                  <option value="social">Social</option>
+                  <option value="">Select type</option>
                   <option value="academic">Academic</option>
+                  <option value="social">Social</option>
                   <option value="career">Career</option>
                   <option value="other">Other</option>
                 </select>
               </div>
 
               <div>
-                <label className="font-bold text-left text-gray-800 block">Location</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
                 <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 pointer-events-none z-10" size={18} />
+                  <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-800 z-10" size={18} />
                   <input
                     type="text"
                     name="location"
-                    value={formData.location || ""}
+                    value={formData.location || ''}
                     onChange={handleChange}
-                    className="input w-full pl-10 bg-white border-black text-black"
+                    className="input input-bordered w-full pl-10 bg-white"
                     required
                   />
                 </div>
               </div>
-
+              
               {/* RSVP Toggle */}
               <div className="flex items-center gap-2 pt-2">
-                <input
-                  type="checkbox"
+                <label htmlFor="rsvpToggle" className="text-sm font-medium text-gray-700 flex-1">Enable RSVP</label>
+                <input 
+                  type="checkbox" 
+                  id="rsvpToggle"
                   checked={rsvpEnabled}
                   onChange={handleRsvpToggle}
-                  className="checkbox border border-black bg-white [&:checked]:bg-[#242937]"
-                />
-                <label className="font-bold text-left text-gray-800">Enable RSVP</label>
+                  className="toggle toggle-primary border-2 border-gray-300 checked:bg-blue-500"
+                 />
               </div>
+
             </div>
 
-            {/* Column 2 */}
+            {/* Column 2 */} 
             <div className="space-y-4">
               <div>
-                <label className="font-bold text-left text-gray-800 block">Start Date & Time</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Start Date & Time</label>
                 <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 pointer-events-none z-10" size={18} />
+                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-800 z-10" size={18} />
                   <input
                     type="datetime-local"
-                    name="startDate"
-                    value={formatDateTimeLocal(formData.startDate)}
-                    onChange={handleChange}
-                    className="input w-full pl-10 pr-10 bg-white border-black text-black appearance-none [&::-webkit-calendar-picker-indicator]:bg-white [&::-webkit-datetime-edit-fields-wrapper]:text-black"
+                    value={formData.startDate ? formData.startDate.toISOString().slice(0, 16) : ""}
+                    onChange={(e) => setFormData({ ...formData, startDate: new Date(e.target.value) })}
+                    className="input input-bordered w-full pl-10 bg-white border-gray-200"
                     required
-                    style={{ colorScheme: 'light' }}
                   />
                 </div>
               </div>
 
               <div>
-                <label className="font-bold text-left text-gray-800 block">End Date & Time</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">End Date & Time</label>
                 <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-600 pointer-events-none z-10" size={18} />
+                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-800 z-10" size={18} />
                   <input
                     type="datetime-local"
-                    name="endDate"
-                    value={formatDateTimeLocal(formData.endDate)}
-                    onChange={handleChange}
-                    className="input w-full pl-10 pr-10 bg-white border-black text-black appearance-none [&::-webkit-calendar-picker-indicator]:bg-white [&::-webkit-datetime-edit-fields-wrapper]:text-black"
+                    value={formData.endDate ? formData.endDate.toISOString().slice(0, 16) : ""}
+                    onChange={(e) => setFormData({ ...formData, endDate: new Date(e.target.value) })}
+                    className="input input-bordered w-full pl-10 bg-white border-gray-200"
                     required
-                    style={{ colorScheme: 'light' }}
                   />
                 </div>
               </div>
 
-              {/* Sponsorship Toggle & Input */}
-              <div className="space-y-2">
-                <div className="flex items-center gap-2">
-                  <input
-                    type="checkbox"
-                    checked={sponsorshipEnabled}
-                    onChange={handleSponsorshipToggle}
-                    className="checkbox border border-black bg-white [&:checked]:bg-[#242937]"
-                  />
-                  <label className="font-bold text-left text-gray-800">Enable Sponsorship</label>
-                </div>
-                {sponsorshipEnabled && (
-                  <div className="space-y-2">
+              {/* Sponsorship Toggle & Value */}
+              <div className="flex items-center gap-2 pt-2">
+                 <label htmlFor="sponsorshipToggle" className="text-sm font-medium text-gray-700 flex-1">Enable Sponsorship</label>
+                 <input 
+                  type="checkbox" 
+                  id="sponsorshipToggle"
+                  checked={sponsorshipEnabled}
+                  onChange={handleSponsorshipToggle}
+                  className="toggle toggle-primary border-2 border-gray-300 checked:bg-blue-500"
+                 />
+              </div>
+              
+              {sponsorshipEnabled && (
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Add Sponsorships</label>
+                  <div className="flex flex-wrap gap-2 p-3 bg-gray-50 border border-gray-200 rounded-xl min-h-[42px] hover:border-blue-300 transition-colors duration-200">
+                    {sponsorshipChips.map((chip) => (
+                      <motion.div
+                        key={chip.id}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="flex items-center gap-1 bg-blue-100 text-blue-700 px-3 py-1.5 rounded-full text-sm hover:bg-blue-200 transition-colors duration-200"
+                      >
+                        <span>{chip.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeSponsorshipChip(chip.id)}
+                          className="hover:text-blue-500 transition-colors"
+                        >
+                          <X size={16} />
+                        </button>
+                      </motion.div>
+                    ))}
                     <input
                       type="text"
                       value={sponsorshipInput}
                       onChange={handleSponsorshipInput}
                       onKeyDown={handleSponsorshipKeyDown}
-                      placeholder="Add sponsors (press Enter)"
-                      className="input w-full bg-white border-black text-black placeholder:text-gray-400"
+                      className="flex-1 bg-transparent border-none outline-none text-gray-900 placeholder-gray-400 min-w-[200px]"
+                      placeholder="Type sponsorship and press Enter"
                     />
-                    <div className="flex flex-wrap gap-2">
-                      {sponsorshipChips.map(chip => (
-                        <div key={chip.id} className="badge gap-2 bg-[#242937] text-white border-none">
-                          {chip.name}
-                          <button
-                            type="button"
-                            onClick={() => removeSponsorshipChip(chip.id)}
-                            className="btn btn-xs btn-ghost btn-circle hover:bg-[#1b1f4e]"
-                          >
-                            <X size={14} />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
                   </div>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Description (Full Width) */}
           <div>
-            <label className="font-bold text-left text-gray-800 block">Description</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
             <textarea
               name="description"
-              value={formData.description || ""}
+              value={formData.description || ''}
               onChange={handleChange}
-              className="textarea w-full h-32 mt-1 bg-white border-black text-black"
+              className="textarea textarea-bordered w-full h-32 bg-white"
               required
             />
           </div>
@@ -435,23 +440,17 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ isOpen, onClose, onSave
             <button
               type="button"
               onClick={onClose}
-              className="btn btn-dash bg-gray-100 hover:bg-gray-200 text-gray-800"
+              className="btn btn-ghost"
             >
               Cancel
             </button>
-            <button
-              type="submit"
-              className="btn btn-primary"
-            >
+            <button type="submit" className="btn btn-primary">
               Save Changes
             </button>
           </div>
         </form>
-      </div>
-      <form method="dialog" className="modal-backdrop">
-        <button onClick={onClose}>close</button>
-      </form>
-    </dialog>
+      </motion.div>
+    </div>
   );
 };
 

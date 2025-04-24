@@ -3,10 +3,9 @@ import React from "react";
 
 interface EventCardProps {
   title: string;
-  company: string;
+  organizer: string;
   location: string;
-  jobType: string;
-  workType: string;
+  date: string;
   description: string;
   imageUrl: string;
   onDetailsClick: () => void;
@@ -16,10 +15,9 @@ interface EventCardProps {
 
 const EventRow: React.FC<EventCardProps> = ({
   title,
-  company,
+  organizer,
   location,
-  jobType,
-  workType,
+  date,
   description,
   imageUrl,
   onDetailsClick,
@@ -31,22 +29,22 @@ const EventRow: React.FC<EventCardProps> = ({
       {/* <figure>
         <img
           src={imageUrl}
-          alt={`${company} job banner`}
+          alt={`${title} event banner`}
           className="w-full h-40 object-cover rounded-box"
         />
       </figure> */}
       <div className="flex list-col-grow gap-6">
         <div className="flex-1">
-          <h2 className="card-title list-col-wrap">{title}</h2>
-          <p>
-            {company} • {location}
+          <h2 className="card-title list-col-wrap text-gray-900">{title}</h2>
+          <p className="text-gray-800">
+            {organizer} • {location} • {new Date(date).toLocaleDateString()}
           </p>
         </div>
 
-        <div className="flex flex-row  items-center card-actions">
+        <div className="flex flex-row items-center card-actions gap-2">
           <button
             onClick={onDetailsClick}
-            className="btn btn-soft rounded-lg"
+            className="btn btn-ghost bg-[#2B3139] text-white rounded-lg w-24 shadow-md hover:shadow-lg transition-shadow"
           >
             Details
           </button>
@@ -54,7 +52,7 @@ const EventRow: React.FC<EventCardProps> = ({
             onClick={() => {
               onSponsorClick();
             }}
-            className="btn btn-sm btn-primary rounded-lg w-full"
+            className="btn btn-primary rounded-lg w-24"
           >
             Sponsor
           </button>
@@ -63,9 +61,9 @@ const EventRow: React.FC<EventCardProps> = ({
               e.stopPropagation();
               onApplyClick();
             }}
-            className="btn btn-primary rounded-lg"
+            className="btn btn-primary rounded-lg w-24"
           >
-            Apply
+            Respond
           </button>
         </div>
       </div>

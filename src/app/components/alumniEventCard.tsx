@@ -3,10 +3,9 @@ import React from "react";
 
 interface EventCardProps {
   title: string;
-  company: string;
+  organizer: string;
   location: string;
-  jobType: string;
-  workType: string;
+  date: string;
   description: string;
   imageUrl: string;
   onDetailsClick: () => void;
@@ -16,10 +15,9 @@ interface EventCardProps {
 
 const EventCard: React.FC<EventCardProps> = ({
   title,
-  company,
+  organizer,
   location,
-  jobType,
-  workType,
+  date,
   description,
   imageUrl,
   onDetailsClick,
@@ -31,7 +29,7 @@ const EventCard: React.FC<EventCardProps> = ({
       <figure className="relative h-48">
         <img 
           src={imageUrl} 
-          alt={`${company} job banner`} 
+          alt={`${title} event banner`} 
           className="w-full h-full object-cover" 
         />
       </figure>
@@ -39,7 +37,7 @@ const EventCard: React.FC<EventCardProps> = ({
       <div className="card-body p-4 flex flex-col h-[calc(500px-12rem)]">
         <h2 className="card-title text-lg font-semibold text-gray-800 mb-1 line-clamp-2">{title}</h2>
         <p className="text-sm text-gray-600 mb-3 line-clamp-1">
-          {company} • {location}
+          {organizer} • {location}
         </p>
         <div className="flex flex-col gap-2 mt-auto">
           <button
@@ -63,7 +61,7 @@ const EventCard: React.FC<EventCardProps> = ({
             }}
             className="btn btn-sm btn-primary rounded-lg w-full"
           >
-            Apply
+            Respond
           </button>
         </div>
       </div>
