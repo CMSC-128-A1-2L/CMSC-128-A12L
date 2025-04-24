@@ -47,12 +47,15 @@ export default function AlumniLayout({
   }
 
   return (
-    <div className="min-h-screen flex flex-col overflow-hidden bg-white">
-      {/* Subtle gradient background */}
-      <div className="fixed inset-0 bg-white z-0"></div>
+    <div className="min-h-screen relative">
+      {/* Background Elements */}
+      <div className="fixed inset-0 bg-[#0f172a]" />
+      <div className="fixed inset-0 bg-[url('/grid-pattern.svg')] opacity-5" />
+      <div className="fixed inset-0 bg-[url('/noise-pattern.png')] opacity-5" />
+      <div className="fixed inset-0 bg-gradient-to-br from-[#1a1f4d]/80 via-[#1a237e]/60 to-[#0d47a1]/40" />
       
       {/* Content */}
-      <div className="relative z-10 flex flex-col min-h-screen">
+      <div className="relative z-10">
         <Navbar
           setSidebarOpen={setSidebarOpen}
           menuButtonRef={menuButtonRef as React.RefObject<HTMLButtonElement>}
@@ -66,23 +69,11 @@ export default function AlumniLayout({
           role={session.user.role}
         />
 
-        <motion.main 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5 }}
-          className={`flex-grow w-full px-1 py-6 transition-all duration-300 ${sidebarOpen ? 'md:ml-64' : ''} overflow-x-hidden`}
+        <main 
+          className={`pt-16 transition-all duration-300 ${sidebarOpen ? 'md:ml-64' : ''}`}
         >
-          <div className="max-w-[120rem] mx-auto flex items-center justify-center min-h-[calc(100vh-64px)]">
-            <motion.div 
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="w-full pt-10"
-            >
-              {children}
-            </motion.div>
-          </div>
-        </motion.main>
+          {children}
+        </main>
       </div>
     </div>
   );
