@@ -2,7 +2,18 @@
 
 import React, { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { Edit2, Camera, User as UserIcon } from "lucide-react";
+import {
+  Edit2,
+  Camera,
+  User as UserIcon,
+  Mail,
+  GraduationCap,
+  Building2,
+  Phone,
+  Globe,
+  MapPin,
+  Briefcase,
+} from "lucide-react";
 import EditProfileModal from "@/app/components/EditProfileModal";
 import { motion } from "framer-motion";
 
@@ -13,6 +24,12 @@ interface ProfileData {
   department?: string;
   bio?: string;
   profilePicture?: string;
+  phoneNumber?: string;
+  currentLocation?: string;
+  currentCompany?: string;
+  currentPosition?: string;
+  linkedIn?: string;
+  website?: string;
 }
 
 export default function AlumniProfile() {
@@ -25,6 +42,12 @@ export default function AlumniProfile() {
     department: "",
     bio: "",
     profilePicture: session?.user?.image || "",
+    phoneNumber: "",
+    currentLocation: "",
+    currentCompany: "",
+    currentPosition: "",
+    linkedIn: "",
+    website: "",
   });
 
   useEffect(() => {
@@ -50,6 +73,9 @@ export default function AlumniProfile() {
   }, [session]);
 
   const handleUpdateProfile = async (updatedProfile: ProfileData) => {
+    // Update local state immediately
+    setProfileData(updatedProfile);
+
     try {
       const response = await fetch("/api/alumni/profile", {
         method: "PUT",
@@ -59,10 +85,7 @@ export default function AlumniProfile() {
         body: JSON.stringify(updatedProfile),
       });
 
-      if (response.ok) {
-        setProfileData(updatedProfile);
-        setIsEditModalOpen(false);
-      } else {
+      if (!response.ok) {
         // Handle error
         console.error("Failed to update profile");
       }
@@ -91,7 +114,7 @@ export default function AlumniProfile() {
 
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Profile Section */}
-          <div className="relative -mt-[100px]">
+          <div className="relative -mt-20">
             {/* Profile Picture */}
             <div className="relative inline-block">
               <div className="w-[168px] h-[168px] rounded-full border-4 border-white bg-white shadow-lg">
@@ -118,25 +141,28 @@ export default function AlumniProfile() {
             </div>
 
             {/* Profile Info */}
-            <div className="mt-4 pb-4 border-b border-gray-200">
+            <div className="mt-4">
               <div className="flex justify-between items-start">
                 <div>
                   <h1 className="text-2xl font-bold text-gray-900">
                     {profileData.name}
                   </h1>
-                  <p className="text-lg text-gray-600 mt-1">
-                    {profileData.email}
-                  </p>
+                  <div className="flex items-center text-gray-600 mt-1">
+                    <Mail size={16} className="mr-2" />
+                    <p>{profileData.email}</p>
+                  </div>
                   {profileData.department && (
-                    <p className="text-base text-gray-600 mt-1">
-                      {profileData.department}
-                    </p>
+                    <div className="flex items-center text-gray-600 mt-1">
+                      <Building2 size={16} className="mr-2" />
+                      <p>{profileData.department}</p>
+                    </div>
                   )}
-                  <p className="text-sm text-gray-500 mt-2">
-                    {profileData.graduationYear
-                      ? `Class of ${profileData.graduationYear}`
-                      : ""}
-                  </p>
+                  {profileData.graduationYear && (
+                    <div className="flex items-center text-gray-600 mt-1">
+                      <GraduationCap size={16} className="mr-2" />
+                      <p>Class of {profileData.graduationYear}</p>
+                    </div>
+                  )}
                 </div>
                 <button
                   onClick={() => setIsEditModalOpen(true)}
@@ -146,16 +172,70 @@ export default function AlumniProfile() {
                   Edit Profile
                 </button>
               </div>
-            </div>
 
-            {/* About Section */}
-            <div className="py-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">
-                About
-              </h2>
-              <p className="text-gray-600 whitespace-pre-wrap">
-                {profileData.bio || "No bio available"}
-              </p>
+              {/* Contact Information */}
+              <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                {profileData.phoneNumber && (
+                  <div className="flex items-center text-gray-600">
+                    <Phone size={16} className="mr-2" />
+                    <p>{profileData.phoneNumber}</p>
+                  </div>
+                )}
+                {profileData.currentLocation && (
+                  <div className="flex items-center text-gray-600">
+                    <MapPin size={16} className="mr-2" />
+                    <p>{profileData.currentLocation}</p>
+                  </div>
+                )}
+                {profileData.currentCompany && (
+                  <div className="flex items-center text-gray-600">
+                    <Briefcase size={16} className="mr-2" />
+                    <p>{profileData.currentCompany}</p>
+                  </div>
+                )}
+                {profileData.currentPosition && (
+                  <div className="flex items-center text-gray-600">
+                    <Briefcase size={16} className="mr-2" />
+                    <p>{profileData.currentPosition}</p>
+                  </div>
+                )}
+                {profileData.linkedIn && (
+                  <div className="flex items-center text-gray-600">
+                    <Globe size={16} className="mr-2" />
+                    <a
+                      href={profileData.linkedIn}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline"
+                    >
+                      LinkedIn Profile
+                    </a>
+                  </div>
+                )}
+                {profileData.website && (
+                  <div className="flex items-center text-gray-600">
+                    <Globe size={16} className="mr-2" />
+                    <a
+                      href={profileData.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline"
+                    >
+                      Personal Website
+                    </a>
+                  </div>
+                )}
+              </div>
+
+              {/* About Section */}
+              <div className="mt-8">
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                  About
+                </h2>
+                <p className="text-gray-600 whitespace-pre-wrap">
+                  {profileData.bio || "No bio available"}
+                </p>
+              </div>
             </div>
           </div>
         </div>
