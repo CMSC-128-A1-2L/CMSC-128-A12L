@@ -13,6 +13,9 @@ import {
 import { RefObject } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { Montserrat } from "next/font/google";
+
+const montserrat = Montserrat({ subsets: ["latin"] });
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -27,22 +30,52 @@ export default function AdminSidebar({
   sidebarRef,
   role,
 }: SidebarProps) {
-  const sidebarItems = [
-    { name: "Dashboard", icon: <LayoutDashboardIcon size={20} />, path: "/admin" },
-    { name: "Manage Users", icon: <Users size={20} />, path: "/admin/user-management" },
-    { name: "Job Opportunities", icon: <Briefcase size={20} />, path: "/admin/opportunities" },
-    { name: "Events", icon: <CalendarCogIcon size={20} />, path: "/admin/events" },
-    { name: "Communications", icon: <Phone size={20} />, path: "/admin/communications" },
-    { name: "Reports", icon: <MessageCircleWarningIcon size={20} />, path: "/admin/reports" },
-    { name: "Logs", icon: <LogsIcon size={20} />, path: "/admin/logs" },
-  ];
+  const sidebarItems = {
+    main: [
+      {
+        name: "Dashboard",
+        icon: <LayoutDashboardIcon size={20} />,
+        path: "/admin",
+      },
+      {
+        name: "Manage Users",
+        icon: <Users size={20} />,
+        path: "/admin/user-management",
+      },
+      {
+        name: "Job Opportunities",
+        icon: <Briefcase size={20} />,
+        path: "/admin/opportunities",
+      },
+      {
+        name: "Events",
+        icon: <CalendarCogIcon size={20} />,
+        path: "/admin/events",
+      },
+    ],
+    management: [
+      {
+        name: "Communications",
+        icon: <Phone size={20} />,
+        path: "/admin/communications",
+      },
+      {
+        name: "Reports",
+        icon: <MessageCircleWarningIcon size={20} />,
+        path: "/admin/reports",
+      },
+      { name: "Logs", icon: <LogsIcon size={20} />, path: "/admin/logs" },
+    ],
+  };
 
   return (
     <div
       ref={sidebarRef}
       className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform ${
         sidebarOpen ? "translate-x-0" : "-translate-x-full"
-      } transition-transform duration-300 ease-in-out overflow-hidden`}
+      } transition-transform duration-300 ease-in-out overflow-hidden ${
+        montserrat.className
+      }`}
     >
       <div className="p-4 flex justify-between items-center border-b bg-gradient-to-r from-[#1a1f4d] to-[#0d47a1] text-white">
         <h2 className="text-lg font-bold">Admin Panel</h2>
@@ -54,34 +87,91 @@ export default function AdminSidebar({
           <X size={24} />
         </button>
       </div>
-      
+
       <nav className="mt-4 flex flex-col h-[calc(100vh-80px)]">
-        <ul className="flex-1 space-y-1 px-2">
-          {sidebarItems.map((item, index) => (
-            <li key={index}>
+        <div className="flex-1 px-2">
+          <div className="mb-6">
+            <h3 className="text-gray-500 text-sm font-medium mb-2 px-4">
+              Main
+            </h3>
+            {sidebarItems.main.map((item, index) => (
               <Link
+                key={index}
                 href={item.path}
-                className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer group"
+                className="flex items-center px-4 py-3 text-gray-700 rounded-lg transition-all duration-200 cursor-pointer group hover:bg-gray-50"
                 onClick={() => setSidebarOpen(false)}
               >
-                <span className="mr-3 text-[#1a1f4d] group-hover:text-[#0d47a1] transition-colors">{item.icon}</span>
-                <span className="font-medium">{item.name}</span>
+                <motion.span
+                  className="mr-3 text-[#1a1f4d] group-hover:text-[#0d47a1]"
+                  whileHover={{ scale: 1.1 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                >
+                  {item.icon}
+                </motion.span>
+                <motion.span
+                  className="font-medium"
+                  whileHover={{ x: 2 }}
+                  transition={{ type: "tween", duration: 0.2 }}
+                >
+                  {item.name}
+                </motion.span>
               </Link>
-            </li>
-          ))}
-        </ul>
+            ))}
+          </div>
+
+          <div className="h-px bg-gray-200 mx-4 my-4" />
+
+          <div className="mb-6">
+            <h3 className="text-gray-500 text-sm font-medium mb-2 px-4">
+              Management
+            </h3>
+            {sidebarItems.management.map((item, index) => (
+              <Link
+                key={index}
+                href={item.path}
+                className="flex items-center px-4 py-3 text-gray-700 rounded-lg transition-all duration-200 cursor-pointer group hover:bg-gray-50"
+                onClick={() => setSidebarOpen(false)}
+              >
+                <motion.span
+                  className="mr-3 text-[#1a1f4d] group-hover:text-[#0d47a1]"
+                  whileHover={{ scale: 1.1 }}
+                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                >
+                  {item.icon}
+                </motion.span>
+                <motion.span
+                  className="font-medium"
+                  whileHover={{ x: 2 }}
+                  transition={{ type: "tween", duration: 0.2 }}
+                >
+                  {item.name}
+                </motion.span>
+              </Link>
+            ))}
+          </div>
+        </div>
 
         {role == "admin" && (
           <div className="mt-auto border-t pt-2 px-2 pb-4">
             <Link
               href="/alumni"
               onClick={() => setSidebarOpen(false)}
-              className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer group"
+              className="flex items-center px-4 py-3 text-gray-700 rounded-lg transition-all duration-200 cursor-pointer group hover:bg-gray-50"
             >
-              <span className="mr-3 text-[#1a1f4d] group-hover:text-[#0d47a1] transition-colors">
+              <motion.span
+                className="mr-3 text-[#1a1f4d] group-hover:text-[#0d47a1]"
+                whileHover={{ scale: 1.1 }}
+                transition={{ type: "spring", stiffness: 400, damping: 10 }}
+              >
                 <SwitchCamera size={20} />
-              </span>
-              <span className="font-medium">Switch to Alumni View</span>
+              </motion.span>
+              <motion.span
+                className="font-medium"
+                whileHover={{ x: 2 }}
+                transition={{ type: "tween", duration: 0.2 }}
+              >
+                Switch to Alumni View
+              </motion.span>
             </Link>
           </div>
         )}
