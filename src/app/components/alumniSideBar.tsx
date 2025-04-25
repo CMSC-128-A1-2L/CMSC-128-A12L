@@ -9,6 +9,7 @@ import {
   Users,
   SwitchCamera,
   Settings,
+  LayoutDashboard,
 } from "lucide-react";
 import { RefObject } from "react";
 import Link from "next/link";
@@ -52,6 +53,11 @@ export default function AlumniSidebar({
       },
     ],
     general: [
+      {
+        name: "Dashboard",
+        icon: <LayoutDashboard size={20} />,
+        path: "/alumni",
+      },
       {
         name: "Job Board",
         icon: <Briefcase size={20} />,

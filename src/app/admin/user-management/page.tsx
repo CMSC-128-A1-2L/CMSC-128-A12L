@@ -123,9 +123,7 @@ export default function UsersManagement(){
         const fetchAlumniUsers = async () => {
             const response = await fetch("/api/admin/users");
             const data = await response.json();
-            data.forEach((item: UserDto) => {
-                console.log(item);
-            });
+            console.log("The data is: ", data);
             setAlumniUsers(data);
         }
         fetchAlumniUsers();

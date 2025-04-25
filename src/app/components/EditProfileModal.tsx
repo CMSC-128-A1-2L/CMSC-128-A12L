@@ -46,12 +46,10 @@ export default function EditProfileModal({
     >
   ) => {
     const { name, value } = e.target;
-    const updatedData = {
-      ...formData,
+    setFormData(prevData => ({
+      ...prevData,
       [name]: value,
-    };
-    setFormData(updatedData);
-    onUpdateProfile(updatedData);
+    }));
   };
 
   return (
