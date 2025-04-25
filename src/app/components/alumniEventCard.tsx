@@ -1,5 +1,7 @@
 "use client";
 import React from "react";
+import { Calendar, MapPin, Users } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface EventCardProps {
   title: string;
@@ -25,32 +27,53 @@ const EventCard: React.FC<EventCardProps> = ({
   onApplyClick,
 }) => {
   return (
-    <div className="card bg-white hover:bg-white rounded-xl overflow-hidden transition-all duration-200 h-[500px] shadow-lg">
-      <figure className="relative h-48">
+    <motion.div
+      whileHover={{ y: -5 }}
+      transition={{ type: "spring", stiffness: 400, damping: 10 }}
+      className="bg-white/5 backdrop-blur-sm rounded-xl overflow-hidden border border-white/10 hover:border-white/20 transition-all duration-300 h-full flex flex-col"
+    >
+      {/* Image Section */}
+      <div className="relative h-48">
         <img 
           src={imageUrl} 
           alt={`${title} event banner`} 
           className="w-full h-full object-cover" 
         />
-      </figure>
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+      </div>
 
-      <div className="card-body p-4 flex flex-col h-[calc(500px-12rem)]">
-        <h2 className="card-title text-lg font-semibold text-gray-800 mb-1 line-clamp-2">{title}</h2>
-        <p className="text-sm text-gray-600 mb-3 line-clamp-1">
-          {organizer} • {location}
-        </p>
+      {/* Content Section */}
+      <div className="p-4 flex flex-col flex-grow">
+        <h2 className="text-lg font-semibold text-white mb-2 line-clamp-2">{title}</h2>
+        
+        <div className="space-y-2 mb-4">
+          <div className="flex items-center gap-2 text-sm text-gray-300">
+            <Users size={16} className="text-gray-400" />
+            <span>{organizer}</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-gray-300">
+            <MapPin size={16} className="text-gray-400" />
+            <span>{location}</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-gray-300">
+            <Calendar size={16} className="text-gray-400" />
+            <span>{new Date(date).toLocaleDateString()}</span>
+          </div>
+        </div>
+
+        <p className="text-sm text-gray-400 mb-4 line-clamp-2 flex-grow">{description}</p>
+
+        {/* Action Buttons */}
         <div className="flex flex-col gap-2 mt-auto">
           <button
             onClick={onDetailsClick}
-            className="btn btn-sm btn-ghost bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg w-full"
+            className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors border border-white/10"
           >
             Details
           </button>
           <button
-            onClick={() => {
-              onSponsorClick();
-            }}
-            className="btn btn-sm btn-primary rounded-lg w-full"
+            onClick={onSponsorClick}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
           >
             Sponsor
           </button>
@@ -59,13 +82,13 @@ const EventCard: React.FC<EventCardProps> = ({
               e.stopPropagation();
               onApplyClick();
             }}
-            className="btn btn-sm btn-primary rounded-lg w-full"
+            className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
           >
             Respond
           </button>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
