@@ -93,6 +93,7 @@ export interface UserDto {
 export const UserSchema = new Schema<UserDto>(
   {
     id: { type: String, required: true },
+    name: { type: String, required: true },
     role: { type: Number, required: true },
     email: { type: String, required: true },
     alumniStatus: { type: String, enum: AlumniStatus, required: true },
