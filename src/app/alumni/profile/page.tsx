@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import EditProfileModal from "@/app/components/EditProfileModal";
 import { motion } from "framer-motion";
+import { toast } from 'react-hot-toast';
 
 interface ProfileData {
   name: string;
@@ -32,8 +33,16 @@ interface ProfileData {
   website?: string;
 }
 
+interface Session {
+  user: {
+    name: string;
+    email: string;
+    image?: string;
+  };
+}
+
 export default function AlumniProfile() {
-  const { data: session } = useSession();
+  const { data: session } = useSession() as { data: Session | null };
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [profileData, setProfileData] = useState<ProfileData>({
     name: session?.user?.name || "",
@@ -51,19 +60,18 @@ export default function AlumniProfile() {
   });
 
   useEffect(() => {
-    // Fetch detailed profile data from API
     const fetchProfileData = async () => {
       try {
         const response = await fetch("/api/alumni/profile");
-        if (response.ok) {
-          const data = await response.json();
-          setProfileData((prevData) => ({
-            ...prevData,
-            ...data,
-          }));
-        }
+        if (!response.ok) throw new Error("Failed to fetch profile data");
+        const data = await response.json();
+        setProfileData((prevData) => ({
+          ...prevData,
+          ...data,
+        }));
       } catch (error) {
-        console.error("Failed to fetch profile data", error);
+        console.error("Error fetching profile:", error);
+        toast.error("Failed to load profile data");
       }
     };
 
@@ -73,24 +81,21 @@ export default function AlumniProfile() {
   }, [session]);
 
   const handleUpdateProfile = async (updatedProfile: ProfileData) => {
-    // Update local state immediately
-    setProfileData(updatedProfile);
-
     try {
       const response = await fetch("/api/alumni/profile", {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(updatedProfile),
       });
 
-      if (!response.ok) {
-        // Handle error
-        console.error("Failed to update profile");
-      }
+      if (!response.ok) throw new Error("Failed to update profile");
+      
+      setProfileData(updatedProfile);
+      toast.success("Profile updated successfully");
+      setIsEditModalOpen(false);
     } catch (error) {
-      console.error("Error updating profile", error);
+      console.error("Error updating profile:", error);
+      toast.error("Failed to update profile");
     }
   };
 
