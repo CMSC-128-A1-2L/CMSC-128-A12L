@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from 'framer-motion';
 import ConstellationBackground from '../components/constellation_background';
 import Modal from '../components/modal';
@@ -13,46 +13,78 @@ interface ActivityItem {
   color: string;
 }
 
+interface DashboardStats {
+  numberOfAlumni: number;
+  numberOfNewUsers: number;
+  numberOfUpcomingEvents: number;
+  numberOfOpportunities: number;
+}
+
 export default function AdminDashboard() {
   const [selectedActivity, setSelectedActivity] = useState<ActivityItem | null>(null);
+  const [stats, setStats] = useState<DashboardStats>({
+    numberOfAlumni: 0,
+    numberOfNewUsers: 0,
+    numberOfUpcomingEvents: 0,
+    numberOfOpportunities: 0,
+  });
 
-  const activities: ActivityItem[] = [
-    {
-      id: 1,
-      title: "New User Registration",
-      content: "A new user has registered in the system. Their account is pending verification.",
-      timestamp: "2 minutes ago",
-      color: "bg-green-500"
-    },
-    {
-      id: 2,
-      title: "Event Creation",
-      content: "A new event 'Alumni Homecoming 2024' has been created and is now open for registration.",
-      timestamp: "1 hour ago",
-      color: "bg-blue-500"
-    },
-    {
-      id: 3,
-      title: "Job Posting",
-      content: "A new job opportunity has been posted by Company XYZ for Software Engineer position.",
-      timestamp: "3 hours ago",
-      color: "bg-yellow-500"
-    },
-    {
-      id: 4,
-      title: "User Registration",
-      content: "A new user has completed their profile setup and is now active in the system.",
-      timestamp: "5 hours ago",
-      color: "bg-green-500"
-    },
-    {
-      id: 5,
-      title: "Event Update",
-      content: "The annual alumni meetup event details have been updated with new venue information.",
-      timestamp: "1 day ago",
-      color: "bg-blue-500"
+  useEffect(() => {
+    async function fetchDashboardStats() {
+      try {
+        const res = await fetch('/api/reports/admin-dashboard');
+        if (!res.ok) throw new Error("Failed to fetch dashboard stats");
+        const data = await res.json();
+        setStats(data);
+      } catch (error) {
+        console.error("Dashboard stats fetch error:", error);
+      }
     }
-  ];
+
+    fetchDashboardStats();
+  }, []);
+
+  const [activities, setActivities] = useState<ActivityItem[]>([]);
+
+useEffect(() => {
+  async function fetchActivities() {
+    try {
+      const res = await fetch('/api/reports/recent-activity');
+      if (!res.ok) throw new Error("Failed to fetch recent activities");
+      const data = await res.json();
+
+      const mappedActivities: ActivityItem[] = data.map((item: any) => {
+        let color = "";
+        switch (item.classifier) {
+          case 1:
+            color = "bg-blue-500";
+            break;
+          case 2:
+            color = "bg-green-500";
+            break;
+          case 3:
+            color = "bg-yellow-500";
+            break;
+        }
+
+        return {
+          id: item.id,
+          title: item.heading,
+          content: item.message,
+          timestamp: item.timestamp,
+          color
+        };
+      });
+
+      setActivities(mappedActivities);
+    } catch (error) {
+      console.error("Activities fetch error:", error);
+    }
+  }
+
+  fetchActivities();
+}, []);
+
 
   return (
     <div className="px-8 py-6">
@@ -68,19 +100,19 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-4 gap-6 mb-6">
         <div className="bg-white rounded-xl p-4 shadow-md">
           <h2 className="text-xl font-semibold mb-2 text-black">Total Alumni</h2>
-          <p className="text-3xl font-bold text-black">1,234</p>
+          <p className="text-3xl font-bold text-black">{stats.numberOfAlumni}</p>
         </div>
         <div className="bg-white rounded-xl p-4 shadow-md">
           <h2 className="text-xl font-semibold mb-2 text-black">Active Jobs</h2>
-          <p className="text-3xl font-bold text-black">45</p>
+          <p className="text-3xl font-bold text-black">{stats.numberOfOpportunities}</p>
         </div>
         <div className="bg-white rounded-xl p-4 shadow-md">
           <h2 className="text-xl font-semibold mb-2 text-black">Upcoming Events</h2>
-          <p className="text-3xl font-bold text-black">89</p>
+          <p className="text-3xl font-bold text-black">{stats.numberOfUpcomingEvents}</p>
         </div>
         <div className="bg-white rounded-xl p-4 shadow-md">
           <h2 className="text-xl font-semibold mb-2 text-black">New Users</h2>
-          <p className="text-3xl font-bold text-black">32</p>
+          <p className="text-3xl font-bold text-black">{stats.numberOfNewUsers}</p>
         </div>
       </div>
 
@@ -103,12 +135,13 @@ export default function AdminDashboard() {
             </button>
           </div>
         </div>
+
         <div className="bg-white rounded-xl p-4 shadow-md flex flex-col h-[400px]">
           <h2 className="text-2xl font-semibold mb-4 text-black">Recent Activity</h2>
           <div className="border-b-2 border-gray-800 mb-4"></div>
           <div className="flex flex-col space-y-4 overflow-y-auto h-[300px]">
             {activities.map((activity) => (
-              <div 
+              <div
                 key={activity.id}
                 onClick={() => setSelectedActivity(activity)}
                 className="bg-gray-50 rounded-lg p-4 cursor-pointer hover:bg-gray-100 transition-colors"

@@ -34,11 +34,25 @@
  */
 
  // api/reports/recent-activity/route.ts
- import { NextRequest, NextResponse } from "next/server";
+// api/reports/recent-activity/route.ts
+import { NextRequest, NextResponse } from "next/server";
 import { getLogRepository } from "@/repositories/log_repository";
 import { getOpportunityRepository } from "@/repositories/opportunity_repository";
 import { getEventRepository } from "@/repositories/event_repository";
 import { getUserRepository } from "@/repositories/user_repository";
+
+function getRelativeTime(date: Date): string {
+  const now = new Date();
+  const diff = Math.floor((now.getTime() - date.getTime()) / 1000); // in seconds
+
+  if (diff < 60) return "Just now";
+  const minutes = Math.floor(diff / 60);
+  if (minutes < 60) return `${minutes} minute${minutes > 1 ? "s" : ""} ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} hour${hours > 1 ? "s" : ""} ago`;
+  const days = Math.floor(hours / 24);
+  return `${days} day${days > 1 ? "s" : ""} ago`;
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -56,16 +70,13 @@ export async function GET(request: NextRequest) {
       .filter((log) => {
         const method = log.status?.toUpperCase();
         const path = log.action?.split(" ")[1];
-        return (
-          validMethods.includes(method) &&
-          validActionPattern.test(path)
-        );
+        return validMethods.includes(method) && validActionPattern.test(path);
       })
       .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
     const response = [];
 
-    for (const log of validLogs) {
+    for (const [index, log] of validLogs.entries()) {
       if (response.length >= 10) break;
 
       const action = log.action;
@@ -101,7 +112,7 @@ export async function GET(request: NextRequest) {
           const user = await userRepository.getUserById(id);
           const userName = user?.name || "a user";
           heading = "User Profile Edit";
-          message = `'${log.name}' has edited '${userName}'s userdetails.`;
+          message = `'${log.name}' has edited '${userName}'s user details.`;
         }
       } else if (type === "opportunities") {
         classifier = 3;
@@ -117,16 +128,24 @@ export async function GET(request: NextRequest) {
       }
 
       if (heading && message) {
-        response.push({ classifier, heading, message });
+        const logTimestamp = new Date(log.timestamp);
+        response.push({
+          id: response.length + 1, // 1 = newest, 10 = oldest
+          classifier,
+          heading,
+          message,
+          timestamp: getRelativeTime(logTimestamp),
+        });
       }
     }
 
     return NextResponse.json(response, { status: 200 });
   } catch (error) {
-    console.error(" Failed to fetch recent activity logs:", error);
+    console.error("Failed to fetch recent activity logs:", error);
     return NextResponse.json(
       { error: "Failed to fetch recent activity logs" },
       { status: 500 }
     );
   }
 }
+
