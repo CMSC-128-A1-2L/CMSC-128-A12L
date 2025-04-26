@@ -1,14 +1,13 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useEffect, useRef } from "react"; // <-- updated to import useEffect
 import FilterSidebar from "@/app/components/filtersJobListings";
 import JobCard from "@/app/components/jobContentCard";
 import JobRow from "@/app/components/jobContentRow";
 import JobDetails from "@/app/components/jobDetails";
 import EditJobListComponent from "@/app/components/editJobList";
-import jobData from "@/dummy_data/job.json";
+// import jobData from "@/dummy_data/job.json"; <-- ❌ REMOVE this line
 import CreateJL from "@/app/components/createJL";
-// Refactor add job list to use modal than page
 
 import {
   Search,
@@ -46,7 +45,7 @@ export default function JobListings() {
     setIsGridView(!isGridView);
   };
 
-  // Add filter state
+  // Active filters state
   const [activeFilters, setActiveFilters] = useState({
     jobType: {
       fullTime: false,
@@ -62,8 +61,32 @@ export default function JobListings() {
       entry: false,
       midLevel: false,
       senior: false,
-    }
+    },
   });
+
+  // 🆕 Jobs state
+  const [jobs, setJobs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // 🆕 Fetch jobs on mount
+  useEffect(() => {
+    const fetchJobs = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('/api/admin/opportunities');
+        if (!response.ok) throw new Error('Failed to fetch jobs');
+        const data = await response.json();
+        setJobs(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchJobs();
+  }, []);
 
   // Handle filter changes from FilterSidebar
   const handleFilterChange = (filters: any) => {
@@ -72,12 +95,12 @@ export default function JobListings() {
     setCurrentPage(1);
   };
 
-  // Apply search/filters
-  const filteredJobs = jobData.filter((job) => {
+  // Apply search/filters 🆕 (jobs not jobData)
+  const filteredJobs = jobs.filter((job) => {
     const searchMatch =
-      job.title.toLowerCase().includes(search.toLowerCase()) ||
-      job.company.toLowerCase().includes(search.toLowerCase()) ||
-      job.description.toLowerCase().includes(search.toLowerCase());
+      job.title?.toLowerCase().includes(search.toLowerCase()) ||
+      job.company?.toLowerCase().includes(search.toLowerCase()) ||
+      job.description?.toLowerCase().includes(search.toLowerCase());
 
     const jobTypeFiltersActive =
       activeFilters.jobType.fullTime ||
@@ -97,21 +120,21 @@ export default function JobListings() {
 
     const workTypeMatch =
       !workTypeFiltersActive ||
-      (activeFilters.workType.onSite && job.work_type === "on-site") ||
-      (activeFilters.workType.remote && job.work_type === "remote") ||
-      (activeFilters.workType.hybrid && job.work_type === "hybrid");
+      (activeFilters.workType.onSite && job.workMode === "onsite") ||
+      (activeFilters.workType.remote && job.workMode === "remote") ||
+      (activeFilters.workType.hybrid && job.workMode === "hybrid");
 
     const experienceLevelFiltersActive =
       activeFilters.experienceLevel.entry ||
       activeFilters.experienceLevel.midLevel ||
       activeFilters.experienceLevel.senior;
 
-    const experienceLevelMatch = !experienceLevelFiltersActive;
+    const experienceLevelMatch = !experienceLevelFiltersActive; // You might want to adjust if your API has experienceLevel field
 
     return searchMatch && jobTypeMatch && workTypeMatch && experienceLevelMatch;
   });
 
-  // Handle Pagination
+  // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
 
@@ -120,6 +143,26 @@ export default function JobListings() {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
+
+  // 🔥 Loading and Error UI
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="text-gray-400 text-xl">Loading jobs...</div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="text-red-500 text-xl">{error}</div>
+      </div>
+    );
+  }
+
+  // continue your page render below...
+
 
   // Handle job details modal
   const handleJobDetails = (job: any) => {
