@@ -74,7 +74,7 @@ export default function JobListings() {
     const fetchJobs = async () => {
       try {
         setLoading(true);
-        const response = await fetch('/api/admin/opportunities');
+        const response = await fetch('/api/alumni/opportunities');
         if (!response.ok) throw new Error('Failed to fetch jobs');
         const data = await response.json();
         setJobs(data);
