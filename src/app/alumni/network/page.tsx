@@ -5,12 +5,13 @@ import { FiFilter } from "react-icons/fi";
 import { IoIosArrowForward, IoIosArrowBack } from "react-icons/io";
 import userData from "@/dummy_data/user.json";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 
 
 
 type Alumni = {
-  role: string;
-  studentId: string;
+  id: string;
+  role: string[];
   firstName: string;
   middleName?: string | null;
   lastName: string;
@@ -18,10 +19,16 @@ type Alumni = {
   gender?: string;
   bio?: string;
   linkedIn?: string;
-  contactNumbers?: string[];
+  phoneNumber?: string;
+  currentLocation?: string;
+  currentCompany?: string;
+  currentPosition?: string;
+  graduationYear?: number;
+  department?: string;
 };
 
 export default function AlumniPage() {
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [selectedFilter, setSelectedFilter] = useState({
     role: "",
@@ -29,15 +36,26 @@ export default function AlumniPage() {
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [pageInput, setPageInput] = useState("1");
-  const [showFilter, setShowFilter] = useState(false); // for filter
+  const [showFilter, setShowFilter] = useState(false);
+  const [alumni, setAlumni] = useState<Alumni[]>([]);
+  const [loading, setLoading] = useState(true);
   const itemsPerPage = 10;
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchAlumni = async () => {
-      const response = await fetch("/api/users");
-      const data = await response.json();
-      console.log(data);
+      try {
+        const response = await fetch("/api/users");
+        if (!response.ok) {
+          throw new Error("Failed to fetch alumni");
+        }
+        const data = await response.json();
+        setAlumni(data);
+      } catch (error) {
+        console.error("Error fetching alumni:", error);
+      } finally {
+        setLoading(false);
+      }
     };
     fetchAlumni();
   }, []);
@@ -59,11 +77,11 @@ export default function AlumniPage() {
   }, [currentPage]);
 
   // filters based on role and gender
-  const filteredAlumni = userData.filter((alumni) => {
+  const filteredAlumni = alumni.filter((alumni) => {
     const fullName = `${alumni.firstName} ${alumni.lastName}`.toLowerCase();
     const searchMatch = fullName.includes(search.toLowerCase());
     const roleMatch =
-      selectedFilter.role === "" || alumni.role === selectedFilter.role;
+      selectedFilter.role === "" || alumni.role.includes(selectedFilter.role);
     const genderMatch =
       selectedFilter.gender === "" || alumni.gender === selectedFilter.gender;
 
@@ -249,10 +267,14 @@ export default function AlumniPage() {
 
             {/* Alumni Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {displayedAlumni.length > 0 ? (
+              {loading ? (
+                <div className="col-span-full text-center py-8">
+                  <p className="text-gray-400">Loading alumni data...</p>
+                </div>
+              ) : displayedAlumni.length > 0 ? (
                 displayedAlumni.map((alumni, index) => (
                   <div
-                    key={index}
+                    key={alumni.id}
                     className="w-full h-88 bg-white/10 backdrop-blur-sm rounded-lg shadow-md flex flex-col justify-end p-2 relative group transition-all duration-300 border border-white/20"
                   >
                     {/* Front View - Default */}
@@ -263,7 +285,7 @@ export default function AlumniPage() {
                           {alumni.firstName} {alumni.lastName}
                         </p>
                         <p className="text-gray-300 text-sm -mt-1">
-                          Batch 2022
+                          Batch {alumni.graduationYear || "N/A"}
                         </p>
                       </div>
                     </div>
@@ -271,23 +293,36 @@ export default function AlumniPage() {
                     {/* Hover View - Detailed Info */}
                     <div className="absolute inset-0 flex flex-col justify-center items-center bg-white/10 backdrop-blur-sm rounded-lg shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4 border border-white/20">
                       <p className="text-gray-200 mb-1">
-                        <strong>Role:</strong> {alumni.role || "N/A"}
+                        <strong>Role:</strong> {alumni.role.join(", ") || "N/A"}
                       </p>
                       <p className="text-gray-200 mb-1">
-                        <strong>Gender:</strong> {alumni.gender || "N/A"}
+                        <strong>Department:</strong> {alumni.department || "N/A"}
                       </p>
-                      <p className="text-gray-200 mb-3">
-                        <strong>LinkedIn:</strong>{" "}
-                        <a
-                          href={alumni.linkedIn || "#"}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-500 underline"
-                        >
-                          Profile
-                        </a>
+                      <p className="text-gray-200 mb-1">
+                        <strong>Current Position:</strong> {alumni.currentPosition || "N/A"}
                       </p>
-                      <button className="btn btn-outline btn-sm border-white text-white hover:bg-white hover:text-black">View Profile</button>
+                      <p className="text-gray-200 mb-1">
+                        <strong>Current Company:</strong> {alumni.currentCompany || "N/A"}
+                      </p>
+                      {alumni.linkedIn && (
+                        <p className="text-gray-200 mb-3">
+                          <strong>LinkedIn:</strong>{" "}
+                          <a
+                            href={alumni.linkedIn}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-500 underline"
+                          >
+                            Profile
+                          </a>
+                        </p>
+                      )}
+                      <button 
+                        onClick={() => router.push(`/alumni/network/${alumni.id}`)}
+                        className="btn btn-outline btn-sm border-white text-white hover:bg-white hover:text-black"
+                      >
+                        View Profile
+                      </button>
                     </div>
                   </div>
                 ))

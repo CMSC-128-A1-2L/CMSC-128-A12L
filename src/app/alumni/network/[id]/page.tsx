@@ -5,39 +5,23 @@ import { useSession } from 'next-auth/react';
 import { Briefcase, Mail, MapPin, Calendar, GraduationCap, Globe2, LinkedinIcon, User as UserIcon } from 'lucide-react';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
+import { toast } from 'react-hot-toast';
 
 interface AlumniProfile {
   id: string;
-  fullName: string;
+  name: string;
   email: string;
-  graduationYear: string;
-  courseGraduated: string;
-  phoneNumber: string;
-  currentLocation: string;
-  currentCompany: string;
-  currentPosition: string;
-  linkedinUrl: string;
-  personalWebsite: string;
-  bio: string;
-  profilePicture: string;
+  graduationYear?: number;
+  department?: string;
+  bio?: string;
+  profilePicture?: string;
+  phoneNumber?: string;
+  currentLocation?: string;
+  currentCompany?: string;
+  currentPosition?: string;
+  linkedIn?: string;
+  website?: string;
 }
-
-// Sample data for demonstration
-const sampleAlumni: AlumniProfile = {
-  id: "1",
-  fullName: "Juan Dela Cruz",
-  email: "juan.delacruz@gmail.com",
-  graduationYear: "2020",
-  courseGraduated: "BS Computer Science",
-  phoneNumber: "+63 912 345 6789",
-  currentLocation: "Makati City, Philippines",
-  currentCompany: "Accenture Philippines",
-  currentPosition: "Software Engineer",
-  linkedinUrl: "https://linkedin.com/in/juandelacruz",
-  personalWebsite: "https://juandelacruz.dev",
-  bio: "Passionate software engineer with expertise in web development and cloud computing. UPLB Computer Science graduate with a strong foundation in both frontend and backend technologies. Currently working on enterprise-scale applications and contributing to open-source projects in my free time.",
-  profilePicture: "/assets/default-avatar.png"
-};
 
 interface ProfilePageProps {
   params: {
@@ -51,23 +35,24 @@ export default function AlumniProfilePage({ params }: ProfilePageProps) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate API call with sample data
     const fetchAlumniProfile = async () => {
       try {
-        // Simulating API delay
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        setAlumni(sampleAlumni);
+        const response = await fetch(`/api/users/${params.id}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch alumni profile');
+        }
+        const data = await response.json();
+        setAlumni(data);
       } catch (error) {
         console.error('Error fetching alumni profile:', error);
+        toast.error('Failed to load alumni profile');
       } finally {
         setLoading(false);
       }
     };
 
-    if (session) {
-      fetchAlumniProfile();
-    }
-  }, [params.id, session]);
+    fetchAlumniProfile();
+  }, [params.id]);
 
   if (loading) {
     return (
@@ -108,34 +93,44 @@ export default function AlumniProfilePage({ params }: ProfilePageProps) {
             {/* Profile Picture */}
             <div className="absolute -top-20 left-6">
               <div className="h-36 w-36 rounded-full border-4 border-white shadow-lg overflow-hidden bg-white">
-                <Image
-                  src={alumni.profilePicture}
-                  alt={alumni.fullName}
-                  width={144}
-                  height={144}
-                  className="object-cover"
-                />
+                {alumni.profilePicture ? (
+                  <Image
+                    src={alumni.profilePicture}
+                    alt={alumni.name}
+                    width={144}
+                    height={144}
+                    className="object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                    <UserIcon className="h-16 w-16 text-gray-400" />
+                  </div>
+                )}
               </div>
             </div>
 
             {/* Name and Basic Info */}
             <div className="pt-20">
               <h1 className="text-3xl font-bold text-gray-900">
-                {alumni.fullName}
+                {alumni.name}
               </h1>
               <div className="mt-2 flex flex-wrap gap-4">
-                <div className="flex items-center text-gray-600">
-                  <Briefcase className="h-5 w-5 mr-2" />
-                  <span>{alumni.currentPosition} at {alumni.currentCompany}</span>
-                </div>
+                {alumni.currentPosition && alumni.currentCompany && (
+                  <div className="flex items-center text-gray-600">
+                    <Briefcase className="h-5 w-5 mr-2" />
+                    <span>{alumni.currentPosition} at {alumni.currentCompany}</span>
+                  </div>
+                )}
                 <div className="flex items-center text-gray-600">
                   <Mail className="h-5 w-5 mr-2" />
                   <span>{alumni.email}</span>
                 </div>
-                <div className="flex items-center text-gray-600">
-                  <MapPin className="h-5 w-5 mr-2" />
-                  <span>{alumni.currentLocation}</span>
-                </div>
+                {alumni.currentLocation && (
+                  <div className="flex items-center text-gray-600">
+                    <MapPin className="h-5 w-5 mr-2" />
+                    <span>{alumni.currentLocation}</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -157,7 +152,7 @@ export default function AlumniProfilePage({ params }: ProfilePageProps) {
                 About
               </h2>
               <p className="mt-4 text-gray-700 leading-relaxed">
-                {alumni.bio}
+                {alumni.bio || "No bio available"}
               </p>
             </div>
 
@@ -176,10 +171,12 @@ export default function AlumniProfilePage({ params }: ProfilePageProps) {
                   </div>
                   <div className="ml-4">
                     <h3 className="text-lg font-medium text-gray-900">
-                      {alumni.courseGraduated}
+                      {alumni.department || "Not specified"}
                     </h3>
                     <p className="text-gray-600">University of the Philippines Los Baños</p>
-                    <p className="text-sm text-gray-500">Class of {alumni.graduationYear}</p>
+                    {alumni.graduationYear && (
+                      <p className="text-sm text-gray-500">Class of {alumni.graduationYear}</p>
+                    )}
                   </div>
                 </div>
               </div>
@@ -201,8 +198,12 @@ export default function AlumniProfilePage({ params }: ProfilePageProps) {
               </h2>
               <div className="mt-4 space-y-3">
                 <p className="text-gray-600">{alumni.email}</p>
-                <p className="text-gray-600">{alumni.phoneNumber}</p>
-                <p className="text-gray-600">{alumni.currentLocation}</p>
+                {alumni.phoneNumber && (
+                  <p className="text-gray-600">{alumni.phoneNumber}</p>
+                )}
+                {alumni.currentLocation && (
+                  <p className="text-gray-600">{alumni.currentLocation}</p>
+                )}
               </div>
             </div>
 
@@ -213,9 +214,9 @@ export default function AlumniProfilePage({ params }: ProfilePageProps) {
                 Connect
               </h2>
               <div className="mt-4 space-y-3">
-                {alumni.linkedinUrl && (
+                {alumni.linkedIn && (
                   <a
-                    href={alumni.linkedinUrl}
+                    href={alumni.linkedIn}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center text-gray-700 hover:text-blue-500 transition-colors"
@@ -224,9 +225,9 @@ export default function AlumniProfilePage({ params }: ProfilePageProps) {
                     LinkedIn Profile
                   </a>
                 )}
-                {alumni.personalWebsite && (
+                {alumni.website && (
                   <a
-                    href={alumni.personalWebsite}
+                    href={alumni.website}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center text-gray-700 hover:text-blue-500 transition-colors"

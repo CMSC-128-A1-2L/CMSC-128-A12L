@@ -47,9 +47,28 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     .catch(() => new NextResponse("Failed to update user", { status: 500 }));
 }
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-  const {id} = await params;
-  const userRepository = getUserRepository();
-  const user = await userRepository.getUserById(id);
-  return NextResponse.json(user);
+export async function GET(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  const { id } = await params;
+  try {
+    const userRepository = getUserRepository();
+    const user = await userRepository.getUserById(id);
+    
+    if (!user) {
+      return NextResponse.json(
+        { error: "User not found" },
+        { status: 404 }
+      );
+    }
+    
+    return NextResponse.json(user);
+  } catch (error) {
+    console.error("Error fetching user:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch user" },
+      { status: 500 }
+    );
+  }
 }
