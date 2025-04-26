@@ -8,32 +8,32 @@ import { EllipsisVertical, Trash } from "lucide-react";
 
 
 const initialNotifications = [
-  { id: 1, type: "event", message: "You are invited to the ICS Grand Alumni Homecoming 2025.", time: "2h", unread: true },
-  { id: 2, type: "job", message: "New job posted by Momi Oni at Secret Lung: Front-End Developer.", time: "5h", unread: true },
-  { id: 3, type: "announcement", message: "Admin posted an announcement: ICS Palicsihan.", time: "9h", unread: true },
-  { id: 4, type: "announcement", message: "Admin posted an announcement: Hiring", time: "9h", unread: false },
-  { id: 5, type: "donation", message: "You successfully donated ₱500 to the ICS Scholarship Fund.", time: "1d", unread: false },
-  { id: 6, type: "event", message: "You are invited in the event discussion: 'TechTalks 2025'.", time: "2d", unread: false },
-  { id: 7, type: "donation", message: "You successfully donated ₱100000 to the ICS Scholarship Fund.", time: "1d", unread: false },
-  { id: 8, type: "announcement", message: "You are invited to Momi Oni's birthday party ", time: "4d", unread: false },
-  { id: 9, type: "announcement", message: "Welcome to AEGIS", time: "4d", unread: false },
-  { id: 10, type: "announcement", message: "Reminder: Event tomorrow ", time: "4d", unread: false },
-  { id: 11, type: "announcement", message: "Check out the new features", time: "4d", unread: false },
-  { id: 12, type: "announcement", message: "Welcome to AEGIS ", time: "4d", unread: false },
+  { id: 1, type: "event", message: "You are invited to the ICS Grand Alumni Homecoming 2025.", time: "2h", isRead: true },
+  { id: 2, type: "job", message: "New job posted by Momi Oni at Secret Lung: Front-End Developer.", time: "5h", isRead: true },
+  { id: 3, type: "announcement", message: "Admin posted an announcement: ICS Palicsihan.", time: "9h", isRead: true },
+  { id: 4, type: "announcement", message: "Admin posted an announcement: Hiring", time: "9h", isRead: false },
+  { id: 5, type: "donation", message: "You successfully donated ₱500 to the ICS Scholarship Fund.", time: "1d", isRead: false },
+  { id: 6, type: "event", message: "You are invited in the event discussion: 'TechTalks 2025'.", time: "2d", isRead: false },
+  { id: 7, type: "donation", message: "You successfully donated ₱100000 to the ICS Scholarship Fund.", time: "1d", isRead: false },
+  { id: 8, type: "announcement", message: "You are invited to Momi Oni's birthday party ", time: "4d", isRead: false },
+  { id: 9, type: "announcement", message: "Welcome to AEGIS", time: "4d", isRead: false },
+  { id: 10, type: "announcement", message: "Reminder: Event tomorrow ", time: "4d", isRead: false },
+  { id: 11, type: "announcement", message: "Check out the new features", time: "4d", isRead: false },
+  { id: 12, type: "announcement", message: "Welcome to AEGIS ", time: "4d", isRead: false },
 ];
 
 export default function NotificationsPage() {
-    const [tab, setTab] = useState<'all' | 'unread'>('all');
+    const [tab, setTab] = useState<'all' | 'isRead'>('all');
     const [showOptions, setShowOptions] = useState<number | null>(null); 
     const [notifications, setNotifications] = useState(initialNotifications);
   
-    const filtered = tab === 'all' ? notifications : notifications.filter((n) => n.unread);
+    const filtered = tab === 'all' ? notifications : notifications.filter((n) => n.isRead);
   
     const handleMarkAllAsRead = () => {
       
       const updatedNotifications = notifications.map((notif) => ({
         ...notif,
-        unread: false,
+        isRead: false,
       }));
       setNotifications(updatedNotifications);
     };
@@ -41,7 +41,7 @@ export default function NotificationsPage() {
     const handleMarkAsRead = (id: number) => {
       setNotifications((prevNotifications) =>
         prevNotifications.map((notif) =>
-          notif.id === id ? { ...notif, unread: false } : notif
+          notif.id === id ? { ...notif, isRead: false } : notif
         )
       );
     };
@@ -49,7 +49,7 @@ export default function NotificationsPage() {
     const handleMarkAsUnread = (id: number) => {
       setNotifications((prevNotifications) =>
         prevNotifications.map((notif) =>
-          notif.id === id ? { ...notif, unread: true } : notif
+          notif.id === id ? { ...notif, isRead: true } : notif
         )
       );
     };
@@ -74,8 +74,8 @@ export default function NotificationsPage() {
               All Notifications
             </button>
             <button
-              className={`px-4 py-2 rounded-md ${tab === 'unread' ? 'bg-[#0c0051] text-white' : 'bg-gray-100 text-[#0c0051]'}`}
-              onClick={() => setTab('unread')}
+              className={`px-4 py-2 rounded-md ${tab === 'isRead' ? 'bg-[#0c0051] text-white' : 'bg-gray-100 text-[#0c0051]'}`}
+              onClick={() => setTab('isRead')}
             >
               Unread Notifications
             </button>
@@ -99,7 +99,7 @@ export default function NotificationsPage() {
               <div
                 key={notif.id}
                 className={`p-4 mb-4 bg-[#f0f0f0] rounded-lg shadow-sm transition-all duration-200 hover:bg-[#0c0051] hover:text-white ${
-                  notif.unread ? 'border-l-4 border-[#0c0051]' : ''
+                  notif.isRead ? 'border-l-4 border-[#0c0051]' : ''
                 } relative group`}
               >
                 <div className="flex items-center justify-between">
@@ -108,7 +108,7 @@ export default function NotificationsPage() {
                     <span className="text-sm text-gray-500">{notif.time} ago</span>
                   </div>
                   {/* Unread Dot */}
-                  {notif.unread && (
+                  {notif.isRead && (
                     <div className="w-2.5 h-2.5 bg-[#0c0051] rounded-full"></div>
                   )}
                 </div>
@@ -128,10 +128,10 @@ export default function NotificationsPage() {
                         <button
                         className="block w-full text-left text-[#0c0051] text-sm py-1 px-3 hover:bg-[#f0f0f0] rounded-md whitespace-nowrap"
                         onClick={() =>
-                            notif.unread ? handleMarkAsRead(notif.id) : handleMarkAsUnread(notif.id)
+                            notif.isRead ? handleMarkAsRead(notif.id) : handleMarkAsUnread(notif.id)
                         }
                         >
-                        {notif.unread ? "Mark as read" : "Mark as unread"}
+                        {notif.isRead ? "Mark as read" : "Mark as isRead"}
                         </button>
                         <button
                         className="block w-full text-left text-[#0c0051] text-sm py-1 px-3 hover:bg-[#f0f0f0] rounded-md whitespace-nowrap"

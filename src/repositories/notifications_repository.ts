@@ -24,10 +24,9 @@ class MongoDBNotificationRepository implements NotificationRepository {
         this.model = connection.models["Notification"] ?? connection.model("Notification", NotificationSchema, "notifications");
     }
 
-    async getNotificationsWithFilters(userId: string, isRead?: boolean, type?: string): Promise<Notification[]> {
+    async getNotificationsWithFilters(userId: string, isRead?: boolean): Promise<Notification[]> {
         const query: any = { userId };
         if (typeof isRead === "boolean") query.isRead = isRead;
-        if (type) query.type = type;
 
         const results = await this.model.find(query).sort({ createdAt: -1 });
         return results.map(mapNotificationDtoToNotification);

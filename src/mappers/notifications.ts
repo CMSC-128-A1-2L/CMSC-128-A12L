@@ -6,11 +6,9 @@ import { Notification } from "@/entities/notifications";
 export function mapNotificationDtoToNotification(dto: NotificationDto): Notification {
     return {
         _id: dto._id?.toString(),
-        userId: dto.userId.toString(),
+        userId: dto.userId?.toString(),
         type: dto.type,
-        title: dto.title,
         message: dto.message,
-        link: dto.link,
         isRead: dto.isRead,
         createdAt: dto.createdAt,
         updatedAt: dto.updatedAt,
@@ -23,9 +21,7 @@ export function mapNotificationToNotificationDto(notification: Notification): No
         _id: notification._id,
         userId: notification.userId,
         type: notification.type,
-        title: notification.title,
         message: notification.message,
-        link: notification.link,
         isRead: notification.isRead,
         createdAt: notification.createdAt,
         updatedAt: notification.updatedAt,

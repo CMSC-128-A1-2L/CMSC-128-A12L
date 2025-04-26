@@ -33,7 +33,7 @@ export async function GET(req: NextRequest) {
         return NextResponse.json(notifications, { status: 200 });
     } catch (error) {
         console.error("Error retrieving notifications:", error);
-        return new NextResponse("Error retrieving notifications", { status: 500 });
+        return NextResponse.json({error: "Failed to retrieve notifications."}, {status: 500});
     }
 }
 
@@ -55,8 +55,33 @@ export async function PATCH(req: NextRequest) {
         return NextResponse.json({ message: "All notifications marked as read" }, { status: 200 });
     } catch (error) {
         console.error("Error marking notifications as read:", error);
-        return new NextResponse("Error marking notifications as read", { status: 500 });
+        return NextResponse.json({error: "Failed to mark notifications as read."}, {status: 500});
     }
 }
 
+// Create a notification
+export async function POST(req: NextRequest) {
+    const session = await getServerSession(authOptions);
 
+    if (!session || !session.user.role.includes(UserRole.ADMIN)) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    try {
+        const notificationRepository = getNotificationRepository();
+        const data = await req.json();
+        if (!data.type || !data.message) {
+            return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+        }
+        const notificationData = {
+            ...data,
+        }
+
+        const notification = await notificationRepository.createNotification(notificationData);
+        return NextResponse.json(notification, { status: 200 });
+    } catch (error) {
+        console.error("Error creating notification:", error);
+        return NextResponse.json({error: "Failed to create new event."}, {status: 500});
+
+    }
+}
