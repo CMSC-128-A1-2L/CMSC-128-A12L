@@ -1,12 +1,11 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import FilterSidebar from "@/app/components/filtersEventListings";
 import EventCard from "@/app/components/alumniEventCard";
 import EventRow from "@/app/components/alumniEventRow";
 import EventDetails from "@/app/components/eventDetails";
 import SponsorshipsModal from "@/app/components/sponsorshipsModal";
-import eventData from "@/dummy_data/event.json";
 import { Event } from "@/entities/event";
 
 import CreateEvent from "@/pages/createEvent";
@@ -23,29 +22,8 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 
-// Convert JSON data to match Event interface
-const convertEventData = (data: any): Event => ({
-  _id: data._id,
-  name: data.title,
-  organizer: data.organizer,
-  description: data.description,
-  type: "social", // Default value since it's not in JSON
-  startDate: new Date(data.date),
-  endDate: new Date(data.date), // Using same date since end date is not in JSON
-  location: data.location,
-  imageUrl: data.imageUrl,
-  sponsorship: {
-    enabled: data.sponsorship?.enabled || false,
-    sponsors: data.sponsorship?.requests?.map((r: any) => r.companyName) || []
-  },
-  rsvp: {
-    enabled: data.rsvp?.enabled || false,
-    options: data.rsvp?.options || []
-  },
-  wouldGo: [],
-  wouldNotGo: [],
-  wouldMaybeGo: []
-});
+// 🚫 Remove dummy data import
+// import eventData from "@/dummy_data/event.json";
 
 export default function EventListings() {
   // Add Event modal state
@@ -84,57 +62,85 @@ export default function EventListings() {
     }
   });
 
+  // 🆕 API events data
+  const [events, setEvents] = useState<Event[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch events on mount
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        setIsLoading(true);
+        const response = await fetch('/api/admin/events');
+        if (!response.ok) {
+          throw new Error('Failed to fetch events');
+        }
+        const data = await response.json();
+  
+        // Fix: Convert startDate and endDate to Date objects
+        const formattedEvents = data.map((event: any) => ({
+          ...event,
+          startDate: new Date(event.startDate),
+          endDate: new Date(event.endDate),
+        }));
+  
+        setEvents(formattedEvents);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching events:', err);
+        setError('Failed to load events. Please try again later.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+  
+    fetchEvents();
+  }, []);  
+
   // Handle filter changes from FilterSidebar
   const handleFilterChange = (filters: any) => {
-    // Create a new object reference to ensure React detects the change
     const newFilters = JSON.parse(JSON.stringify(filters));
     setActiveFilters(newFilters);
     setCurrentPage(1);
   };
 
-  // Apply search/filters
-  const filteredEvents = eventData
-    .map(convertEventData)
-    .filter((event) => {
-      // Search filter
-      const searchMatch =
-        event.name.toLowerCase().includes(search.toLowerCase()) ||
-        event.organizer.toLowerCase().includes(search.toLowerCase()) ||
-        event.description.toLowerCase().includes(search.toLowerCase());
+  // 🆕 Apply search/filters to API data
+  const filteredEvents = events.filter((event) => {
+    const searchMatch =
+      (event.name || "").toLowerCase().includes(search.toLowerCase()) ||
+      (event.organizer || "").toLowerCase().includes(search.toLowerCase()) ||
+      (event.description || "").toLowerCase().includes(search.toLowerCase());
 
-      // Event Type filter
-      const eventTypeFiltersActive =
-        activeFilters.eventType.social ||
-        activeFilters.eventType.academic ||
-        activeFilters.eventType.career ||
-        activeFilters.eventType.other;
+    const eventTypeFiltersActive =
+      activeFilters.eventType.social ||
+      activeFilters.eventType.academic ||
+      activeFilters.eventType.career ||
+      activeFilters.eventType.other;
 
-      const eventTypeMatch =
-        !eventTypeFiltersActive ||
-        (activeFilters.eventType.social && event.type === "social") ||
-        (activeFilters.eventType.academic && event.type === "academic") ||
-        (activeFilters.eventType.career && event.type === "career") ||
-        (activeFilters.eventType.other && event.type === "other");
+    const eventTypeMatch =
+      !eventTypeFiltersActive ||
+      (activeFilters.eventType.social && event.type === "social") ||
+      (activeFilters.eventType.academic && event.type === "academic") ||
+      (activeFilters.eventType.career && event.type === "career") ||
+      (activeFilters.eventType.other && event.type === "other");
 
-      return searchMatch && eventTypeMatch;
-    });
+    return searchMatch && eventTypeMatch;
+  });
 
-  // Handle Pagination
+  // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
-
   const totalPages = Math.ceil(filteredEvents.length / itemsPerPage);
   const displayedEvents = filteredEvents.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
 
-  // Handle event details modal
+  // Handle Modals (details, sponsor, edit)
   const handleEventDetails = (event: Event) => {
     setSelectedEvent(event);
-    const modal = document.getElementById(
-      "job_details_modal"
-    ) as HTMLDialogElement;
+    const modal = document.getElementById("job_details_modal") as HTMLDialogElement;
     if (modal) {
       modal.showModal();
       setShowDetailsModal(true);
@@ -145,17 +151,9 @@ export default function EventListings() {
     setShowDetailsModal(false);
   };
 
-  // Handle Respond to Event button click
-  const handleRespond = (eventTitle: string) => {
-    console.log(`Responding to ${eventTitle}`);
-  };
-
-  // Handle Sponsor Details button click
   const handleSponsor = (event: Event) => {
     setSelectedEvent(event);
-    const modal = document.getElementById(
-      "sponsor_details_modal"
-    ) as HTMLDialogElement;
+    const modal = document.getElementById("sponsor_details_modal") as HTMLDialogElement;
     if (modal) {
       modal.showModal();
       setShowSponsorModal(true);
@@ -166,22 +164,15 @@ export default function EventListings() {
     setShowSponsorModal(false);
   };
 
-  // Handle Edit Event button click
   const handleEdit = (event: Event) => {
     setSelectedEvent(event);
-    // Close the details modal first
-    const detailsModal = document.getElementById(
-      "job_details_modal"
-    ) as HTMLDialogElement;
+    const detailsModal = document.getElementById("job_details_modal") as HTMLDialogElement;
     if (detailsModal) {
       detailsModal.close();
       setShowDetailsModal(false);
     }
-    // Then open the edit modal after a short delay to ensure smooth transition
     setTimeout(() => {
-      const editModal = document.getElementById(
-        "edit_event_modal"
-      ) as HTMLDialogElement;
+      const editModal = document.getElementById("edit_event_modal") as HTMLDialogElement;
       if (editModal) {
         editModal.showModal();
         setShowEditModal(true);
@@ -193,21 +184,38 @@ export default function EventListings() {
     setShowEditModal(false);
   };
 
-  // Handle Delete Event
   const handleDelete = (eventId: string) => {
     console.log("Delete event", eventId);
-    // TODO: Implement delete functionality
+    // TODO: Implement delete
   };
 
-  // Handle Add Event button click
+  const handleRespond = (eventTitle: string) => {
+    console.log(`Responding to ${eventTitle}`);
+  };
+
   const handleAddEvent = () => {
-    const modal = document.getElementById(
-      "create_event_modal"
-    ) as HTMLDialogElement;
+    const modal = document.getElementById("create_event_modal") as HTMLDialogElement;
     if (modal) {
       modal.showModal();
     }
   };
+
+  // 🆕 Loading and Error UI
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen text-gray-400">
+        Loading events...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex justify-center items-center h-screen text-red-500">
+        {error}
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen">
@@ -368,7 +376,7 @@ export default function EventListings() {
                         location={event.location}
                         date={event.startDate.toISOString()}
                         description={event.description}
-                        imageUrl={event.imageUrl || ''}
+                        imageUrl={event.imageUrl || "https://science.nasa.gov/wp-content/uploads/2023/06/webb-flickr-52259221868-30e1c78f0c-4k-jpg.webp"}
                         onDetailsClick={() => handleEventDetails(event)}
                         onSponsorClick={() => handleSponsor(event)}
                         onApplyClick={() => handleRespond(event.name)}
