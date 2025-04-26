@@ -32,11 +32,13 @@ export default function JobsReports({ className }: JobsReportsProps) {
   // Sample data - replace with actual data from your API
   const jobPostingsData = {
     labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-    datasets: [{
-      label: "Number of Job Postings",
-      data: [25, 32, 28, 35, 42, 38],
-      backgroundColor: "rgba(75, 192, 192, 0.5)",
-    }],
+    datasets: [
+      {
+        label: "Number of Job Postings",
+        data: [25, 32, 28, 35, 42, 38],
+        backgroundColor: "rgba(75, 192, 192, 0.5)",
+      },
+    ],
   };
 
   const sampleJobListings: JobListing[] = [
@@ -67,14 +69,15 @@ export default function JobsReports({ className }: JobsReportsProps) {
     // Add more sample job listings as needed
   ];
 
-  const filteredJobs = sampleJobListings.filter((job) =>
-    job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    job.company.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredJobs = sampleJobListings.filter(
+    (job) =>
+      job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      job.company.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
     <div className={className}>
-      <div className="grid gap-6">
+      <div className="grid gap-6 text-black">
         <Card>
           <CardHeader>
             <CardTitle>Monthly Job Postings</CardTitle>
@@ -126,4 +129,4 @@ export default function JobsReports({ className }: JobsReportsProps) {
       </div>
     </div>
   );
-} 
+}

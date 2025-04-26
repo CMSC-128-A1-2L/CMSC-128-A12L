@@ -21,6 +21,36 @@ ChartJS.register(
   Legend
 );
 
+// Create a custom plugin to draw labels
+ChartJS.register({
+  id: "customLabels",
+  afterDatasetsDraw(chart) {
+    const { ctx } = chart;
+    chart.data.datasets.forEach((dataset, i) => {
+      const meta = chart.getDatasetMeta(i);
+      if (!meta.hidden) {
+        meta.data.forEach((element, index) => {
+          // Get value
+          const value = dataset.data[index] as number;
+
+          // Get bar properties using element
+          const { x } = element;
+          const y = element.y - 10; // Position above the bar
+
+          // Set styling
+          ctx.fillStyle = "black";
+          ctx.font = "bold 12px Arial";
+          ctx.textAlign = "center";
+          
+
+          // Draw value above bar
+          ctx.fillText(value.toString(), x, y);
+        });
+      }
+    });
+  },
+});
+
 interface BarChartProps {
   title: string;
   data: {
@@ -46,6 +76,14 @@ export default function BarChart({ title, data }: BarChartProps) {
           title: {
             display: true,
             text: title,
+          },
+          tooltip: {
+            enabled: true,
+          },
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
           },
         },
       }}

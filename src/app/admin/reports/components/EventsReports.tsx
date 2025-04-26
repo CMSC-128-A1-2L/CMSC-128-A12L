@@ -35,30 +35,9 @@ export default function EventsReports({ className }: EventsReportsProps) {
     ],
   };
 
-  const attendanceData = {
-    labels: [
-      "Career Fair",
-      "Alumni Homecoming",
-      "Networking Night",
-      "Workshop Series",
-    ],
-    datasets: [
-      {
-        label: "Registered",
-        data: [120, 150, 80, 100],
-        backgroundColor: "rgba(53, 162, 235, 0.5)",
-      },
-      {
-        label: "Attended",
-        data: [100, 130, 65, 85],
-        backgroundColor: "rgba(75, 192, 192, 0.5)",
-      },
-    ],
-  };
-
   return (
     <div className={className}>
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2 text-black">
         <Card>
           <CardHeader>
             <CardTitle>Events per Month</CardTitle>
@@ -74,15 +53,6 @@ export default function EventsReports({ className }: EventsReportsProps) {
           </CardHeader>
           <CardContent>
             <PieChart title="RSVP Status" data={rsvpStatusData} />
-          </CardContent>
-        </Card>
-
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <CardTitle>Event Attendance vs Registration</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <BarChart title="Attendance Comparison" data={attendanceData} />
           </CardContent>
         </Card>
       </div>
