@@ -1,11 +1,12 @@
 "use client";
 import { signOut, useSession } from "next-auth/react";
-import { Menu, LogOut, User, X } from "lucide-react";
+import { Menu, LogOut, User, X, Bell } from "lucide-react";
 import Link from "next/link";
 import { RefObject, useState, useEffect } from "react";
 import { UserRole } from "@/entities/user";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
+import { useUnreadNotificationCount } from "@/hooks/useUnreadNotificationCount";
 
 interface NavbarProps {
   setSidebarOpen: (open: boolean) => void;
@@ -21,6 +22,7 @@ export default function Navbar({
   const { data: session } = useSession();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const { unreadCount, loading } = useUnreadNotificationCount();
   
   // Determine the role label and profile path based on the user's role
   const isAdmin = session?.user?.role?.includes(UserRole.ADMIN);
@@ -74,13 +76,31 @@ export default function Navbar({
         <div className="hidden md:flex items-center space-x-8">
           {session ? (
             <>
-              {session?.user.role.includes(UserRole.ALUMNI) ? (<Link href={profilePath} className="text-sm font-medium hover:text-gray-200 transition-colors relative group">
-                <span className="flex items-center">
-                  <User size={18} className="mr-1" />
-                  <span>PROFILE</span>
-                </span>
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-white transition-all duration-300 group-hover:w-full"></span>
-              </Link>) : ""}
+              {session?.user.role.includes(UserRole.ALUMNI) && (
+                <>
+                  <Link href="/alumni/notifications" className="text-sm font-medium hover:text-gray-200 transition-colors relative group">
+                    <span className="flex items-center">
+                      <div className="relative">
+                        <Bell size={18} className="mr-3.5" />
+                        {!loading && unreadCount > 0 && (
+                          <span className="absolute -top-2 -right-0.25 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                            {unreadCount > 99 ? '99+' : unreadCount}
+                          </span>
+                        )}
+                      </div>
+                      <span>NOTIFICATIONS</span>
+                    </span>
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-white transition-all duration-300 group-hover:w-full"></span>
+                  </Link>
+                  <Link href={profilePath} className="text-sm font-medium hover:text-gray-200 transition-colors relative group">
+                    <span className="flex items-center">
+                      <User size={18} className="mr-1" />
+                      <span>PROFILE</span>
+                    </span>
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-white transition-all duration-300 group-hover:w-full"></span>
+                  </Link>
+                </>
+              )}
               <button
                 onClick={() => signOut()}
                 className="text-sm font-medium hover:text-gray-200 transition-colors relative group focus:outline-none cursor-pointer"
@@ -114,15 +134,33 @@ export default function Navbar({
           <div className="flex flex-col space-y-4">
             {session ? (
               <>
-                <Link 
-                  href={profilePath} 
-                  className="text-sm font-medium hover:text-gray-200 transition-colors flex items-center py-2"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  <User size={18} className="mr-2" />
-                  <span>PROFILE</span>
-                </Link>
-                
+                {session?.user.role.includes(UserRole.ALUMNI) && (
+                  <>
+                    <Link 
+                      href="/alumni/notifications" 
+                      className="text-sm font-medium hover:text-gray-200 transition-colors flex items-center py-2"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <div className="relative mr-2">
+                        <Bell size={18} />
+                        {!loading && unreadCount > 0 && (
+                          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                            {unreadCount > 99 ? '99+' : unreadCount}
+                          </span>
+                        )}
+                      </div>
+                      <span>NOTIFICATIONS</span>
+                    </Link>
+                    <Link 
+                      href={profilePath} 
+                      className="text-sm font-medium hover:text-gray-200 transition-colors flex items-center py-2"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      <User size={18} className="mr-2" />
+                      <span>PROFILE</span>
+                    </Link>
+                  </>
+                )}
                 <button
                   onClick={() => {
                     signOut();
