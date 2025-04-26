@@ -41,45 +41,56 @@ export async function GET(req: NextRequest) {
 }
 
 // Mark a specific notification as read
-export async function PATCH(req: NextRequest) {
-    const { searchParams } = req.nextUrl;
-    const id = searchParams.get('id');  // Use `.get()` to retrieve 'id'
+export async function PATCH(
+    req: NextRequest,
+    { params }: { params: { id: string } }
+) {
+    const id = params.id;
 
     if (!id) {
         return NextResponse.json({ error: "Notification ID is required" }, { status: 400 });
     }
+
     const session = await getServerSession(authOptions);
 
-    // if (!session || !session.user.role.includes(UserRole.ADMIN)) {
-    //     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    // }
     if (!session) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     try {
         const notificationRepository = getNotificationRepository();
-        await notificationRepository.markAsRead(id as string);
-        return NextResponse.json({ message: "Notification marked as read" }, { status: 200 });
+        const body = await req.json();
+        
+        if (body.isRead) {
+            await notificationRepository.markAsRead(id);
+        } else {
+            await notificationRepository.markAsUnread(id);
+        }
+        
+        return NextResponse.json({ 
+            message: `Notification marked as ${body.isRead ? 'read' : 'unread'}` 
+        });
     } catch (error) {
-        console.error("Error marking notification as read:", error);
-        return new NextResponse("Error marking notification as read", { status: 500 });
+        console.error("Error updating notification read status:", error);
+        return NextResponse.json(
+            { error: "Failed to update notification status" },
+            { status: 500 }
+        );
     }
 }
 
 // Delete a specific notification
-export async function DELETE(req: NextRequest) {
-    const { searchParams } = req.nextUrl;
-    const id = searchParams.get('id');  // Use `.get()` to retrieve 'id'
+export async function DELETE(
+    req: NextRequest,
+    { params }: { params: { id: string } }
+) {
+    const id = params.id;
 
     if (!id) {
         return NextResponse.json({ error: "Notification ID is required" }, { status: 400 });
     }
-    const session = await getServerSession(authOptions);
 
-    // if (!session || !session.user.role.includes(UserRole.ADMIN)) {
-    //     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    // }
+    const session = await getServerSession(authOptions);
 
     if (!session) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -87,10 +98,13 @@ export async function DELETE(req: NextRequest) {
 
     try {
         const notificationRepository = getNotificationRepository();
-        await notificationRepository.deleteNotificationById(id as string);
-        return NextResponse.json({ message: "Notification deleted successfully" }, { status: 200 });
+        await notificationRepository.deleteNotificationById(id);
+        return NextResponse.json({ message: "Notification deleted successfully" });
     } catch (error) {
         console.error("Error deleting notification:", error);
-        return new NextResponse("Error deleting notification", { status: 500 });
+        return NextResponse.json(
+            { error: "Failed to delete notification" },
+            { status: 500 }
+        );
     }
 }

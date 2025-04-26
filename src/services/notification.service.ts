@@ -31,7 +31,7 @@ export async function createNotification({ type, entity, entityName, action, cus
         }
     }
 
-    const response = await fetch('/api/notifications', {
+    const response = await fetch('/api/notifications/send-all', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
