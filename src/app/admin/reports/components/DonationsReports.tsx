@@ -1,7 +1,6 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import BarChart from "./charts/BarChart";
 import LineChart from "./charts/LineChart";
 
 interface DonationsReportsProps {
@@ -22,23 +21,6 @@ export default function DonationsReports({ className }: DonationsReportsProps) {
     ],
   };
 
-  const topDonorsData = {
-    labels: [
-      "John Doe",
-      "Jane Smith",
-      "Tech Corp",
-      "Alumni Assoc.",
-      "Anonymous",
-    ],
-    datasets: [
-      {
-        label: "Donation Amount (₱)",
-        data: [100000, 75000, 50000, 45000, 30000],
-        backgroundColor: "rgba(153, 102, 255, 0.5)",
-      },
-    ],
-  };
-
   const cumulativeDonationsData = {
     labels: ["2019", "2020", "2021", "2022", "2023"],
     datasets: [
@@ -55,7 +37,7 @@ export default function DonationsReports({ className }: DonationsReportsProps) {
 
   return (
     <div className={className}>
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 md:grid-cols-2 text-black">
         <Card>
           <CardHeader>
             <CardTitle>Monthly Donation Trends</CardTitle>
@@ -66,15 +48,6 @@ export default function DonationsReports({ className }: DonationsReportsProps) {
         </Card>
 
         <Card>
-          <CardHeader>
-            <CardTitle>Top Donors</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <BarChart title="Top Donors by Amount" data={topDonorsData} />
-          </CardContent>
-        </Card>
-
-        <Card className="md:col-span-2">
           <CardHeader>
             <CardTitle>Cumulative Donations</CardTitle>
           </CardHeader>
