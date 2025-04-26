@@ -57,7 +57,8 @@ export default function OpportunitiesTestPage() {
                 type: 'job',
                 entity: formData,
                 entityName: formData.title ?? '',
-                action: 'created'
+                action: 'created',
+                sendAll: true
             });
 
             await fetchOpportunities();

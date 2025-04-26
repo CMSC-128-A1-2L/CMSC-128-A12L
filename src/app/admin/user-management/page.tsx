@@ -10,6 +10,7 @@ import FilterModal from "../../components/filterModal";
 import { motion } from 'framer-motion';
 import { UserDto } from "@/models/user";
 import ScrollIndicator from "../../components/ScrollIndicator";
+import { createNotification } from "@/services/notification.service";
 
 interface PendingVerification {
     name: string;
@@ -73,6 +74,12 @@ export default function UsersManagement(){
 
         if (response.ok) {
             console.log("User accepted");
+            createNotification({
+                type: "Welcome",
+                entity: userId,
+                userId: userId,
+                customMessage: `Welcome to AEGIS!`
+            });
             setPendingVerificationUsers(pendingVerificationUsers.filter((user) => user.id !== userId));
         }
     }

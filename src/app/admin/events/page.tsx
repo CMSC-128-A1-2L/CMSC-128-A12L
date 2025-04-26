@@ -212,7 +212,8 @@ export default function EventsPage() {
         type: 'event',
         entity: eventData,
         entityName: eventData.name ?? '',
-        action: 'created'
+        action: 'created',
+        sendAll: true
       });
 
       setShowEventModal(false);

@@ -9,11 +9,11 @@ import { Connection, Model } from "mongoose";
 export interface NotificationRepository {
     getNotificationsWithFilters(userId: string): Promise<Notification[]>;
     createNotification(notification: Notification): Promise<string>;
+    createGlobalNotification(notification: Notification): Promise<string>;
     deleteNotificationById(id: string): Promise<void>;
     markAsRead(id: string): Promise<void>;
     markAsUnread(id: string): Promise<void>;
     markAllAsRead(userId: string): Promise<void>;
-    createGlobalNotification(notification: Notification): Promise<string>;
 }
 
 class MongoDBNotificationRepository implements NotificationRepository {

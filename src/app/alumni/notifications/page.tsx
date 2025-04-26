@@ -84,6 +84,7 @@ export default function NotificationsPage() {
     };
 
     const handleMarkAsRead = async (id: string) => {
+        console.log("did it go here")
         try {
             const response = await fetch(`/api/notifications/${id}`, {
                 method: "PATCH",
@@ -103,6 +104,7 @@ export default function NotificationsPage() {
     };
 
     const handleMarkAsUnread = async (id: string) => {
+        console.log("did it go here")
         try {
             const response = await fetch(`/api/notifications/${id}`, {
                 method: "PATCH",
@@ -224,73 +226,53 @@ export default function NotificationsPage() {
                                 <div className="flex-1">
                                     <p className="font-semibold">{notif.message}</p>
                                     <div className="flex items-center space-x-2">
-                                        <span className="text-sm text-gray-500">
+                                        <span className="text-sm text-gray-500 group-hover:text-gray-300">
                                             {formatTimeAgo(notif.createdAt)} ago
                                         </span>
-                                        <span className="text-sm text-gray-500">•</span>
-                                        <span className="text-sm text-gray-500 capitalize">
+                                        <span className="text-sm text-gray-500 group-hover:text-gray-300">•</span>
+                                        <span className="text-sm text-gray-500 capitalize group-hover:text-gray-300">
                                             {notif.type}
                                         </span>
                                         {!notif.userId && (
                                             <>
-                                                <span className="text-sm text-gray-500">•</span>
-                                                <span className="text-sm text-gray-500">
+                                                <span className="text-sm text-gray-500 group-hover:text-gray-300">•</span>
+                                                <span className="text-sm text-gray-500 group-hover:text-gray-300">
                                                     Global
                                                 </span>
                                             </>
                                         )}
                                     </div>
                                 </div>
+
+                                {/* Action Buttons */}
+                                <div className="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button
+                                        onClick={() => {
+                                            if (!notif.isRead) {
+                                                handleMarkAsRead(notif._id!);
+                                            } else {
+                                                handleMarkAsUnread(notif._id!);
+                                            }
+                                        }}
+                                        className="px-3 py-1 text-sm bg-white/90 text-[#0c0051] rounded-md hover:bg-white transition-colors"
+                                    >
+                                        {!notif.isRead ? "Mark as read" : "Mark as unread"}
+                                    </button>
+                                    
+                                    {notif.userId === session?.user?.id && (
+                                        <button
+                                            onClick={() => handleDelete(notif._id!)}
+                                            className="px-3 py-1 text-sm bg-gray-100/90 text-gray-700 rounded-md hover:bg-gray-100 hover:text-gray-900 transition-colors flex items-center"
+                                        >
+                                            <Trash size={14} className="mr-1" />
+                                            Delete
+                                        </button>
+                                    )}
+                                </div>
+
                                 {/* Unread Dot */}
                                 {!notif.isRead && (
-                                    <div className="w-2.5 h-2.5 bg-[#0c0051] rounded-full"></div>
-                                )}
-                            </div>
-
-                            {/* Ellipsis Button and Dropdown */}
-                            <div 
-                                ref={dropdownRef}
-                                className="absolute top-1/2 right-4 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-20"
-                            >
-                                <button
-                                    className="p-2 text-[#0c0051] hover:bg-[#f0f0f0] rounded-full group-hover:text-white"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setShowOptions(showOptions === notif._id! ? null : notif._id!);
-                                    }}
-                                >
-                                    <EllipsisVertical size={20} />
-                                </button>
-
-                                {/* Dropdown options */}
-                                {showOptions === notif._id && (
-                                    <div className="absolute right-0 top-full mt-1 bg-white shadow-lg rounded-md p-2 z-30">
-                                        <button
-                                            className="block w-full text-left text-[#0c0051] text-sm py-1 px-3 hover:bg-[#f0f0f0] rounded-md whitespace-nowrap"
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                !notif.isRead 
-                                                    ? handleMarkAsRead(notif._id!)
-                                                    : handleMarkAsUnread(notif._id!);
-                                                setShowOptions(null);
-                                            }}
-                                        >
-                                            {!notif.isRead ? "Mark as read" : "Mark as unread"}
-                                        </button>
-                                        {notif.userId === session?.user?.id && (
-                                            <button
-                                                className="block w-full text-left text-[#0c0051] text-sm py-1 px-3 hover:bg-[#f0f0f0] rounded-md whitespace-nowrap"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleDelete(notif._id!);
-                                                    setShowOptions(null);
-                                                }}
-                                            >
-                                                <Trash size={14} className="inline mr-1" />
-                                                Delete
-                                            </button>
-                                        )}
-                                    </div>
+                                    <div className="w-2.5 h-2.5 bg-[#0c0051] rounded-full ml-2"></div>
                                 )}
                             </div>
                         </div>

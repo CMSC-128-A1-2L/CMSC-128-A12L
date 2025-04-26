@@ -34,6 +34,29 @@ export async function GET(req: NextRequest) {
     }
 }
 
+export async function POST(req: NextRequest) {
+    const session = await getServerSession(authOptions);
+
+    if (!session) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    try {
+        const notificationRepository = getNotificationRepository();
+        const body = await req.json();
+        
+        if (!body.userId || !body.type || !body.message) {
+            return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+        }
+
+        const notification = await notificationRepository.createNotificationById(body);
+        return NextResponse.json(notification, { status: 200 });
+    } catch (error) {
+        console.error("Error creating notification:", error);
+        return NextResponse.json({ error: "Failed to create notification" }, { status: 500 });
+    }
+}
+
 // Mark all notifications as read for a user
 export async function PUT(req: NextRequest) {
     const session = await getServerSession(authOptions);
@@ -52,32 +75,5 @@ export async function PUT(req: NextRequest) {
             { error: "Failed to mark all notifications as read" },
             { status: 500 }
         );
-    }
-}
-
-// Create a notification
-export async function POST(req: NextRequest) {
-    const session = await getServerSession(authOptions);
-
-    if (!session || !session.user.role.includes(UserRole.ADMIN)) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    try {
-        const notificationRepository = getNotificationRepository();
-        const data = await req.json();
-        if (!data.type || !data.message) {
-            return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
-        }
-        const notificationData = {
-            ...data,
-        }
-
-        const notification = await notificationRepository.createNotification(notificationData);
-        return NextResponse.json(notification, { status: 200 });
-    } catch (error) {
-        console.error("Error creating notification:", error);
-        return NextResponse.json({error: "Failed to create new event."}, {status: 500});
-
     }
 }

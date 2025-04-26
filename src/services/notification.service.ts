@@ -1,14 +1,15 @@
-export type NotificationType = 'event' | 'announcement' | 'donation' | 'job';
 
 interface NotificationParams {
-    type: NotificationType;
+    type: string;
     entity: any;
     entityName?: string;
-    action: 'created' | 'updated' | 'deleted';
+    action?: 'created' | 'updated' | 'deleted';
     customMessage?: string;
+    sendAll?: boolean;
+    userId?: string;
 }
 
-export async function createNotification({ type, entity, entityName, action, customMessage }: NotificationParams): Promise<void> {
+export async function createNotification({ type, entity, entityName, action, customMessage, sendAll, userId }: NotificationParams): Promise<void> {
     let message = customMessage;
     
     if (!customMessage) {
@@ -31,6 +32,7 @@ export async function createNotification({ type, entity, entityName, action, cus
         }
     }
 
+    if (sendAll) {
     const response = await fetch('/api/notifications/send-all', {
         method: 'POST',
         headers: {
@@ -41,9 +43,28 @@ export async function createNotification({ type, entity, entityName, action, cus
             message,
         }),
     });
-
     if (!response.ok) {
         const error = await response.json();
         throw new Error(error.error || 'Failed to create notification');
     }
+    } else {
+
+        const response = await fetch('/api/notifications', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                userId,
+                type,
+                message,
+            }),
+        });
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to create notification');
+        }
+    }
+
+
 } 
