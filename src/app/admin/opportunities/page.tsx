@@ -5,7 +5,7 @@
 import { useState, useEffect } from 'react';
 import { Opportunity } from '@/entities/opportunity';
 import { Plus, Trash2, Briefcase, Building2, MapPin, Tag, Clock, Loader2, Menu, X } from 'lucide-react';
-
+import { createNotification } from '@/services/notification.service';
 export default function OpportunitiesTestPage() {
     const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
     const [loading, setLoading] = useState(false);
@@ -53,6 +53,13 @@ export default function OpportunitiesTestPage() {
 
             if (!response.ok) throw new Error('Failed to create opportunity');
             
+            await createNotification({
+                type: 'job',
+                entity: formData,
+                entityName: formData.title ?? '',
+                action: 'created'
+            });
+
             await fetchOpportunities();
             setFormData({
                 title: '',

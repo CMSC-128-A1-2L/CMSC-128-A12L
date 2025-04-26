@@ -17,6 +17,7 @@ import AdminEventDetails from "@/app/components/AdminEventDetails";
 import EditEventModal from "@/app/components/AdminEditEvent";
 import CreateEventModal from "@/app/components/createEvent";
 import { Event } from "@/entities/event";
+import { createNotification } from '@/services/notification.service';
 
 export default function EventsPage() {
   // State management
@@ -205,6 +206,15 @@ export default function EventsPage() {
       if (result.event && result.event._id) {
         setEvents(prevEvents => [...prevEvents, result.event]);
       }
+
+      // Create notification using the service
+      await createNotification({
+        type: 'event',
+        entity: eventData,
+        entityName: eventData.name ?? '',
+        action: 'created'
+      });
+
       setShowEventModal(false);
     } catch (error) {
       console.error('Error creating event:', error);
