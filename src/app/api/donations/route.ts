@@ -1,40 +1,48 @@
-import { NextApiRequest, NextApiResponse } from "next/server";
-import { getServerSession } from "next-auth"; 
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+// app/api/donations/route.ts
+import { NextRequest, NextResponse } from "next/server";
 import { getEducationRepository } from "@/repositories/donation_repository";
 import { Donation } from "@/entities/donation";
-import { UserRole } from "@/entities/user";  
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { UserRole } from "@/entities/user";
 
-
-export async function GET(req: NextApiRequest, res: NextApiResponse) {
+export async function GET(req: NextRequest) {
     const session = await getServerSession(authOptions);
+
     if (!session || !session.user.role.includes(UserRole.ADMIN)) {
-        return res.status(401).json({ error: "Unauthorized" });
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    
+    const donationRepo = getEducationRepository();
+
     try {
-        const donationRepository = getEducationRepository();
-        const donations = await donationRepository.getAllDonations();
-        res.status(200).json(donations);
+        const allDonations = await donationRepo.getAllDonations();
+        return NextResponse.json(allDonations, { status: 200 });
     } catch (error) {
-        res.status(500).json({ error: "Error retrieving donations" });
+        console.error("Failed to fetch donations:", error);
+        return new NextResponse("Failed to fetch donations", { status: 500 });
     }
 }
 
-export async function POST(req: NextApiRequest, res: NextApiResponse) {
+export async function POST(req: NextRequest) {
+    console.log("POST /api/donations triggered.");
+
     const session = await getServerSession(authOptions);
+
     if (!session || !session.user.role.includes(UserRole.ADMIN)) {
-        return res.status(401).json({ error: "Unauthorized" });
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    
+    const donationRepo = getEducationRepository();
+
     try {
-        const donationRepository = getEducationRepository();
-        const donationData: Donation = req.body;
-        const donationId = await donationRepository.createDonation(donationData);
-        res.status(201).json({ message: "Donation created successfully", id: donationId });
-    } catch (error) {
-        res.status(500).json({ error: "Error creating donation" });
+        const donationData: Donation = await req.json();
+        const newDonationId = await donationRepo.createDonation(donationData);
+        console.log("Created Donation ID:", newDonationId);
+
+        return NextResponse.json({ id: newDonationId }, { status: 201 });
+    } catch (err) {
+        console.error("Failed to create donation:", err);
+        return new NextResponse("Failed to create donation", { status: 500 });
     }
 }
