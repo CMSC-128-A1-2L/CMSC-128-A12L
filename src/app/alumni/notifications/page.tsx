@@ -74,7 +74,7 @@ export default function NotificationsPage() {
             
             setNotifications(prevNotifications =>
                 prevNotifications.map(notif => ({
-                    ...notif,
+        ...notif,
                     isRead: true
                 }))
             );
@@ -82,7 +82,7 @@ export default function NotificationsPage() {
             console.error(err);
         }
     };
-
+  
     const handleMarkAsRead = async (id: string) => {
         console.log("did it go here")
         try {
@@ -96,13 +96,13 @@ export default function NotificationsPage() {
             setNotifications(prevNotifications =>
                 prevNotifications.map(notif =>
                     notif._id === id ? { ...notif, isRead: true } : notif
-                )
-            );
+        )
+      );
         } catch (err) {
             console.error(err);
         }
     };
-
+  
     const handleMarkAsUnread = async (id: string) => {
         console.log("did it go here")
         try {
@@ -116,13 +116,13 @@ export default function NotificationsPage() {
             setNotifications(prevNotifications =>
                 prevNotifications.map(notif =>
                     notif._id === id ? { ...notif, isRead: false } : notif
-                )
-            );
+        )
+      );
         } catch (err) {
             console.error(err);
         }
     };
-
+  
     const handleDelete = async (id: string) => {
         try {
             const response = await fetch(`/api/notifications/${id}`, {
@@ -171,60 +171,60 @@ export default function NotificationsPage() {
             </div>
         );
     }
-
+  
     return (
-        <div className="flex-1 overflow-y-auto p-6 bg-white text-[#0c0051] font-montserrat">
-            <h1 className="text-2xl font-bold mb-4 text-[#0c0051]">Notifications</h1>
-
-            {/* Tab Navigation */}
-            <div className="flex items-center justify-between mb-6">
-                <div className="flex space-x-4">
-                    <button
+      <div className="flex-1 overflow-y-auto p-6 bg-white text-[#0c0051] font-montserrat">
+        <h1 className="text-2xl font-bold mb-4 text-[#0c0051]">Notifications</h1>
+  
+        {/* Tab Navigation */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex space-x-4">
+            <button
                         className={`px-4 py-2 rounded-md transition-colors duration-200 ${
                             tab === 'all' 
                                 ? 'bg-[#0c0051] text-white' 
                                 : 'bg-gray-100 text-[#0c0051] hover:bg-gray-200'
                         }`}
-                        onClick={() => setTab('all')}
-                    >
-                        All Notifications
-                    </button>
-                    <button
+              onClick={() => setTab('all')}
+            >
+              All Notifications
+            </button>
+            <button
                         className={`px-4 py-2 rounded-md transition-colors duration-200 ${
                             tab === 'unread' 
                                 ? 'bg-[#0c0051] text-white' 
                                 : 'bg-gray-100 text-[#0c0051] hover:bg-gray-200'
                         }`}
                         onClick={() => setTab('unread')}
-                    >
-                        Unread Notifications
-                    </button>
-                </div>
-
-                {/* Mark All as Read Button */}
-                <button
+            >
+              Unread Notifications
+            </button>
+          </div>
+  
+          {/* Mark All as Read Button */}
+          <button
                     className="px-4 py-2 bg-[#0c0051] text-white rounded-md hover:bg-[#0c0051]/90 transition-colors duration-200"
-                    onClick={handleMarkAllAsRead}
-                >
-                    Mark all as read
-                </button>
-            </div>
-
-            {/* Notifications List */}
-            <div className="w-full max-w-[1200px] h-[calc(100vh-200px)] overflow-y-auto mx-auto">
-                {filtered.length === 0 ? (
-                    <p className="text-gray-500">No notifications available.</p>
-                ) : (
-                    filtered.map((notif) => (
-                        <div
+            onClick={handleMarkAllAsRead}
+          >
+            Mark all as read
+          </button>
+        </div>
+  
+        {/* Notifications List */}
+        <div className="w-full max-w-[1200px] h-[calc(100vh-200px)] overflow-y-auto mx-auto">
+          {filtered.length === 0 ? (
+            <p className="text-gray-500">No notifications available.</p>
+          ) : (
+            filtered.map((notif) => (
+              <div
                             key={notif._id}
-                            className={`p-4 mb-4 bg-[#f0f0f0] rounded-lg shadow-sm transition-all duration-200 hover:bg-[#0c0051] hover:text-white ${
-                                notif.isRead ? 'border-l-4 border-[#0c0051]' : ''
-                            } relative group`}
-                        >
-                            <div className="flex items-center justify-between">
-                                <div className="flex-1">
-                                    <p className="font-semibold">{notif.message}</p>
+                className={`p-4 mb-4 bg-[#f0f0f0] rounded-lg shadow-sm transition-all duration-200 hover:bg-[#0c0051] hover:text-white ${
+                  notif.isRead ? 'border-l-4 border-[#0c0051]' : ''
+                } relative group`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <p className="font-semibold">{notif.message}</p>
                                     <div className="flex items-center space-x-2">
                                         <span className="text-sm text-gray-500 group-hover:text-gray-300">
                                             {formatTimeAgo(notif.createdAt)} ago
@@ -240,13 +240,13 @@ export default function NotificationsPage() {
                                                     Global
                                                 </span>
                                             </>
-                                        )}
+                  )}
                                     </div>
-                                </div>
-
+                </div>
+  
                                 {/* Action Buttons */}
                                 <div className="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button
+                  <button
                                         onClick={() => {
                                             if (!notif.isRead) {
                                                 handleMarkAsRead(notif._id!);
@@ -257,28 +257,28 @@ export default function NotificationsPage() {
                                         className="px-3 py-1 text-sm bg-white/90 text-[#0c0051] rounded-md hover:bg-white transition-colors"
                                     >
                                         {!notif.isRead ? "Mark as read" : "Mark as unread"}
-                                    </button>
-                                    
+                  </button>
+  
                                     {notif.userId === session?.user?.id && (
-                                        <button
+                        <button
                                             onClick={() => handleDelete(notif._id!)}
                                             className="px-3 py-1 text-sm bg-gray-100/90 text-gray-700 rounded-md hover:bg-gray-100 hover:text-gray-900 transition-colors flex items-center"
-                                        >
+                        >
                                             <Trash size={14} className="mr-1" />
-                                            Delete
-                                        </button>
+                        Delete
+                        </button>
                                     )}
-                                </div>
+                    </div>
 
                                 {/* Unread Dot */}
                                 {!notif.isRead && (
                                     <div className="w-2.5 h-2.5 bg-[#0c0051] rounded-full ml-2"></div>
-                                )}
-                            </div>
-                        </div>
-                    ))
-                )}
-            </div>
+                    )}
+                </div>
+              </div>
+            ))
+          )}
         </div>
+      </div>
     );
-}
+  }

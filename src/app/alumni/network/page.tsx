@@ -1,14 +1,9 @@
 "use client";
-import { useSession } from "next-auth/react";
-import { UserRole } from "@/entities/user";
 
 import { useState, useRef, useEffect } from "react";
 import { FiFilter } from "react-icons/fi";
 import { IoIosArrowForward, IoIosArrowBack } from "react-icons/io";
 import userData from "@/dummy_data/user.json";
-
-import CreateJL from "@/app/components/createJL";
-import CreateEvent from "@/pages/createEvent"; 
 import { motion } from "framer-motion";
 
 
@@ -38,6 +33,14 @@ export default function AlumniPage() {
   const itemsPerPage = 10;
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    const fetchAlumni = async () => {
+      const response = await fetch("/api/users");
+      const data = await response.json();
+      console.log(data);
+    };
+    fetchAlumni();
+  }, []);
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {

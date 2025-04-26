@@ -64,11 +64,11 @@ export default function AlumniProfile() {
       try {
         const response = await fetch("/api/alumni/profile");
         if (!response.ok) throw new Error("Failed to fetch profile data");
-        const data = await response.json();
-        setProfileData((prevData) => ({
-          ...prevData,
-          ...data,
-        }));
+          const data = await response.json();
+          setProfileData((prevData) => ({
+            ...prevData,
+            ...data,
+          }));
       } catch (error) {
         console.error("Error fetching profile:", error);
         toast.error("Failed to load profile data");
@@ -238,8 +238,8 @@ export default function AlumniProfile() {
                 </h2>
                 <div className="bg-white/10 backdrop-blur-sm rounded-lg p-6">
                   <p className="text-gray-200 whitespace-pre-wrap">
-                    {profileData.bio || "No bio available"}
-                  </p>
+                  {profileData.bio || "No bio available"}
+                </p>
                 </div>
               </div>
             </div>
