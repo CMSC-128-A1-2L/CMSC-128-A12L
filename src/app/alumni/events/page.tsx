@@ -581,12 +581,25 @@ export default function EventListings() {
                 organizer={selectedEvent.organizer}
                 location={selectedEvent.location}
                 date={selectedEvent.startDate}
+                endDate={selectedEvent.endDate}
                 description={selectedEvent.description}
                 isOpen={showDetailsModal}
                 onClose={handleCloseDetailsModal}
-                onRSVPClick={() => handleRespond(selectedEvent, 'go')}
-                onEditClick={() => handleEdit(selectedEvent)}
-                onDeleteClick={() => handleDelete(selectedEvent._id || '')}
+                onRSVPClick={() => {
+                  // Close the details modal first
+                  const modal = document.getElementById("job_details_modal") as HTMLDialogElement;
+                  if (modal) {
+                    modal.close();
+                    setShowDetailsModal(false);
+                  }
+                  // Then show RSVP options
+                  setRsvpEvent(selectedEvent);
+                }}
+                imageUrl={selectedEvent.imageUrl}
+                type={selectedEvent.type}
+                wouldGo={selectedEvent.wouldGo}
+                wouldNotGo={selectedEvent.wouldNotGo}
+                wouldMaybeGo={selectedEvent.wouldMaybeGo}
               />
             )}
 
@@ -654,7 +667,7 @@ export default function EventListings() {
       />
       {rsvpEvent && (
         <div 
-          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+          className="fixed inset-0 z-[70] bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
           onClick={(e) => {
             if (e.target === e.currentTarget) setRsvpEvent(null);
           }}
