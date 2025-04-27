@@ -154,9 +154,7 @@ export default function JobListings() {
   // Handle job details modal
   const handleJobDetails = (job: any) => {
     setSelectedJob(job);
-    const modal = document.getElementById(
-      "job_details_modal"
-    ) as HTMLDialogElement;
+    const modal = document.getElementById("job_details_modal") as HTMLDialogElement;
     if (modal) {
       modal.showModal();
       setIsModalOpen(true);
@@ -174,10 +172,12 @@ export default function JobListings() {
 
   // Handle Edit Job button click
   const handleEdit = (job: any) => {
+    if (job.userId !== session?.user?.id) {
+      toast.error("You can only edit your own job postings");
+      return;
+    }
     setSelectedJob(job);
-    const modal = document.getElementById(
-      "edit_job_modal"
-    ) as HTMLDialogElement;
+    const modal = document.getElementById("edit_job_modal") as HTMLDialogElement;
     if (modal) {
       modal.showModal();
       setIsModalOpen(true);
@@ -486,6 +486,7 @@ export default function JobListings() {
                 onApplyClick={() => handleApply(selectedJob.title)}
                 onEditClick={() => handleEdit(selectedJob)}
                 onDeleteClick={() => {}}
+                canEdit={selectedJob.userId === session?.user?.id} // Add this line
               />
             )}
 

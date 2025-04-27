@@ -9,6 +9,8 @@ import {
   User2,
   FileText,
   X,
+  Edit2,
+  Trash2,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -26,9 +28,10 @@ interface JobDetailsProps {
   onApplyClick: () => void;
   onEditClick: () => void;
   onDeleteClick: () => void;
+  canEdit?: boolean;
 }
 
-const JobDetails: React.FC<JobDetailsProps> = ({
+export default function JobDetails({
   title,
   company,
   location,
@@ -42,7 +45,8 @@ const JobDetails: React.FC<JobDetailsProps> = ({
   onApplyClick,
   onEditClick,
   onDeleteClick,
-}) => {
+  canEdit = false,
+}: JobDetailsProps) {
   const handleClose = () => {
     const modal = document.getElementById("job_details_modal") as HTMLDialogElement;
     if (modal) {
@@ -52,7 +56,7 @@ const JobDetails: React.FC<JobDetailsProps> = ({
   };
 
   return (
-    <dialog id="job_details_modal" className="modal bg-black/50 backdrop-blur-sm">
+    <dialog id="job_details_modal" className="modal">
       <motion.div 
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
@@ -157,15 +161,31 @@ const JobDetails: React.FC<JobDetailsProps> = ({
           >
             Close
           </button>
-          <button
-            onClick={onEditClick}
-            className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors"
-          >
-            Edit
-          </button>
+          {canEdit && (
+            <>
+              <button 
+                onClick={onEditClick}
+                className="px-4 py-2 bg-white/5 hover:bg-white/10 text-blue-200 rounded-lg transition-colors border border-blue-500/20"
+              >
+                <div className="flex items-center gap-2">
+                  <Edit2 size={18} />
+                  Edit
+                </div>
+              </button>
+              <button 
+                onClick={onDeleteClick}
+                className="px-4 py-2 bg-white/5 hover:bg-white/10 text-red-200 rounded-lg transition-colors border border-red-500/20"
+              >
+                <div className="flex items-center gap-2">
+                  <Trash2 size={18} />
+                  Delete
+                </div>
+              </button>
+            </>
+          )}
           <button
             onClick={onApplyClick}
-            className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+            className="px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-200 rounded-lg transition-colors border border-blue-500/20"
           >
             Apply Now
           </button>
@@ -178,6 +198,4 @@ const JobDetails: React.FC<JobDetailsProps> = ({
       </form>
     </dialog>
   );
-};
-
-export default JobDetails;
+}
