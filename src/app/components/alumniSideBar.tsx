@@ -38,10 +38,10 @@ export default function AlumniSidebar({
   const { data: session } = useSession();
   console.log("Session data:", session);
 
-  const userName = session?.user?.name || "";
-  const displayName = userName || "Alumni User";
+  const userEmail = session?.user?.email || "";
+  const displayName = userEmail.split("@")[0] || "Alumni User";
   const userImage = session?.user?.image;
-  const initial = (userName[0] || "A").toUpperCase();
+  const initial = (displayName[0] || "A").toUpperCase();
 
   const sidebarItems = {
     account: [
@@ -64,6 +64,11 @@ export default function AlumniSidebar({
         path: "/alumni/jobs",
       },
       { name: "Events", icon: <Calendar size={20} />, path: "/alumni/events" },
+      {
+        name: "Announcements",
+        icon: <Bell size={20} />,
+        path: "/alumni/announcements",
+      },
       {
         name: "Donations",
         icon: <DollarSign size={20} />,
@@ -109,10 +114,10 @@ export default function AlumniSidebar({
         </button>
       </div>
 
-      <nav className="mt-4 flex flex-col h-[calc(100vh-80px)]">
-        <div className="flex-1 px-2">
-          <div className="mb-6">
-            <h3 className="text-gray-500 text-sm font-medium mb-2 px-4">
+      <nav className="mt-4 flex flex-col h-[calc(100vh-80px)] overflow-y-auto">
+        <div className="flex-1 px-2 min-h-0">
+          <div className="mb-1">
+            <h3 className="text-gray-500 text-sm font-medium mb-1 px-4">
               Account
             </h3>
             {sidebarItems.account.map((item, index) => (
@@ -148,7 +153,7 @@ export default function AlumniSidebar({
             ))}
           </div>
 
-          <div className="h-px bg-gray-200 mx-4 my-4" />
+          <div className="h-px bg-gray-200 mx-4 my-1" />
 
           <div className="mb-6">
             <h3 className="text-gray-500 text-sm font-medium mb-2 px-4">
@@ -212,7 +217,7 @@ export default function AlumniSidebar({
         </div>
 
         {role == "admin" && (
-          <div className="mt-auto border-t pt-2 px-2 pb-4">
+          <div className="border-t pt-2 px-2 pb-4 mt-2">
             <Link
               href="/admin"
               onClick={() => setSidebarOpen(false)}
