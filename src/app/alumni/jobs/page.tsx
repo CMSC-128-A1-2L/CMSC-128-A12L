@@ -303,240 +303,248 @@ export default function JobListings() {
 
           {/* Main content */}
           <main className="flex-1">
-            {/* Active filters */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="flex flex-wrap items-center gap-2 mb-4"
-            >
-              {Object.entries(activeFilters.jobType).map(([key, value]) =>
-                value ? (
-                  <div
-                    key={key}
-                    className="px-3 py-2 bg-white/5 rounded-lg text-white border border-white/10 flex items-center gap-2"
-                  >
-                    {key === "fullTime"
-                      ? "Full-time"
-                      : key === "partTime"
-                      ? "Part-time"
-                      : "Contract"}
-                    <button
-                      className="opacity-60 hover:opacity-100 cursor-pointer"
-                      onClick={() => {
-                        const newFilters = { ...activeFilters };
-                        newFilters.jobType[key as keyof typeof newFilters.jobType] = false;
-                        handleFilterChange(newFilters);
-                      }}
-                    >
-                      ✕
-                    </button>
-                  </div>
-                ) : null
-              )}
+            {loading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="text-white/80">Loading jobs...</div>
+              </div>
+            ) : (
+              <>
+                {/* Active filters */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="flex flex-wrap items-center gap-2 mb-4"
+                >
+                  {Object.entries(activeFilters.jobType).map(([key, value]) =>
+                    value ? (
+                      <div
+                        key={key}
+                        className="px-3 py-2 bg-white/5 rounded-lg text-white border border-white/10 flex items-center gap-2"
+                      >
+                        {key === "fullTime"
+                          ? "Full-time"
+                          : key === "partTime"
+                          ? "Part-time"
+                          : "Contract"}
+                        <button
+                          className="opacity-60 hover:opacity-100 cursor-pointer"
+                          onClick={() => {
+                            const newFilters = { ...activeFilters };
+                            newFilters.jobType[key as keyof typeof newFilters.jobType] = false;
+                            handleFilterChange(newFilters);
+                          }}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ) : null
+                  )}
 
-              {Object.entries(activeFilters.workType).map(([key, value]) =>
-                value ? (
-                  <div
-                    key={key}
-                    className="px-3 py-2 bg-white/5 rounded-lg text-white border border-white/10 flex items-center gap-2"
-                  >
-                    {key === "onSite"
-                      ? "On-site"
-                      : key === "remote"
-                      ? "Remote"
-                      : "Hybrid"}
-                    <button
-                      className="opacity-60 hover:opacity-100 cursor-pointer"
-                      onClick={() => {
-                        const newFilters = { ...activeFilters };
-                        newFilters.workType[key as keyof typeof newFilters.workType] = false;
-                        handleFilterChange(newFilters);
-                      }}
-                    >
-                      ✕
-                    </button>
-                  </div>
-                ) : null
-              )}
+                  {Object.entries(activeFilters.workType).map(([key, value]) =>
+                    value ? (
+                      <div
+                        key={key}
+                        className="px-3 py-2 bg-white/5 rounded-lg text-white border border-white/10 flex items-center gap-2"
+                      >
+                        {key === "onSite"
+                          ? "On-site"
+                          : key === "remote"
+                          ? "Remote"
+                          : "Hybrid"}
+                        <button
+                          className="opacity-60 hover:opacity-100 cursor-pointer"
+                          onClick={() => {
+                            const newFilters = { ...activeFilters };
+                            newFilters.workType[key as keyof typeof newFilters.workType] = false;
+                            handleFilterChange(newFilters);
+                          }}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ) : null
+                  )}
 
-              {Object.entries(activeFilters.experienceLevel).map(([key, value]) =>
-                value ? (
-                  <div
-                    key={key}
-                    className="px-3 py-2 bg-white/5 rounded-lg text-white border border-white/10 flex items-center gap-2"
-                  >
-                    {key === "entry"
-                      ? "Entry Level"
-                      : key === "midLevel"
-                      ? "Mid-Level"
-                      : "Senior"}
-                    <button
-                      className="opacity-60 hover:opacity-100 cursor-pointer"
-                      onClick={() => {
-                        const newFilters = { ...activeFilters };
-                        newFilters.experienceLevel[key as keyof typeof newFilters.experienceLevel] = false;
-                        handleFilterChange(newFilters);
-                      }}
-                    >
-                      ✕
-                    </button>
-                  </div>
-                ) : null
-              )}
+                  {Object.entries(activeFilters.experienceLevel).map(([key, value]) =>
+                    value ? (
+                      <div
+                        key={key}
+                        className="px-3 py-2 bg-white/5 rounded-lg text-white border border-white/10 flex items-center gap-2"
+                      >
+                        {key === "entry"
+                          ? "Entry Level"
+                          : key === "midLevel"
+                          ? "Mid-Level"
+                          : "Senior"}
+                        <button
+                          className="opacity-60 hover:opacity-100 cursor-pointer"
+                          onClick={() => {
+                            const newFilters = { ...activeFilters };
+                            newFilters.experienceLevel[key as keyof typeof newFilters.experienceLevel] = false;
+                            handleFilterChange(newFilters);
+                          }}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ) : null
+                  )}
 
-              {/* Results count */}
-              {filteredJobs.length > 0 && (
-                <div className="ml-auto text-sm text-gray-400">
-                  Showing {filteredJobs.length} results
-                </div>
-              )}
-            </motion.div>
+                  {/* Results count */}
+                  {filteredJobs.length > 0 && (
+                    <div className="ml-auto text-sm text-gray-400">
+                      Showing {filteredJobs.length} results
+                    </div>
+                  )}
+                </motion.div>
 
-            {/* Grid/List View */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              className={`grid ${isGridView ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'} gap-4`}
-            >
-              {displayedJobs.length > 0 ? (
-                displayedJobs.map((job, index) => (
-                  <motion.div
-                    key={index}
+                {/* Grid/List View */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.3 }}
+                  className={`grid ${isGridView ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'} gap-4`}
+                >
+                  {displayedJobs.length > 0 ? (
+                    displayedJobs.map((job, index) => (
+                      <motion.div
+                        key={index}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, delay: index * 0.05 }}
+                        className="transition-colors"
+                      >
+                        {isGridView ? (
+                          <JobCard
+                            tags={job.tags}
+                            workMode={job.workMode.charAt(0).toUpperCase() + job.workMode.slice(1)}
+                            position={job.position}
+                            title={job.title}
+                            company={job.company}
+                            location={job.location}
+                            description={job.description}
+                            imageUrl={job.imageUrl}
+                            onDetailsClick={() => handleJobDetails(job)}
+                            onApplyClick={() => handleApply(job.title)}
+                          />
+                        ) : (
+                          <JobRow
+                          tags={job.tags}
+                          workMode={job.workMode.charAt(0).toUpperCase() + job.workMode.slice(1)}
+                          position={job.position}
+                          title={job.title}
+                          company={job.company}
+                          location={job.location}
+                          description={job.description}
+                          imageUrl={job.imageUrl}
+                          onDetailsClick={() => handleJobDetails(job)}
+                          onApplyClick={() => handleApply(job.title)}
+                          />
+                        )}
+                      </motion.div>
+                    ))
+                  ) : (
+                    <div className="col-span-full text-center py-8">
+                      <p className="text-gray-400">
+                        No jobs found matching your filters.
+                      </p>
+                      <button
+                        className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors mt-4 border border-white/10"
+                        onClick={() =>
+                          handleFilterChange({
+                            jobType: {
+                              fullTime: false,
+                              partTime: false,
+                              contract: false,
+                            },
+                            workType: {
+                              onSite: false,
+                              remote: false,
+                              hybrid: false,
+                            },
+                            experienceLevel: {
+                              entry: false,
+                              midLevel: false,
+                              senior: false,
+                            }
+                          })
+                        }
+                      >
+                        Clear all filters
+                      </button>
+                    </div>
+                  )}
+                </motion.div>
+
+                {/* Job Details Modal */}
+                {selectedJob && (
+                  <JobDetails
+                    position={selectedJob.position}
+                    title={selectedJob.title}
+                    company={selectedJob.company}
+                    location={selectedJob.location}
+                    jobType={selectedJob.job_type}
+                    workType={selectedJob.work_type}
+                    description={selectedJob.description}
+                    isOpen={isModalOpen}
+                    onClose={handleCloseModal}
+                    onApplyClick={() => handleApply(selectedJob.title)}
+                    onEditClick={() => handleEdit(selectedJob)}
+                    onDeleteClick={() => {}}
+                    canEdit={selectedJob.userId === session?.user?.id} // Add this line
+                  />
+                )}
+
+                {/* Edit Job Modal */}
+                {selectedJob && (
+                  <EditJobListComponent
+                    isOpen={isModalOpen}
+                    onClose={handleCloseModal}
+                    onSave={(jobData) => {
+                      console.log("Save job", jobData);
+                      setIsModalOpen(false);
+                    }}
+                    initialJobData={{
+                      title: selectedJob.title,
+                      company: selectedJob.company,
+                      location: selectedJob.location,
+                      jobType: selectedJob.job_type,
+                      workType: selectedJob.work_type,
+                      salary: selectedJob.salary,
+                      description: selectedJob.description
+                    }}
+                  />
+                )}
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <motion.div 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.05 }}
-                    className="transition-colors"
+                    transition={{ delay: 0.4 }}
+                    className="flex justify-center items-center space-x-4 my-8"
                   >
-                    {isGridView ? (
-                      <JobCard
-                        tags={job.tags}
-                        workMode={job.workMode.charAt(0).toUpperCase() + job.workMode.slice(1)}
-                        position={job.position}
-                        title={job.title}
-                        company={job.company}
-                        location={job.location}
-                        description={job.description}
-                        imageUrl={job.imageUrl}
-                        onDetailsClick={() => handleJobDetails(job)}
-                        onApplyClick={() => handleApply(job.title)}
-                      />
-                    ) : (
-                      <JobRow
-                      tags={job.tags}
-                      workMode={job.workMode.charAt(0).toUpperCase() + job.workMode.slice(1)}
-                      position={job.position}
-                      title={job.title}
-                      company={job.company}
-                      location={job.location}
-                      description={job.description}
-                      imageUrl={job.imageUrl}
-                      onDetailsClick={() => handleJobDetails(job)}
-                      onApplyClick={() => handleApply(job.title)}
-                      />
-                    )}
+                    <button
+                      onClick={() => setCurrentPage(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-white/10"
+                    >
+                      <ChevronLeft />
+                    </button>
+                    <span className="text-gray-400">
+                      {currentPage} / {totalPages}
+                    </span>
+                    <button
+                      onClick={() => setCurrentPage(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-white/10"
+                    >
+                      <ChevronRight />
+                    </button>
                   </motion.div>
-                ))
-              ) : (
-                <div className="col-span-full text-center py-8">
-                  <p className="text-gray-400">
-                    No jobs found matching your filters.
-                  </p>
-                  <button
-                    className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors mt-4 border border-white/10"
-                    onClick={() =>
-                      handleFilterChange({
-                        jobType: {
-                          fullTime: false,
-                          partTime: false,
-                          contract: false,
-                        },
-                        workType: {
-                          onSite: false,
-                          remote: false,
-                          hybrid: false,
-                        },
-                        experienceLevel: {
-                          entry: false,
-                          midLevel: false,
-                          senior: false,
-                        }
-                      })
-                    }
-                  >
-                    Clear all filters
-                  </button>
-                </div>
-              )}
-            </motion.div>
-
-            {/* Job Details Modal */}
-            {selectedJob && (
-              <JobDetails
-                position={selectedJob.position}
-                title={selectedJob.title}
-                company={selectedJob.company}
-                location={selectedJob.location}
-                jobType={selectedJob.job_type}
-                workType={selectedJob.work_type}
-                description={selectedJob.description}
-                isOpen={isModalOpen}
-                onClose={handleCloseModal}
-                onApplyClick={() => handleApply(selectedJob.title)}
-                onEditClick={() => handleEdit(selectedJob)}
-                onDeleteClick={() => {}}
-                canEdit={selectedJob.userId === session?.user?.id} // Add this line
-              />
-            )}
-
-            {/* Edit Job Modal */}
-            {selectedJob && (
-              <EditJobListComponent
-                isOpen={isModalOpen}
-                onClose={handleCloseModal}
-                onSave={(jobData) => {
-                  console.log("Save job", jobData);
-                  setIsModalOpen(false);
-                }}
-                initialJobData={{
-                  title: selectedJob.title,
-                  company: selectedJob.company,
-                  location: selectedJob.location,
-                  jobType: selectedJob.job_type,
-                  workType: selectedJob.work_type,
-                  salary: selectedJob.salary,
-                  description: selectedJob.description
-                }}
-              />
-            )}
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <motion.div 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4 }}
-                className="flex justify-center items-center space-x-4 my-8"
-              >
-                <button
-                  onClick={() => setCurrentPage(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-white/10"
-                >
-                  <ChevronLeft />
-                </button>
-                <span className="text-gray-400">
-                  {currentPage} / {totalPages}
-                </span>
-                <button
-                  onClick={() => setCurrentPage(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed border border-white/10"
-                >
-                  <ChevronRight />
-                </button>
-              </motion.div>
+                )}
+              </>
             )}
           </main>
         </div>
@@ -546,6 +554,11 @@ export default function JobListings() {
       {showModal && (
         <CreateJL
           onClose={() => setShowModal(false)}
+          onSuccess={() => {
+            toast.success('Job posted successfully');
+            setShowModal(false);
+            fetchJobs(jobView); // Refresh jobs list
+          }}
         />
       )}
     </div>
