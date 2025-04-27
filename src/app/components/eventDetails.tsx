@@ -12,7 +12,7 @@ interface EventDetailsProps {
   title: string;
   organizer: string;
   location: string;
-  date: string;
+  date: Date;
   description: string;
   isOpen: boolean;
   onClose: () => void;

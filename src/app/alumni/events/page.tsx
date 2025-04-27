@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useSession } from "next-auth/react";
+import { toast } from "react-hot-toast";
+import { useState, useRef, useEffect } from "react";
 import FilterSidebar from "@/app/components/filtersEventListings";
 import EventCard from "@/app/components/alumniEventCard";
 import EventRow from "@/app/components/alumniEventRow";
 import EventDetails from "@/app/components/eventDetails";
 import SponsorshipsModal from "@/app/components/sponsorshipsModal";
-import eventData from "@/dummy_data/event.json";
 import { Event } from "@/entities/event";
 
 import CreateEvent from "@/pages/createEvent";
@@ -23,31 +24,13 @@ import {
 } from "lucide-react";
 import { motion } from "framer-motion";
 
-// Convert JSON data to match Event interface
-const convertEventData = (data: any): Event => ({
-  _id: data._id,
-  name: data.title,
-  organizer: data.organizer,
-  description: data.description,
-  type: "social", // Default value since it's not in JSON
-  startDate: new Date(data.date),
-  endDate: new Date(data.date), // Using same date since end date is not in JSON
-  location: data.location,
-  imageUrl: data.imageUrl,
-  sponsorship: {
-    enabled: data.sponsorship?.enabled || false,
-    sponsors: data.sponsorship?.requests?.map((r: any) => r.companyName) || []
-  },
-  rsvp: {
-    enabled: data.rsvp?.enabled || false,
-    options: data.rsvp?.options || []
-  },
-  wouldGo: [],
-  wouldNotGo: [],
-  wouldMaybeGo: []
-});
-
 export default function EventListings() {
+  const { data: session } = useSession();
+  // Add loading and error states
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [events, setEvents] = useState<Event[]>([]);
+
   // Add Event modal state
   const [showEventModal, setShowEventModal] = useState(false);
 
@@ -84,6 +67,9 @@ export default function EventListings() {
     }
   });
 
+  // Add this after other state declarations
+  const [timelineFilter, setTimelineFilter] = useState<'all' | 'ongoing' | 'finished'>('all');
+
   // Handle filter changes from FilterSidebar
   const handleFilterChange = (filters: any) => {
     // Create a new object reference to ensure React detects the change
@@ -92,32 +78,94 @@ export default function EventListings() {
     setCurrentPage(1);
   };
 
-  // Apply search/filters
-  const filteredEvents = eventData
-    .map(convertEventData)
-    .filter((event) => {
-      // Search filter
-      const searchMatch =
-        event.name.toLowerCase().includes(search.toLowerCase()) ||
-        event.organizer.toLowerCase().includes(search.toLowerCase()) ||
-        event.description.toLowerCase().includes(search.toLowerCase());
+  // Fetch events with timeline parameter
+  useEffect(() => {
+    const fetchEvents = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(`/api/events?timeline=${timelineFilter}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch events');
+        }
+        const data = await response.json();
+        setEvents(data);
+      } catch (err) {
+        console.error('Error fetching events:', err);
+        setError('Failed to load events');
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      // Event Type filter
-      const eventTypeFiltersActive =
-        activeFilters.eventType.social ||
-        activeFilters.eventType.academic ||
-        activeFilters.eventType.career ||
-        activeFilters.eventType.other;
+    fetchEvents();
+  }, [timelineFilter]); // Re-fetch when timeline filter changes
 
-      const eventTypeMatch =
-        !eventTypeFiltersActive ||
-        (activeFilters.eventType.social && event.type === "social") ||
-        (activeFilters.eventType.academic && event.type === "academic") ||
-        (activeFilters.eventType.career && event.type === "career") ||
-        (activeFilters.eventType.other && event.type === "other");
+  // Update event response handlers
+  const handleRespond = async (event: Event, response: 'go' | 'notGo' | 'maybeGo') => {
+    try {
+      const endpoint = `/api/events/${event._id}/${response === 'go' ? 'going' : response === 'notGo' ? 'not-going' : 'maybe-going'}`;
+      const res = await fetch(endpoint, { method: 'POST' });
+      
+      if (!res.ok) throw new Error('Failed to update response');
 
-      return searchMatch && eventTypeMatch;
-    });
+      // Update local state
+      const updatedEvents = events.map(e => {
+        if (e._id === event._id) {
+          // Remove from other arrays and add to the selected one
+          const updatedEvent = {
+            ...e,
+            wouldGo: response === 'go' ? [...e.wouldGo, session?.user?.id] : e.wouldGo.filter(id => id !== session?.user?.id),
+            wouldNotGo: response === 'notGo' ? [...e.wouldNotGo, session?.user?.id] : e.wouldNotGo.filter(id => id !== session?.user?.id),
+            wouldMaybeGo: response === 'maybeGo' ? [...e.wouldMaybeGo, session?.user?.id] : e.wouldMaybeGo.filter(id => id !== session?.user?.id)
+          };
+          return updatedEvent;
+        }
+        return e;
+      });
+
+      setEvents(updatedEvents);
+      toast.success('Response updated successfully');
+    } catch (err) {
+      console.error('Error updating response:', err);
+      toast.error('Failed to update response');
+    }
+  };
+
+  // Helper function to determine event status
+  const getEventStatus = (event: Event) => {
+    const now = new Date().getTime();
+    const start = new Date(event.startDate).getTime();
+    const end = new Date(event.endDate).getTime();
+
+    if (now < start) return 'upcoming';
+    if (now > end) return 'finished';
+    return 'ongoing';
+  };
+
+  // Apply only search and type filters since timeline is handled by API
+  const filteredEvents = events.filter((event) => {
+    // Search filter
+    const searchMatch =
+      event.name.toLowerCase().includes(search.toLowerCase()) ||
+      event.organizer.toLowerCase().includes(search.toLowerCase()) ||
+      event.description.toLowerCase().includes(search.toLowerCase());
+
+    // Event Type filter
+    const eventTypeFiltersActive =
+      activeFilters.eventType.social ||
+      activeFilters.eventType.academic ||
+      activeFilters.eventType.career ||
+      activeFilters.eventType.other;
+
+    const eventTypeMatch =
+      !eventTypeFiltersActive ||
+      (activeFilters.eventType.social && event.type === "social") ||
+      (activeFilters.eventType.academic && event.type === "academic") ||
+      (activeFilters.eventType.career && event.type === "career") ||
+      (activeFilters.eventType.other && event.type === "other");
+
+    return searchMatch && eventTypeMatch;
+  });
 
   // Handle Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -143,11 +191,6 @@ export default function EventListings() {
 
   const handleCloseDetailsModal = () => {
     setShowDetailsModal(false);
-  };
-
-  // Handle Respond to Event button click
-  const handleRespond = (eventTitle: string) => {
-    console.log(`Responding to ${eventTitle}`);
   };
 
   // Handle Sponsor Details button click
@@ -233,6 +276,40 @@ export default function EventListings() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Timeline Filter - Added Section */}
+        <div className="flex justify-center gap-2 mb-8">
+          <button
+            onClick={() => setTimelineFilter('all')}
+            className={`px-4 py-2 rounded-lg transition-colors border ${
+              timelineFilter === 'all'
+                ? 'bg-white/20 text-white border-white/20'
+                : 'bg-white/5 text-gray-300 border-white/10 hover:bg-white/10'
+            }`}
+          >
+            All Events
+          </button>
+          <button
+            onClick={() => setTimelineFilter('ongoing')}
+            className={`px-4 py-2 rounded-lg transition-colors border ${
+              timelineFilter === 'ongoing'
+                ? 'bg-white/20 text-white border-white/20'
+                : 'bg-white/5 text-gray-300 border-white/10 hover:bg-white/10'
+            }`}
+          >
+            Ongoing Events
+          </button>
+          <button
+            onClick={() => setTimelineFilter('finished')}
+            className={`px-4 py-2 rounded-lg transition-colors border ${
+              timelineFilter === 'finished'
+                ? 'bg-white/20 text-white border-white/20'
+                : 'bg-white/5 text-gray-300 border-white/10 hover:bg-white/10'
+            }`}
+          >
+            Past Events
+          </button>
+        </div>
+
         {/* Search and View Toggle */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
@@ -366,7 +443,7 @@ export default function EventListings() {
                         title={event.name}
                         organizer={event.organizer}
                         location={event.location}
-                        date={event.startDate.toISOString()}
+                        date={event.startDate}
                         description={event.description}
                         imageUrl={event.imageUrl || ''}
                         onDetailsClick={() => handleEventDetails(event)}
@@ -378,7 +455,7 @@ export default function EventListings() {
                         title={event.name}
                         organizer={event.organizer}
                         location={event.location}
-                        date={event.startDate.toISOString()}
+                        date={event.startDate}
                         description={event.description}
                         imageUrl={event.imageUrl || ''}
                         onDetailsClick={() => handleEventDetails(event)}
@@ -418,11 +495,11 @@ export default function EventListings() {
                 title={selectedEvent.name}
                 organizer={selectedEvent.organizer}
                 location={selectedEvent.location}
-                date={selectedEvent.startDate.toISOString()}
+                date={selectedEvent.startDate}
                 description={selectedEvent.description}
                 isOpen={showDetailsModal}
                 onClose={handleCloseDetailsModal}
-                onRSVPClick={() => handleRespond(selectedEvent.name)}
+                onRSVPClick={() => handleRespond(selectedEvent, 'go')}
                 onEditClick={() => handleEdit(selectedEvent)}
                 onDeleteClick={() => handleDelete(selectedEvent._id || '')}
               />

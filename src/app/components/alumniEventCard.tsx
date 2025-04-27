@@ -1,19 +1,29 @@
 "use client";
 import React from "react";
-import { Calendar, MapPin, Users } from "lucide-react";
+import { Calendar, MapPin, Users, Image as ImageIcon } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface EventCardProps {
   title: string;
   organizer: string;
   location: string;
-  date: string;
+  date: Date;
   description: string;
   imageUrl: string;
   onDetailsClick: () => void;
   onSponsorClick: () => void;
   onApplyClick: () => void;
 }
+
+const DefaultEventBanner = ({ title }: { title: string }) => (
+  <div className="relative h-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center p-4">
+    <div className="text-center">
+      <ImageIcon className="w-12 h-12 mx-auto mb-2 text-white/40" />
+      <h3 className="text-xl font-bold text-white/80 line-clamp-2">{title}</h3>
+    </div>
+    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+  </div>
+);
 
 const EventCard: React.FC<EventCardProps> = ({
   title,
@@ -34,12 +44,18 @@ const EventCard: React.FC<EventCardProps> = ({
     >
       {/* Image Section */}
       <div className="relative h-48">
-        <img 
-          src={imageUrl} 
-          alt={`${title} event banner`} 
-          className="w-full h-full object-cover" 
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+        {imageUrl ? (
+          <>
+            <img 
+              src={imageUrl} 
+              alt={`${title} event banner`} 
+              className="w-full h-full object-cover" 
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+          </>
+        ) : (
+          <DefaultEventBanner title={title} />
+        )}
       </div>
 
       {/* Content Section */}
