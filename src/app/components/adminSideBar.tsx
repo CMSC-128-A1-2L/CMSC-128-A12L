@@ -31,12 +31,20 @@ export default function AdminSidebar({
   role,
 }: SidebarProps) {
   const sidebarItems = {
-    main: [
+    general: [
       {
         name: "Dashboard",
         icon: <LayoutDashboardIcon size={20} />,
         path: "/admin",
       },
+      {
+        name: "Reports",
+        icon: <MessageCircleWarningIcon size={20} />,
+        path: "/admin/reports",
+      },
+      { name: "Logs", icon: <LogsIcon size={20} />, path: "/admin/logs" },
+    ],
+    management: [
       {
         name: "Manage Users",
         icon: <Users size={20} />,
@@ -52,19 +60,11 @@ export default function AdminSidebar({
         icon: <CalendarCogIcon size={20} />,
         path: "/admin/events",
       },
-    ],
-    management: [
       {
         name: "Communications",
         icon: <Phone size={20} />,
         path: "/admin/communications",
       },
-      {
-        name: "Reports",
-        icon: <MessageCircleWarningIcon size={20} />,
-        path: "/admin/reports",
-      },
-      { name: "Logs", icon: <LogsIcon size={20} />, path: "/admin/logs" },
     ],
   };
 
@@ -87,72 +87,56 @@ export default function AdminSidebar({
           <X size={24} />
         </button>
       </div>
-
       <nav className="mt-4 flex flex-col h-[calc(100vh-80px)]">
-        <div className="flex-1 px-2">
-          <div className="mb-6">
-            <h3 className="text-gray-500 text-sm font-medium mb-2 px-4">
-              Main
-            </h3>
-            {sidebarItems.main.map((item, index) => (
-              <Link
-                key={index}
-                href={item.path}
-                className="flex items-center px-4 py-3 text-gray-700 rounded-lg transition-all duration-200 cursor-pointer group hover:bg-gray-50"
-                onClick={() => setSidebarOpen(false)}
-              >
-                <motion.span
-                  className="mr-3 text-[#1a1f4d] group-hover:text-[#0d47a1]"
-                  whileHover={{ scale: 1.1 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
+        <div className="mb-6">
+          <h3 className="text-gray-500 text-sm font-medium mb-2 px-4">
+            General
+          </h3>
+          <ul className="space-y-1 px-2">
+            {sidebarItems.general.map((item, index) => (
+              <li key={index}>
+                <Link
+                  href={item.path}
+                  className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer group"
+                  onClick={() => setSidebarOpen(false)}
                 >
-                  {item.icon}
-                </motion.span>
-                <motion.span
-                  className="font-medium"
-                  whileHover={{ x: 2 }}
-                  transition={{ type: "tween", duration: 0.2 }}
-                >
-                  {item.name}
-                </motion.span>
-              </Link>
+                  <span className="mr-3 text-[#1a1f4d] group-hover:text-[#0d47a1] transition-colors">
+                    {item.icon}
+                  </span>
+                  <span className="font-medium">{item.name}</span>
+                </Link>
+              </li>
             ))}
-          </div>
-
-          <div className="h-px bg-gray-200 mx-4 my-4" />
-
-          <div className="mb-6">
-            <h3 className="text-gray-500 text-sm font-medium mb-2 px-4">
-              Management
-            </h3>
-            {sidebarItems.management.map((item, index) => (
-              <Link
-                key={index}
-                href={item.path}
-                className="flex items-center px-4 py-3 text-gray-700 rounded-lg transition-all duration-200 cursor-pointer group hover:bg-gray-50"
-                onClick={() => setSidebarOpen(false)}
-              >
-                <motion.span
-                  className="mr-3 text-[#1a1f4d] group-hover:text-[#0d47a1]"
-                  whileHover={{ scale: 1.1 }}
-                  transition={{ type: "spring", stiffness: 400, damping: 10 }}
-                >
-                  {item.icon}
-                </motion.span>
-                <motion.span
-                  className="font-medium"
-                  whileHover={{ x: 2 }}
-                  transition={{ type: "tween", duration: 0.2 }}
-                >
-                  {item.name}
-                </motion.span>
-              </Link>
-            ))}
-          </div>
+          </ul>
         </div>
-
+        <div className="h-px bg-gray-200 mx-4 my-4" />
+        <div className="mb-6">
+          <h3 className="text-gray-500 text-sm font-medium mb-2 px-4">
+            Management
+          </h3>
+          <ul className="space-y-1 px-2">
+            {sidebarItems.management.map((item, index) => (
+              <li key={index}>
+                <Link
+                  href={item.path}
+                  className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer group"
+                  onClick={() => setSidebarOpen(false)}
+                >
+                  <span className="mr-3 text-[#1a1f4d] group-hover:text-[#0d47a1] transition-colors">
+                    {item.icon}
+                  </span>
+                  <span className="font-medium">{item.name}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="h-px bg-gray-200 mx-4 my-4" />
         {role == "admin" && (
           <div className="mt-auto border-t pt-2 px-2 pb-4">
+            <h3 className="text-gray-500 text-sm font-medium mb-2 px-4">
+              Others
+            </h3>
             <Link
               href="/alumni"
               onClick={() => setSidebarOpen(false)}
