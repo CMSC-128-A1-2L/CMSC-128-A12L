@@ -25,6 +25,7 @@ import {
 import { motion } from "framer-motion";
 import { Popover } from '@headlessui/react';
 import { Check, ThumbsUp, ThumbsDown, HelpCircle } from 'lucide-react';
+import ConstellationBackground from "@/app/components/constellationBackground";
 
 export default function EventListings() {
   const { data: session } = useSession();
@@ -340,8 +341,9 @@ export default function EventListings() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <div className="relative text-white -mt-16 pt-16">
+      <div className="relative text-white -mt-16 pt-16 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-[#1a1f4d]/90 to-[#2a3f8f]/90"></div>
+        <ConstellationBackground />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -352,8 +354,8 @@ export default function EventListings() {
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
               Events
             </h1>
-            <p className="text-xl text-gray-200 max-w-2xl mx-auto">
-              Discover and participate in alumni events, from networking opportunities to professional development.
+            <p className="text-xl text-gray-200">
+              Stay connected with upcoming alumni gatherings and activities
             </p>
           </motion.div>
         </div>
@@ -373,7 +375,7 @@ export default function EventListings() {
           >
             All Events
           </button>
-          <button
+            <button
             onClick={() => setTimelineFilter('ongoing')}
             className={`px-4 py-2 rounded-lg transition-colors border ${
               timelineFilter === 'ongoing'
@@ -382,8 +384,8 @@ export default function EventListings() {
             }`}
           >
             Ongoing Events
-          </button>
-          <button
+            </button>
+            <button
             onClick={() => setTimelineFilter('finished')}
             className={`px-4 py-2 rounded-lg transition-colors border ${
               timelineFilter === 'finished'
@@ -392,8 +394,8 @@ export default function EventListings() {
             }`}
           >
             Past Events
-          </button>
-        </div>
+            </button>
+          </div>
 
         {/* Search and View Toggle */}
         <motion.div 
@@ -455,13 +457,13 @@ export default function EventListings() {
               </button>
             </div>
             {showEventModal && <CreateEvent onClose={() => setShowEventModal(false)} />}
-            <FilterSidebar
-              isOpen={filterSidebarOpen}
-              setIsOpen={setFilterSidebarOpen}
-              onFilterChange={handleFilterChange}
+              <FilterSidebar
+                isOpen={filterSidebarOpen}
+                setIsOpen={setFilterSidebarOpen}
+                onFilterChange={handleFilterChange}
               showModal={handleAddEvent}
               activeFilters={activeFilters}
-            />
+              />
           </motion.aside>
 
           <main className="flex-1">
@@ -605,7 +607,7 @@ export default function EventListings() {
 
             {/* Sponsorship Details Modal */}
             {selectedEvent && (
-              <SponsorshipsModal
+                <SponsorshipsModal
                 onClose={handleCloseSponsorModal}
               />
             )}

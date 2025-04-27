@@ -9,6 +9,8 @@ import EditJobListComponent from "@/app/components/editJobList";
 import CreateJL from "@/app/components/createJL";
 import { useSession } from "next-auth/react";
 import { toast } from "react-hot-toast";
+import ConstellationBackground from "@/app/components/constellationBackground";
+// Refactor add job list to use modal than page
 
 import {
   Search,
@@ -185,8 +187,9 @@ export default function JobListings() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <div className="relative text-white -mt-16 pt-16">
+      <div className="relative text-white -mt-16 pt-16 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-[#1a1f4d]/90 to-[#2a3f8f]/90"></div>
+        <ConstellationBackground />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -195,10 +198,10 @@ export default function JobListings() {
             className="text-center"
           >
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              Job Listings
+              Job Board
             </h1>
-            <p className="text-xl text-gray-200 max-w-2xl mx-auto">
-              Explore career opportunities and find your next professional role.
+            <p className="text-xl text-gray-200">
+              Discover career opportunities and connect with employers
             </p>
           </motion.div>
         </div>
