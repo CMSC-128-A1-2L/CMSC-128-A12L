@@ -67,7 +67,9 @@ export default function FilterSidebar({
     <div className="flex-grow">
       {/* Sidebar */}
       <div
-        className={`flex flex-col flex-start gap-3 w-64 bg-[#0f172a] p-4 rounded-xl shadow-lg ${
+        className={`flex flex-col flex-start gap-3 w-64 
+          bg-gradient-to-r from-[#1a1f4d]/90 to-[#2a3f8f]/90
+          p-4 rounded-xl shadow-lg ${
           isOpen ? "block" : "hidden"
         } sticky top-0 h-full overflow-y-auto`}
       >
@@ -82,7 +84,7 @@ export default function FilterSidebar({
         </div>
 
         {/* Event Type Filter */}
-        <fieldset className="fieldset p-4 bg-white/5 rounded-box gap-3">
+        <fieldset className="fieldset p-4 bg-black/10 rounded-box gap-3">
           <h3 className="font-semibold mb-2 text-white/90">Event Type</h3>
 
           <label className="fieldset-label text-white/70 flex items-center gap-2 hover:bg-white/10 p-2 rounded-lg transition-colors">
