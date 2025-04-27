@@ -19,6 +19,7 @@
     "@tailwindcss/oxide": "^4.0.15",
     "bcrypt": "^5.1.1",
     "chart.js": "^4.4.9",
+    "chartjs-plugin-datalabels": "^2.2.0",
     "class-variance-authority": "^0.7.1",
     "cloudinary": "^2.5.1",
     "clsx": "^2.1.1",

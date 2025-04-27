@@ -2,9 +2,10 @@
 
 import { Pie, Doughnut } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import ChartDataLabels from "chartjs-plugin-datalabels";
 
 // Register ChartJS components
-ChartJS.register(ArcElement, Tooltip, Legend);
+ChartJS.register(ArcElement, Tooltip, Legend, ChartDataLabels);
 
 interface PieChartProps {
   title: string;
@@ -34,8 +35,18 @@ export default function PieChart({ title, data, type = "pie" }: PieChartProps) {
             display: true,
             text: title,
           },
+          datalabels: {
+            display: true,
+            color: "black",
+            font: {
+              weight: "bold",
+              size: 14,
+            },
+            formatter: (value: number) => value,
+          },
         },
       }}
+      plugins={[ChartDataLabels]}
     />
   );
 }
