@@ -10,7 +10,7 @@ import DonationsReports from "./components/DonationsReports";
 type ReportType = "alumni" | "jobs" | "events" | "donations" | null;
 
 export default function ReportsPage() {
-  const [selectedReport, setSelectedReport] = useState<ReportType>(null);
+  const [selectedReport, setSelectedReport] = useState<ReportType>("alumni");
 
   const renderReport = () => {
     switch (selectedReport) {

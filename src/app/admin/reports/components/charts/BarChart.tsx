@@ -21,36 +21,6 @@ ChartJS.register(
   Legend
 );
 
-// Create a custom plugin to draw labels
-ChartJS.register({
-  id: "customLabels",
-  afterDatasetsDraw(chart) {
-    const { ctx } = chart;
-    chart.data.datasets.forEach((dataset, i) => {
-      const meta = chart.getDatasetMeta(i);
-      if (!meta.hidden) {
-        meta.data.forEach((element, index) => {
-          // Get value
-          const value = dataset.data[index] as number;
-
-          // Get bar properties using element
-          const { x } = element;
-          const y = element.y - 10; // Position above the bar
-
-          // Set styling
-          ctx.fillStyle = "black";
-          ctx.font = "bold 12px Arial";
-          ctx.textAlign = "center";
-          
-
-          // Draw value above bar
-          ctx.fillText(value.toString(), x, y);
-        });
-      }
-    });
-  },
-});
-
 interface BarChartProps {
   title: string;
   data: {
@@ -64,6 +34,35 @@ interface BarChartProps {
 }
 
 export default function BarChart({ title, data }: BarChartProps) {
+  // Custom plugin for value labels (only for this chart)
+  const valueLabelsPlugin = {
+    id: "customLabels",
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    afterDatasetsDraw(chart: any) {
+      const { ctx } = chart;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      chart.data.datasets.forEach((dataset: any, i: any) => {
+        const meta = chart.getDatasetMeta(i);
+        if (!meta.hidden) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          meta.data.forEach((element: any, index: any) => {
+            // Get value
+            const value = dataset.data[index] as number;
+            // Get bar properties using element
+            const { x } = element;
+            const y = element.y - 10; // Position above the bar
+            // Set styling
+            ctx.fillStyle = "black";
+            ctx.font = "bold 12px Arial";
+            ctx.textAlign = "center";
+            // Draw value above bar
+            ctx.fillText(value.toString(), x, y);
+          });
+        }
+      });
+    },
+  };
+
   return (
     <Bar
       data={data}
@@ -87,6 +86,7 @@ export default function BarChart({ title, data }: BarChartProps) {
           },
         },
       }}
+      plugins={[valueLabelsPlugin]}
     />
   );
 }
