@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import FilterSidebar from "@/app/components/filtersJobListings";
 import JobCard from "@/app/components/jobContentCard";
 import JobRow from "@/app/components/jobContentRow";
 import JobDetails from "@/app/components/jobDetails";
 import EditJobListComponent from "@/app/components/editJobList";
-import jobData from "@/dummy_data/job.json";
 import CreateJL from "@/app/components/createJL";
+import { useSession } from "next-auth/react";
+import { toast } from "react-hot-toast";
 import ConstellationBackground from "@/app/components/constellationBackground";
 // Refactor add job list to use modal than page
 
@@ -23,6 +24,34 @@ import {
 import { motion } from "framer-motion";
 
 export default function JobListings() {
+  const { data: session } = useSession();
+  // Add state for jobs
+  const [jobs, setJobs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [jobView, setJobView] = useState<'all' | 'user'>('all');
+
+  // Add fetch function
+  const fetchJobs = async (filter: 'all' | 'user' = 'all') => {
+    try {
+      setLoading(true);
+      const response = await fetch(`/api/alumni/opportunities?filter=${filter}`);
+      if (!response.ok) throw new Error('Failed to fetch jobs');
+      const data = await response.json();
+      console.log(data)
+      setJobs(data);
+    } catch (error) {
+      console.error('Error fetching jobs:', error);
+      toast.error('Failed to load jobs');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch jobs on mount and when view changes
+  useEffect(() => {
+    fetchJobs(jobView);
+  }, [jobView]);
+
   // Sidebar state
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
@@ -73,8 +102,8 @@ export default function JobListings() {
     setCurrentPage(1);
   };
 
-  // Apply search/filters
-  const filteredJobs = jobData.filter((job) => {
+  // Update filtered jobs to use fetched data instead of dummy data
+  const filteredJobs = jobs.filter((job) => {
     const searchMatch =
       job.title.toLowerCase().includes(search.toLowerCase()) ||
       job.company.toLowerCase().includes(search.toLowerCase()) ||
@@ -187,6 +216,30 @@ export default function JobListings() {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="flex items-center gap-4 py-4 mb-8"
         >
+          {/* Jobs filter toggle - left */}
+          <div className="flex items-center gap-2 bg-white/5 rounded-lg p-1 border border-white/10">
+            <button
+              onClick={() => setJobView('all')}
+              className={`px-3 py-1.5 rounded-md text-sm transition-colors ${
+                jobView === 'all'
+                  ? 'bg-white/10 text-white'
+                  : 'text-white/70 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              All Jobs
+            </button>
+            <button
+              onClick={() => setJobView('user')}
+              className={`px-3 py-1.5 rounded-md text-sm transition-colors ${
+                jobView === 'user'
+                  ? 'bg-white/10 text-white'
+                  : 'text-white/70 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              My Jobs
+            </button>
+          </div>
+
           {/* Search bar - center */}
           <div className="flex-1 max-w-2xl mx-auto">
             <div className="relative">
@@ -358,11 +411,12 @@ export default function JobListings() {
                   >
                     {isGridView ? (
                       <JobCard
+                        tags={job.tags}
+                        workMode={job.workMode.charAt(0).toUpperCase() + job.workMode.slice(1)}
+                        position={job.position}
                         title={job.title}
                         company={job.company}
                         location={job.location}
-                        jobType={job.job_type}
-                        workType={job.work_type}
                         description={job.description}
                         imageUrl={job.imageUrl}
                         onDetailsClick={() => handleJobDetails(job)}
@@ -370,15 +424,16 @@ export default function JobListings() {
                       />
                     ) : (
                       <JobRow
-                        title={job.title}
-                        company={job.company}
-                        location={job.location}
-                        jobType={job.job_type}
-                        workType={job.work_type}
-                        description={job.description}
-                        imageUrl={job.imageUrl}
-                        onDetailsClick={() => handleJobDetails(job)}
-                        onApplyClick={() => handleApply(job.title)}
+                      tags={job.tags}
+                      workMode={job.workMode.charAt(0).toUpperCase() + job.workMode.slice(1)}
+                      position={job.position}
+                      title={job.title}
+                      company={job.company}
+                      location={job.location}
+                      description={job.description}
+                      imageUrl={job.imageUrl}
+                      onDetailsClick={() => handleJobDetails(job)}
+                      onApplyClick={() => handleApply(job.title)}
                       />
                     )}
                   </motion.div>
@@ -419,12 +474,12 @@ export default function JobListings() {
             {/* Job Details Modal */}
             {selectedJob && (
               <JobDetails
+                position={selectedJob.position}
                 title={selectedJob.title}
                 company={selectedJob.company}
                 location={selectedJob.location}
                 jobType={selectedJob.job_type}
                 workType={selectedJob.work_type}
-                salary={selectedJob.salary}
                 description={selectedJob.description}
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}

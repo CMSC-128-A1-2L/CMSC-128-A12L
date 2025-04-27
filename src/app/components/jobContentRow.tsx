@@ -1,28 +1,40 @@
 "use client";
 import React from "react";
-import { Building, MapPin, Briefcase, Clock } from "lucide-react";
+import { Building2, MapPin, Briefcase, Clock, Image as ImageIcon } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface JobCardProps {
   title: string;
   company: string;
+  position: string;
   location: string;
-  jobType: string;
-  workType: string;
   description: string;
-  imageUrl: string;
+  workMode: string;
+  tags: string[];
+  imageUrl?: string;
   onDetailsClick: () => void;
   onApplyClick: () => void;
 }
 
+const DefaultJobBanner = ({ title }: { title: string }) => (
+  <div className="relative h-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center p-4">
+    <div className="text-center">
+      <ImageIcon className="w-8 h-8 mx-auto mb-1 text-white/40" />
+      <h3 className="text-sm font-bold text-white/80 line-clamp-2">{title}</h3>
+    </div>
+    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+  </div>
+);
+
 const JobRow: React.FC<JobCardProps> = ({
   title,
   company,
+  position,
   location,
-  jobType,
-  workType,
   description,
-  imageUrl,
+  workMode,
+  tags,
+  imageUrl = "/default-job-banner.jpg",
   onDetailsClick,
   onApplyClick,
 }) => {
@@ -34,13 +46,19 @@ const JobRow: React.FC<JobCardProps> = ({
     >
       <div className="flex flex-col md:flex-row gap-4 p-4">
         {/* Image Section */}
-        <div className="relative w-full md:w-48 h-32 flex-shrink-0">
-          <img
-            src={imageUrl}
-            alt={`${company} job banner`}
-            className="w-full h-full object-cover rounded-lg"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent rounded-lg" />
+        <div className="relative w-full md:w-48 h-32 flex-shrink-0 rounded-lg overflow-hidden">
+          {imageUrl ? (
+            <>
+              <img
+                src={imageUrl}
+                alt={`${title} job banner`}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+            </>
+          ) : (
+            <DefaultJobBanner title={title} />
+          )}
         </div>
 
         {/* Content Section */}
@@ -49,27 +67,41 @@ const JobRow: React.FC<JobCardProps> = ({
           
           <div className="space-y-2 mb-2">
             <div className="flex items-center gap-2 text-sm text-gray-300">
-              <Building size={16} className="text-gray-400" />
+              <Building2 size={16} className="text-gray-400" />
               <span>{company}</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-gray-300">
+              <Briefcase size={16} className="text-gray-400" />
+              <span>{position}</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-gray-300">
               <MapPin size={16} className="text-gray-400" />
               <span>{location}</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-gray-300">
-              <Briefcase size={16} className="text-gray-400" />
-              <span>{jobType}</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-gray-300">
               <Clock size={16} className="text-gray-400" />
-              <span>{workType}</span>
+              <span>{workMode}</span>
             </div>
           </div>
 
-          <p className="text-sm text-gray-400 line-clamp-2">{description}</p>
+          <p className="text-sm text-gray-400 line-clamp-2 mb-4">{description}</p>
+
+          {/* Tags */}
+          {tags && tags.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-4">
+              {tags.map((tag, index) => (
+                <span 
+                  key={index}
+                  className="px-2 py-1 bg-white/5 rounded-full text-xs text-gray-300"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
 
           {/* Action Buttons */}
-          <div className="flex flex-wrap gap-2 mt-4">
+          <div className="flex flex-wrap gap-2">
             <button
               onClick={onDetailsClick}
               className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors border border-white/10"

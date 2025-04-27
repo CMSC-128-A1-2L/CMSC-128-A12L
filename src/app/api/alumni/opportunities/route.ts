@@ -8,16 +8,26 @@ import { Opportunity } from "@/entities/opportunity";
 
 export async function GET(request: NextRequest) {
     try {
-        // Check alumni authentication
         const session = await getServerSession(authOptions);
         if (!session || !session.user.role.includes(UserRole.ALUMNI)) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const opportunityRepository = getOpportunityRepository();
-        const opportunities = await opportunityRepository.getAllOpportunities();
+        // Get filter from URL params
+        const { searchParams } = new URL(request.url);
+        const filter = searchParams.get('filter');
         
-        return NextResponse.json(opportunities);
+        const opportunityRepository = getOpportunityRepository();
+
+        if (filter === 'user') {
+            // Get only user's opportunities
+            const opportunities = await opportunityRepository.getOpportunitiesByUserId(session.user.id);
+            return NextResponse.json(opportunities);
+        } else {
+            // Get all opportunities
+            const opportunities = await opportunityRepository.getAllOpportunities();
+            return NextResponse.json(opportunities);
+        }
     } catch (error) {
         console.error("Failed to fetch opportunities:", error);
         return NextResponse.json(
