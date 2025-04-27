@@ -177,25 +177,25 @@ export default function NotificationsPage() {
         <h1 className="text-2xl font-bold mb-4 text-[#0c0051]">Notifications</h1>
   
         {/* Tab Navigation */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex space-x-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+          <div className="flex flex-wrap gap-2 sm:gap-4">
             <button
-                        className={`px-4 py-2 rounded-md transition-colors duration-200 ${
-                            tab === 'all' 
-                                ? 'bg-[#0c0051] text-white' 
-                                : 'bg-gray-100 text-[#0c0051] hover:bg-gray-200'
-                        }`}
+              className={`px-4 py-2 rounded-md transition-colors duration-200 ${
+                tab === 'all' 
+                  ? 'bg-[#0c0051] text-white' 
+                  : 'bg-gray-100 text-[#0c0051] hover:bg-gray-200'
+              }`}
               onClick={() => setTab('all')}
             >
               All Notifications
             </button>
             <button
-                        className={`px-4 py-2 rounded-md transition-colors duration-200 ${
-                            tab === 'unread' 
-                                ? 'bg-[#0c0051] text-white' 
-                                : 'bg-gray-100 text-[#0c0051] hover:bg-gray-200'
-                        }`}
-                        onClick={() => setTab('unread')}
+              className={`px-4 py-2 rounded-md transition-colors duration-200 ${
+                tab === 'unread' 
+                  ? 'bg-[#0c0051] text-white' 
+                  : 'bg-gray-100 text-[#0c0051] hover:bg-gray-200'
+              }`}
+              onClick={() => setTab('unread')}
             >
               Unread Notifications
             </button>
@@ -203,7 +203,7 @@ export default function NotificationsPage() {
   
           {/* Mark All as Read Button */}
           <button
-                    className="px-4 py-2 bg-[#0c0051] text-white rounded-md hover:bg-[#0c0051]/90 transition-colors duration-200"
+            className="px-4 py-2 bg-[#0c0051] text-white rounded-md hover:bg-[#0c0051]/90 transition-colors duration-200"
             onClick={handleMarkAllAsRead}
           >
             Mark all as read
@@ -224,19 +224,19 @@ export default function NotificationsPage() {
               >
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
-                    <p className="font-semibold">{notif.message}</p>
-                                    <div className="flex items-center space-x-2">
-                                        <span className="text-sm text-gray-500 group-hover:text-gray-300">
+                    <p className="font-semibold text-sm sm:text-base">{notif.message}</p>
+                                    <div className="flex flex-wrap items-center gap-1 sm:gap-2">
+                                        <span className="text-xs sm:text-sm text-gray-500 group-hover:text-gray-300">
                                             {formatTimeAgo(notif.createdAt)} ago
                                         </span>
-                                        <span className="text-sm text-gray-500 group-hover:text-gray-300">•</span>
-                                        <span className="text-sm text-gray-500 capitalize group-hover:text-gray-300">
+                                        <span className="text-xs sm:text-sm text-gray-500 group-hover:text-gray-300">•</span>
+                                        <span className="text-xs sm:text-sm text-gray-500 capitalize group-hover:text-gray-300">
                                             {notif.type}
                                         </span>
                                         {!notif.userId && (
                                             <>
-                                                <span className="text-sm text-gray-500 group-hover:text-gray-300">•</span>
-                                                <span className="text-sm text-gray-500 group-hover:text-gray-300">
+                                                <span className="text-xs sm:text-sm text-gray-500 group-hover:text-gray-300">•</span>
+                                                <span className="text-xs sm:text-sm text-gray-500 group-hover:text-gray-300">
                                                     Global
                                                 </span>
                                             </>
