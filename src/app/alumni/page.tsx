@@ -28,25 +28,81 @@ interface DashboardStats {
   upcomingEvents: number;
   jobOpportunities: number;
   unreadNotifications: number;
+  trends: {
+    connections: string;
+    events: string;
+    jobs: string;
+    notifications: string;
+  };
 }
 
 export default function AlumniDashboard() {
   const { data: session } = useSession();
+  const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<DashboardStats>({
     connections: 0,
     upcomingEvents: 0,
     jobOpportunities: 0,
-    unreadNotifications: 0
+    unreadNotifications: 0,
+    trends: {
+      connections: "",
+      events: "",
+      jobs: "",
+      notifications: ""
+    }
   });
 
   useEffect(() => {
-    setStats({
-      connections: 42,
-      upcomingEvents: 3,
-      jobOpportunities: 5,
-      unreadNotifications: 2
-    });
-  }, []);
+    const fetchDashboardStats = async () => {
+      setLoading(true);
+      try {
+        // Get current date and last week's date
+        const now = new Date();
+        const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+        // Fetch alumni with timestamps
+        const alumniResponse = await fetch('/api/users?includeTimestamp=true');
+        const alumniData = await alumniResponse.json();
+        const newAlumniCount = alumniData.filter((a: any) => new Date(a.createdAt) > lastWeek).length;
+        
+        // Fetch events
+        const eventsResponse = await fetch('/api/events?timeline=ongoing');
+        const eventsData = await eventsResponse.json();
+        const newEventsCount = eventsData.filter((e: any) => new Date(e.createdAt) > lastWeek).length;
+        
+        // Fetch job opportunities
+        const jobsResponse = await fetch('/api/alumni/opportunities');
+        const jobsData = await jobsResponse.json();
+        const newJobsCount = jobsData.filter((j: any) => new Date(j.createdAt) > lastWeek).length;
+        
+        // Fetch notifications
+        const notificationsResponse = await fetch(`/api/notifications?userId=${session?.user?.id}&unread=true`);
+        const notificationsData = await notificationsResponse.json();
+        const newNotificationsCount = notificationsData.filter((n: any) => new Date(n.createdAt) > lastWeek).length;
+
+        setStats({
+          connections: alumniData.length || 0,
+          upcomingEvents: eventsData.length || 0,
+          jobOpportunities: jobsData.length || 0,
+          unreadNotifications: notificationsData.length || 0,
+          trends: {
+            connections: `+${newAlumniCount} this week`,
+            events: newEventsCount > 0 ? `${newEventsCount} new` : "No new events",
+            jobs: newJobsCount > 0 ? `${newJobsCount} new posts` : "No new posts",
+            notifications: newNotificationsCount > 0 ? `${newNotificationsCount} new` : "No new"
+          }
+        });
+      } catch (error) {
+        console.error('Error fetching dashboard stats:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (session?.user) {
+      fetchDashboardStats();
+    }
+  }, [session]);
 
   const quickActions = [
     {
@@ -119,32 +175,36 @@ export default function AlumniDashboard() {
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12"
         >
           <StatCard
-            title="Connections"
+            title="Active Alumni"
             value={stats.connections}
             icon={Users}
             color="text-blue-500"
-            trend="+5 this week"
+            trend={stats.trends.connections}
+            loading={loading}
           />
           <StatCard
             title="Upcoming Events"
             value={stats.upcomingEvents}
             icon={Calendar}
             color="text-green-500"
-            trend="2 new events"
+            trend={stats.trends.events}
+            loading={loading}
           />
           <StatCard
             title="Job Opportunities"
             value={stats.jobOpportunities}
             icon={Briefcase}
             color="text-purple-500"
-            trend="3 new postings"
+            trend={stats.trends.jobs}
+            loading={loading}
           />
           <StatCard
             title="Notifications"
             value={stats.unreadNotifications}
             icon={Bell}
             color="text-orange-500"
-            trend="2 unread"
+            trend={stats.trends.notifications}
+            loading={loading}
           />
         </motion.div>
 
@@ -223,12 +283,13 @@ export default function AlumniDashboard() {
   );
 }
 
-function StatCard({ title, value, icon: Icon, color, trend }: { 
+function StatCard({ title, value, icon: Icon, color, trend, loading }: { 
   title: string; 
   value: number; 
   icon: any; 
   color: string;
   trend: string;
+  loading: boolean;
 }) {
   return (
     <motion.div
@@ -239,10 +300,19 @@ function StatCard({ title, value, icon: Icon, color, trend }: {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-gray-300">{title}</p>
-            <h3 className="text-3xl font-bold mt-1 text-white">{value}</h3>
-            <p className="text-sm text-gray-400 mt-1">{trend}</p>
+            {loading ? (
+              <div className="mt-1 space-y-2">
+                <div className="h-8 w-16 bg-white/10 rounded animate-pulse" />
+                <div className="h-4 w-24 bg-white/10 rounded animate-pulse" />
+              </div>
+            ) : (
+              <>
+                <h3 className="text-3xl font-bold mt-1 text-white">{value}</h3>
+                <p className="text-sm text-gray-400 mt-1">{trend}</p>
+              </>
+            )}
           </div>
-          <div className={`p-4 rounded-xl ${color} bg-opacity-10`}>
+          <div className={`p-4 rounded-xl ${color} bg-opacity-10 ${loading ? 'animate-pulse' : ''}`}>
             <Icon className={`w-8 h-8 ${color}`} />
           </div>
         </div>
