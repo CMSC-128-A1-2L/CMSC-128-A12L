@@ -6,7 +6,7 @@ import { Briefcase, Mail, MapPin, Calendar, GraduationCap, Globe2, LinkedinIcon,
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
-
+import { useParams } from 'next/navigation';
 interface AlumniProfile {
   id: string;
   name: string;
@@ -29,7 +29,9 @@ interface ProfilePageProps {
   };
 }
 
-export default function AlumniProfilePage({ params }: ProfilePageProps) {
+export default function AlumniProfilePage() {
+  const params = useParams();
+  const id = params?.id as string;
   const { data: session } = useSession();
   const [alumni, setAlumni] = useState<AlumniProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -37,7 +39,8 @@ export default function AlumniProfilePage({ params }: ProfilePageProps) {
   useEffect(() => {
     const fetchAlumniProfile = async () => {
       try {
-        const response = await fetch(`/api/users/${params.id}`);
+
+        const response = await fetch(`/api/users/${id}`);
         if (!response.ok) {
           throw new Error('Failed to fetch alumni profile');
         }
@@ -52,7 +55,7 @@ export default function AlumniProfilePage({ params }: ProfilePageProps) {
     };
 
     fetchAlumniProfile();
-  }, [params.id]);
+  }, [id]);
 
   if (loading) {
     return (

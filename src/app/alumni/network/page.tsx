@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { FiFilter } from "react-icons/fi";
+import { useState, useRef, useEffect, useMemo } from "react";
+import { FiFilter, FiUsers, FiMapPin, FiBriefcase, FiCalendar } from "react-icons/fi";
 import { IoIosArrowForward, IoIosArrowBack } from "react-icons/io";
 import userData from "@/dummy_data/user.json";
 import { motion } from "framer-motion";
@@ -12,8 +12,7 @@ import { useRouter } from "next/navigation";
 type Alumni = {
   id: string;
   role: string[];
-  firstName: string;
-  middleName?: string | null;
+  name: string;
   lastName: string;
   suffix?: string | null;
   gender?: string;
@@ -78,7 +77,7 @@ export default function AlumniPage() {
 
   // filters based on role and gender
   const filteredAlumni = alumni.filter((alumni) => {
-    const fullName = `${alumni.firstName} ${alumni.lastName}`.toLowerCase();
+    const fullName = `${alumni.name}`.toLowerCase();
     const searchMatch = fullName.includes(search.toLowerCase());
     const roleMatch =
       selectedFilter.role === "" || alumni.role.includes(selectedFilter.role);
@@ -282,7 +281,7 @@ export default function AlumniPage() {
                       <div className="w-full h-[85%] bg-white/20 rounded-t-lg absolute top-0"></div>
                       <div className="absolute bottom-1 flex flex-col items-center">
                         <p className="text-white font-medium">
-                          {alumni.firstName} {alumni.lastName}
+                          {alumni.name}
                         </p>
                         <p className="text-gray-300 text-sm -mt-1">
                           Batch {alumni.graduationYear || "N/A"}

@@ -11,17 +11,7 @@ const Redirect = () => {
   
   useEffect(() => {
     if (status === "unauthenticated") {
-      // Create a promise that resolves after 1 second
-      const redirectPromise = new Promise<void>((resolve) => {
-        setTimeout(() => {
-          resolve();
-        }, 1000);
-      });
-      
-      // When the promise resolves, sign out and redirect to login
-      redirectPromise.then(() => {
         handleSignOut();
-      });
     }
 
     if (status === "authenticated" && session) {
