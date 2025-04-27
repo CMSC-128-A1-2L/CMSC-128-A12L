@@ -7,7 +7,7 @@ interface EventCardProps {
   title: string;
   organizer: string;
   location: string;
-  date: string;
+  date: Date;
   description: string;
   imageUrl: string;
   onDetailsClick: () => void;

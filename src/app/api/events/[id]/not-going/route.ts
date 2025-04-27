@@ -4,39 +4,40 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { UserRole } from "@/entities/user";
 
-// MARKS non-attendance to an event (WouldNotGo)
 export async function POST(req: NextRequest, { params }: { params: {id: string}}) {
     try {
-        // get session info
         const session = await getServerSession(authOptions);
         if(!session || !session.user.role.includes(UserRole.ALUMNI)){
             return NextResponse.json({error: "Unauthorized"}, {status: 401})
         }
 
-        const {id} = params;
+        const {id} = await params;
         const eventRepository = getEventRepository();
+        const event = await eventRepository.getEventById(id);
 
-        // URL Query Ver
-        // const qParams = req.nextUrl.searchParams;
-        // const notgoing = qParams.get('not-going'); 
-        // if(notgoing === 'true'){
-        
-        // marking as interested
-        if(req.body){
-            return await eventRepository.addToEventWNotGo(id, session.user.id)
-            .then(() => new NextResponse("Successfully confirmed non-attendance to event", {status: 200}))
-            .catch(() => new NextResponse("Failed to mark event non-attendance", {status: 500}));
-        }else{
-        // toggle user NOTGOING to false, remove user from wouldNotGo
-            return await eventRepository.deleteFromEventWNotGo(id, session.user.id)
-            .then(() => new NextResponse("Successfully removed non-attendance to event", {status: 200}))
-            .catch(() => new NextResponse("Failed to remove event non-attendance", {status: 500}));
+        if (!event) {
+            return NextResponse.json({error: "Event not found"}, {status: 404});
         }
-        
+
+        const userId = session.user.id;
+
+        // Check if user is already in wouldNotGo
+        if (event.wouldNotGo.includes(userId)) {
+            // Remove from wouldNotGo if already present
+            await eventRepository.deleteFromEventWNotGo(id, userId);
+            return NextResponse.json({message: "Response removed", action: "removed"}, {status: 200});
+        } else {
+            // Remove from other arrays first
+            await eventRepository.deleteFromEventWGo(id, userId);
+            await eventRepository.deleteFromEventWMaybeGo(id, userId);
+            // Add to wouldNotGo
+            await eventRepository.addToEventWNotGo(id, userId);
+            return NextResponse.json({message: "Response updated", action: "added"}, {status: 200});
+        }
     } catch (error) {
-        console.log("Failed to mark non-attendance: ", error);
+        console.error("Failed to update response:", error);
         return NextResponse.json(
-            { error: "Failed to mark non-attendance"},
+            { error: "Failed to update response"},
             { status: 500 }
         );
     }

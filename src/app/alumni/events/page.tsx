@@ -23,6 +23,8 @@ import {
   Filter,
 } from "lucide-react";
 import { motion } from "framer-motion";
+import { Popover } from '@headlessui/react';
+import { Check, ThumbsUp, ThumbsDown, HelpCircle } from 'lucide-react';
 
 export default function EventListings() {
   const { data: session } = useSession();
@@ -101,34 +103,117 @@ export default function EventListings() {
   }, [timelineFilter]); // Re-fetch when timeline filter changes
 
   // Update event response handlers
+  const [rsvpEvent, setRsvpEvent] = useState<Event | null>(null);
+
   const handleRespond = async (event: Event, response: 'go' | 'notGo' | 'maybeGo') => {
     try {
-      const endpoint = `/api/events/${event._id}/${response === 'go' ? 'going' : response === 'notGo' ? 'not-going' : 'maybe-going'}`;
+      const userId = session?.user?.id;
+      if (!userId) return;
+
+      const endpoint = `/api/events/${event._id}/${
+        response === 'go' ? 'interested' : 
+        response === 'notGo' ? 'not-going' : 
+        'maybe-going'}`;
+
       const res = await fetch(endpoint, { method: 'POST' });
       
       if (!res.ok) throw new Error('Failed to update response');
 
-      // Update local state
+      const { action } = await res.json();
+
+      // Update local state based on action from backend
       const updatedEvents = events.map(e => {
         if (e._id === event._id) {
-          // Remove from other arrays and add to the selected one
-          const updatedEvent = {
-            ...e,
-            wouldGo: response === 'go' ? [...e.wouldGo, session?.user?.id] : e.wouldGo.filter(id => id !== session?.user?.id),
-            wouldNotGo: response === 'notGo' ? [...e.wouldNotGo, session?.user?.id] : e.wouldNotGo.filter(id => id !== session?.user?.id),
-            wouldMaybeGo: response === 'maybeGo' ? [...e.wouldMaybeGo, session?.user?.id] : e.wouldMaybeGo.filter(id => id !== session?.user?.id)
-          };
-          return updatedEvent;
+          const cleanEvent = { ...e };
+          // Remove from all arrays first
+          cleanEvent.wouldGo = cleanEvent.wouldGo.filter(id => id !== userId);
+          cleanEvent.wouldNotGo = cleanEvent.wouldNotGo.filter(id => id !== userId);
+          cleanEvent.wouldMaybeGo = cleanEvent.wouldMaybeGo.filter(id => id !== userId);
+
+          // Only add to array if the action was 'added'
+          if (action === 'added') {
+            if (response === 'go') cleanEvent.wouldGo.push(userId);
+            if (response === 'notGo') cleanEvent.wouldNotGo.push(userId);
+            if (response === 'maybeGo') cleanEvent.wouldMaybeGo.push(userId);
+          }
+          return cleanEvent;
         }
         return e;
       });
 
       setEvents(updatedEvents);
-      toast.success('Response updated successfully');
+      toast.success(action === 'added' ? 'Response updated successfully' : 'Response removed successfully');
+      setRsvpEvent(null);
     } catch (err) {
       console.error('Error updating response:', err);
       toast.error('Failed to update response');
     }
+  };
+
+  // RSVP Component
+  const RSVPOptions = ({ event }: { event: Event }) => {
+    const userId = session?.user?.id;
+    const isGoing = event.wouldGo.includes(userId || '');
+    const isNotGoing = event.wouldNotGo.includes(userId || '');
+    const isMaybeGoing = event.wouldMaybeGo.includes(userId || '');
+
+    return (
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.9 }}
+        className="bg-white/10 backdrop-blur-md rounded-xl shadow-xl border border-white/20 p-4 w-72"
+      >
+        <div className="text-center mb-4">
+          <h3 className="text-lg font-semibold text-white mb-1">RSVP to Event</h3>
+          <p className="text-sm text-gray-300">{event.name}</p>
+        </div>
+        
+        <div className="space-y-2">
+          <button
+            className={`w-full p-3 rounded-lg transition-all duration-200 flex items-center justify-between group
+              ${isGoing 
+                ? 'bg-blue-500/20 border border-blue-500/50' 
+                : 'bg-white/5 border border-white/10 hover:bg-white/10'}`}
+            onClick={() => handleRespond(event, 'go')}
+          >
+            <div className="flex items-center gap-3">
+              <ThumbsUp className={`h-5 w-5 ${isGoing ? 'text-blue-400' : 'text-gray-400'}`} />
+              <span className={`text-sm font-medium ${isGoing ? 'text-blue-400' : 'text-gray-300'}`}>Going</span>
+            </div>
+            {isGoing && <Check className="h-4 w-4 text-blue-400" />}
+          </button>
+
+          <button
+            className={`w-full p-3 rounded-lg transition-all duration-200 flex items-center justify-between group
+              ${isMaybeGoing 
+                ? 'bg-yellow-500/20 border border-yellow-500/50' 
+                : 'bg-white/5 border border-white/10 hover:bg-white/10'}`}
+            onClick={() => handleRespond(event, 'maybeGo')}
+          >
+            <div className="flex items-center gap-3">
+              <HelpCircle className={`h-5 w-5 ${isMaybeGoing ? 'text-yellow-400' : 'text-gray-400'}`} />
+              <span className={`text-sm font-medium ${isMaybeGoing ? 'text-yellow-400' : 'text-gray-300'}`}>Maybe</span>
+            </div>
+            {isMaybeGoing && <Check className="h-4 w-4 text-yellow-400" />}
+          </button>
+
+          <button
+            className={`w-full p-3 rounded-lg transition-all duration-200 flex items-center justify-between group
+              ${isNotGoing 
+                ? 'bg-red-500/20 border border-red-500/50' 
+                : 'bg-white/5 border border-white/10 hover:bg-white/10'}`}
+            onClick={() => handleRespond(event, 'notGo')}
+          >
+            <div className="flex items-center gap-3">
+              <ThumbsDown className={`h-5 w-5 ${isNotGoing ? 'text-red-400' : 'text-gray-400'}`} />
+              <span className={`text-sm font-medium ${isNotGoing ? 'text-red-400' : 'text-gray-300'}`}>Not Going</span>
+            </div>
+            {isNotGoing && <Check className="h-4 w-4 text-red-400" />}
+          </button>
+        </div>
+      </motion.div>
+    );
   };
 
   // Helper function to determine event status
@@ -448,7 +533,7 @@ export default function EventListings() {
                         imageUrl={event.imageUrl || ''}
                         onDetailsClick={() => handleEventDetails(event)}
                         onSponsorClick={() => handleSponsor(event)}
-                        onApplyClick={() => handleRespond(event.name)}
+                        onApplyClick={() => setRsvpEvent(event)}
                       />
                     ) : (
                       <EventRow
@@ -460,7 +545,7 @@ export default function EventListings() {
                         imageUrl={event.imageUrl || ''}
                         onDetailsClick={() => handleEventDetails(event)}
                         onSponsorClick={() => handleSponsor(event)}
-                        onApplyClick={() => handleRespond(event.name)}
+                        onApplyClick={() => setRsvpEvent(event)}
                       />
                     )}
                   </motion.div>
@@ -567,6 +652,16 @@ export default function EventListings() {
           }
         }}
       />
+      {rsvpEvent && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setRsvpEvent(null);
+          }}
+        >
+          <RSVPOptions event={rsvpEvent} />
+        </div>
+      )}
     </div>
   );
 }
