@@ -199,11 +199,23 @@ export default function JobListings() {
 
   // Update edit handler
   const handleEditClick = (job: any) => {
-    if (job.userId !== session?.user?.id) {
+    // Check both userId and _id formats since they may come in different formats
+    const currentUserId = session?.user?.id;
+    const jobUserId = job.userId || job._id;
+
+    if (jobUserId !== currentUserId) {
       toast.error("You can only edit your own job postings");
       return;
     }
-    setSelectedJob(job);
+
+    // Normalize the job data before setting it
+    const normalizedJob = {
+      ...job,
+      job_type: job.job_type || job.jobType || 'full-time',
+      work_type: job.work_type || job.workType || 'on-site',
+    };
+
+    setSelectedJob(normalizedJob);
     setShowDetailsModal(false); // Close details modal
     setShowEditModal(true); // Open edit modal
   };

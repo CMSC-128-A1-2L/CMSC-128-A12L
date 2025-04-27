@@ -35,6 +35,18 @@ const EditJobModal: React.FC<EditJobModalProps> = ({
   const [jobData, setJobData] = useState(initialJobData);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Add useEffect to handle modal visibility
+  React.useEffect(() => {
+    const modal = document.getElementById('edit_job_modal') as HTMLDialogElement;
+    if (modal) {
+      if (isOpen) {
+        modal.showModal();
+      } else {
+        modal.close();
+      }
+    }
+  }, [isOpen]);
+
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
@@ -72,14 +84,14 @@ const EditJobModal: React.FC<EditJobModalProps> = ({
   return (
     <dialog id="edit_job_modal" className="modal">
       <div className="modal-box rounded-3xl bg-white">
-        <form method="dialog">
+        <div className="relative">
           <button 
-            className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 text-gray-600 hover:bg-[#605dff] hover:text-white"
             onClick={onClose}
+            className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 text-gray-600 hover:bg-[#605dff] hover:text-white"
           >
             ✕
           </button>
-        </form>
+        </div>
 
         <h3 className="font-bold text-xl text-gray-900 mt-4">Edit Job Post</h3>
 
@@ -196,9 +208,9 @@ const EditJobModal: React.FC<EditJobModalProps> = ({
           </button>
         </div>
       </div>
-      <form method="dialog" className="modal-backdrop">
+      <div className="modal-backdrop" onClick={onClose}>
         <button onClick={onClose}>close</button>
-      </form>
+      </div>
     </dialog>
   );
 };
