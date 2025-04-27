@@ -68,7 +68,8 @@ export default function JobListings() {
 
   // Job details/Edit job details modal state
   const [selectedJob, setSelectedJob] = useState<any>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
 
   // View toggle state
   const [isGridView, setIsGridView] = useState(true);
@@ -154,15 +155,12 @@ export default function JobListings() {
   // Handle job details modal
   const handleJobDetails = (job: any) => {
     setSelectedJob(job);
-    const modal = document.getElementById("job_details_modal") as HTMLDialogElement;
-    if (modal) {
-      modal.showModal();
-      setIsModalOpen(true);
-    }
+    setShowDetailsModal(true);
   };
 
-  const handleCloseModal = () => {
-    setIsModalOpen(false);
+  const handleCloseDetailsModal = () => {
+    setShowDetailsModal(false);
+    setTimeout(() => setSelectedJob(null), 100); // Clear selected job after modal closes
   };
 
   // Handle Apply to Job button click
@@ -170,17 +168,76 @@ export default function JobListings() {
     console.log(`Applying for ${jobTitle}`);
   };
 
-  // Handle Edit Job button click
-  const handleEdit = (job: any) => {
+  // Add delete handler
+  const handleDelete = async (job: any) => {
+    if (job.userId !== session?.user?.id) {
+      toast.error("You can only delete your own job postings");
+      return;
+    }
+
+    if (!confirm("Are you sure you want to delete this job posting?")) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/alumni/opportunities/${job._id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete job');
+      }
+
+      toast.success('Job deleted successfully');
+      setShowDetailsModal(false);
+      fetchJobs(jobView); // Refresh jobs list
+    } catch (error) {
+      console.error('Error deleting job:', error);
+      toast.error('Failed to delete job');
+    }
+  };
+
+  // Update edit handler
+  const handleEditClick = (job: any) => {
     if (job.userId !== session?.user?.id) {
       toast.error("You can only edit your own job postings");
       return;
     }
     setSelectedJob(job);
-    const modal = document.getElementById("edit_job_modal") as HTMLDialogElement;
-    if (modal) {
-      modal.showModal();
-      setIsModalOpen(true);
+    setShowDetailsModal(false); // Close details modal
+    setShowEditModal(true); // Open edit modal
+  };
+
+  const handleCloseEditModal = () => {
+    setShowEditModal(false);
+    setSelectedJob(null);
+  };
+
+  // Update edit submit handler
+  const handleEdit = async (jobData: any) => {
+    try {
+      const response = await fetch(`/api/alumni/opportunities/${selectedJob._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...jobData,
+          tags: jobData.tags || selectedJob.tags || [],
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update job');
+      }
+
+      toast.success('Job updated successfully');
+      setShowEditModal(false);
+      setSelectedJob(null);
+      fetchJobs(jobView);
+    } catch (error) {
+      console.error('Error updating job:', error);
+      toast.error('Failed to update job');
     }
   };
 
@@ -487,24 +544,22 @@ export default function JobListings() {
                     jobType={selectedJob.job_type}
                     workType={selectedJob.work_type}
                     description={selectedJob.description}
-                    isOpen={isModalOpen}
-                    onClose={handleCloseModal}
+                    tags={selectedJob.tags}
+                    isOpen={showDetailsModal}
+                    onClose={handleCloseDetailsModal}
                     onApplyClick={() => handleApply(selectedJob.title)}
-                    onEditClick={() => handleEdit(selectedJob)}
-                    onDeleteClick={() => {}}
-                    canEdit={selectedJob.userId === session?.user?.id} // Add this line
+                    onEditClick={() => handleEditClick(selectedJob)}
+                    onDeleteClick={() => handleDelete(selectedJob)}
+                    canEdit={selectedJob.userId === session?.user?.id}
                   />
                 )}
 
                 {/* Edit Job Modal */}
                 {selectedJob && (
                   <EditJobListComponent
-                    isOpen={isModalOpen}
-                    onClose={handleCloseModal}
-                    onSave={(jobData) => {
-                      console.log("Save job", jobData);
-                      setIsModalOpen(false);
-                    }}
+                    isOpen={showEditModal}
+                    onClose={handleCloseEditModal}
+                    onSave={handleEdit}
                     initialJobData={{
                       title: selectedJob.title,
                       company: selectedJob.company,
@@ -512,7 +567,8 @@ export default function JobListings() {
                       jobType: selectedJob.job_type,
                       workType: selectedJob.work_type,
                       salary: selectedJob.salary,
-                      description: selectedJob.description
+                      description: selectedJob.description,
+                      tags: selectedJob.tags || [],
                     }}
                   />
                 )}

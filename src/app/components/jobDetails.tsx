@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Building2,
   MapPin,
@@ -47,6 +47,17 @@ export default function JobDetails({
   onDeleteClick,
   canEdit = false,
 }: JobDetailsProps) {
+  useEffect(() => {
+    const modal = document.getElementById("job_details_modal") as HTMLDialogElement;
+    if (modal) {
+      if (isOpen) {
+        modal.showModal();
+      } else {
+        modal.close();
+      }
+    }
+  }, [isOpen]);
+
   const handleClose = () => {
     const modal = document.getElementById("job_details_modal") as HTMLDialogElement;
     if (modal) {

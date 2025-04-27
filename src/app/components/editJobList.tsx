@@ -10,6 +10,7 @@ interface EditJobModalProps {
     workType: string;
     salary?: string;
     description: string;
+    tags?: string[];
   };
   isOpen: boolean;
   onClose: () => void;
@@ -25,6 +26,7 @@ const EditJobModal: React.FC<EditJobModalProps> = ({
     workType: "On-site",
     salary: "",
     description: "",
+    tags: [],
   },
   isOpen,
   onClose,
@@ -168,6 +170,21 @@ const EditJobModal: React.FC<EditJobModalProps> = ({
               onChange={handleChange}
               className="w-full p-2 border rounded-md bg-white text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               placeholder="e.g. $50,000 - $70,000"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Tags (comma-separated)</label>
+            <input
+              type="text"
+              name="tags"
+              value={jobData.tags?.join(', ') || ''}
+              onChange={(e) => setJobData({
+                ...jobData,
+                tags: e.target.value.split(',').map(tag => tag.trim()).filter(Boolean)
+              })}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              placeholder="e.g. React, TypeScript, Node.js"
             />
           </div>
 
