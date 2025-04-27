@@ -4,6 +4,7 @@ import Link from "next/link";
 import { CreditCard, ArrowRight } from "lucide-react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import ConstellationBackground from "@/app/components/constellationBackground";
 
 export default function DonationsPage() {
   const pathname = usePathname();
@@ -26,8 +27,9 @@ export default function DonationsPage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <div className="relative text-white -mt-16 pt-16">
+      <div className="relative text-white -mt-16 pt-16 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-[#1a1f4d]/90 to-[#2a3f8f]/90"></div>
+        <ConstellationBackground />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -36,10 +38,10 @@ export default function DonationsPage() {
             className="text-center"
           >
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              Support Our Cause
+              Donations
             </h1>
-            <p className="text-xl text-gray-200 max-w-2xl mx-auto">
-              Your generous donations help us continue our mission and make a difference in the lives of many.
+            <p className="text-xl text-gray-200">
+              Support our alumni community initiatives
             </p>
           </motion.div>
         </div>

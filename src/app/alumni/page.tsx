@@ -21,6 +21,7 @@ import {
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import ConstellationBackground from "@/app/components/constellationBackground";
 
 interface DashboardStats {
   connections: number;
@@ -75,14 +76,22 @@ export default function AlumniDashboard() {
       href: "/alumni/network",
       color: "bg-orange-500",
       description: "Connect with fellow alumni"
+    },
+    {
+      title: "Announcements",
+      icon: Bell,
+      href: "/alumni/announcements",
+      color: "bg-red-500",
+      description: "Stay updated with important news"
     }
   ];
 
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <div className="relative text-white -mt-16 pt-16">
+      <div className="relative text-white -mt-16 pt-16 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-[#1a1f4d]/90 to-[#2a3f8f]/90"></div>
+        <ConstellationBackground />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -147,15 +156,16 @@ export default function AlumniDashboard() {
           className="mb-12"
         >
           <h2 className="text-2xl font-bold text-white mb-6">Quick Actions</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-5 gap-4">
             {quickActions.map((action, index) => (
               <motion.div
                 key={action.title}
                 whileHover={{ y: -5 }}
                 transition={{ duration: 0.2 }}
+                className="w-full h-[200px]"
               >
                 <Link href={action.href}>
-                  <Card className="p-6 hover:shadow-lg transition-all duration-300 cursor-pointer bg-white/10 backdrop-blur-sm border-0">
+                  <Card className="p-6 hover:shadow-lg transition-all duration-300 cursor-pointer bg-white/10 backdrop-blur-sm border-0 h-full">
                     <div className="flex items-center justify-between mb-4">
                       <div className={`p-3 rounded-xl ${action.color} text-white shadow-lg`}>
                         <action.icon className="w-6 h-6" />
