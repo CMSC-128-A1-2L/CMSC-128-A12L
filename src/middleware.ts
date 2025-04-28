@@ -80,5 +80,7 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-    matcher: ["/alumni/:path*", "/admin/:path*", "/api/admin/:path*", "/api/alumni/:path*"], 
+    matcher: ["/alumni/:path*", "/admin/:path*", "/api/admin/:path*", "/api/alumni/:path*", 
+        // this is for the rsvp, i did not include it in the alumni path lmao
+        "/api/events/:path*"], 
 };

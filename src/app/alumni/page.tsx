@@ -169,27 +169,43 @@ export default function AlumniDashboard() {
           let icon = Users;
           let color = "bg-blue-100/20";
           let title = "Activity";
-          
-          // Map actions to icons and colors
-          if (log.action.includes('events')) {
+          let description = '';
+
+          // Parse the action string
+          const [method, path] = log.action.split(' ');
+
+          // Determine activity type and description
+          if (path.includes('profile')) {
+            if (method === 'PUT') {
+              description = 'Updated your profile information';
+            }
+          } else if (path.includes('events')) {
             icon = Calendar;
             color = "bg-green-100/20";
             title = "Event Activity";
-          } else if (log.action.includes('opportunities') || log.action.includes('jobs')) {
+            if (path.includes('interested')) {
+              description = 'Marked interest in attending an event';
+            } else if (path.includes('not-going')) {
+              description = 'Marked as not attending an event';
+            } else if (path.includes('maybe-going')) {
+              description = 'Marked as maybe attending an event';
+            }
+          } else if (path.includes('opportunities') || path.includes('jobs')) {
             icon = Briefcase;
             color = "bg-purple-100/20";
             title = "Job Activity";
-          } else if (log.action.includes('notifications')) {
-            icon = Bell;
-            color = "bg-orange-100/20";
-            title = "Notification";
+            if (method === 'POST') {
+              description = 'Posted a new job opportunity';
+            } else if (method === 'PUT') {
+              description = 'Updated a job posting';
+            }
           }
 
           return {
             icon,
             color,
             title,
-            description: log.action,
+            description: description || 'Performed an activity',
             time: new Date(log.timestamp).toRelativeString()
           };
         });
