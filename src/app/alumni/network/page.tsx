@@ -154,15 +154,25 @@ export default function AlumniPage() {
           <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setShowFilter(!showFilter)}
-              className="btn btn-outline flex items-center bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20"
+              className="btn btn-outline flex items-center bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20 min-w-[100px]"
             >
               <FiFilter className="mr-1" /> Filter
             </button>
 
             {showFilter && (
-              <ul className="absolute z-10 mt-2 bg-white/10 backdrop-blur-sm shadow-lg rounded-md w-40 border border-white/20">
+              <ul className="absolute z-50 mt-2 bg-white/10 backdrop-blur-sm shadow-lg rounded-md w-[280px] sm:w-[320px] right-0 sm:right-auto sm:left-0 border border-white/20 max-h-[80vh] overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
                 {/* Role Filter */}
-                <li className="p-2 font-bold text-white">Role</li>
+                <li className="p-2 font-bold text-white sticky top-0 bg-white/10 backdrop-blur-sm z-10 border-b border-white/20">
+                  <div className="flex items-center justify-between">
+                    <span>Role</span>
+                    <button
+                      onClick={() => setSelectedFilter({ ...selectedFilter, role: "" })}
+                      className="text-sm text-gray-300 hover:text-white"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                </li>
                 <li>
                   <button
                     onClick={() => setSelectedFilter({ ...selectedFilter, role: "" })}
@@ -183,7 +193,17 @@ export default function AlumniPage() {
                 </li>
 
                 {/* Gender Filter */}
-                <li className="p-2 font-bold text-white">Gender</li>
+                <li className="p-2 font-bold text-white sticky top-0 bg-white/10 backdrop-blur-sm z-10 border-b border-white/20">
+                  <div className="flex items-center justify-between">
+                    <span>Gender</span>
+                    <button
+                      onClick={() => setSelectedFilter({ ...selectedFilter, gender: "" })}
+                      className="text-sm text-gray-300 hover:text-white"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                </li>
                 <li>
                   <button
                     onClick={() =>
@@ -216,12 +236,12 @@ export default function AlumniPage() {
                 </li>
 
                 {/* Clear Filter */}
-                <li className="p-2">
+                <li className="p-2 sticky bottom-0 bg-white/10 backdrop-blur-sm z-10 border-t border-white/20">
                   <button
                     onClick={clearFilters}
-                    className="w-full text-center px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-md cursor-pointer"
+                    className="w-full text-center px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-md cursor-pointer transition-colors duration-200"
                   >
-                    Clear
+                    Clear All Filters
                   </button>
                 </li>
               </ul>
