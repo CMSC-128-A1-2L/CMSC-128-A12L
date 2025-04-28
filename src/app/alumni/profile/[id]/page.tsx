@@ -22,7 +22,7 @@ interface ProfileData {
   graduationYear?: number;
   department?: string;
   bio?: string;
-  profilePicture?: string;
+  imageUrl?: string;
   phoneNumber?: string;
   currentLocation?: string;
   currentCompany?: string;
@@ -98,9 +98,9 @@ export default function AlumniProfilePage() {
             {/* Profile Picture */}
             <div className="relative inline-block">
               <div className="w-[168px] h-[168px] rounded-full border-4 border-white/20 bg-white/10 backdrop-blur-sm shadow-lg">
-                {profileData.profilePicture ? (
+                {profileData.imageUrl ? (
                   <img
-                    src={profileData.profilePicture}
+                    src={profileData.imageUrl}
                     alt="Profile"
                     className="w-full h-full rounded-full object-cover"
                   />

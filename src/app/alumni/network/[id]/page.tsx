@@ -14,7 +14,7 @@ interface AlumniProfile {
   graduationYear?: number;
   department?: string;
   bio?: string;
-  profilePicture?: string;
+  imageUrl?: string;
   phoneNumber?: string;
   currentLocation?: string;
   currentCompany?: string;
@@ -96,13 +96,11 @@ export default function AlumniProfilePage() {
             {/* Profile Picture */}
             <div className="absolute -top-20 left-6">
               <div className="h-36 w-36 rounded-full border-4 border-white shadow-lg overflow-hidden bg-white">
-                {alumni.profilePicture ? (
-                  <Image
-                    src={alumni.profilePicture}
+                {alumni.imageUrl ? (
+                  <img
+                    src={alumni.imageUrl}
                     alt={alumni.name}
-                    width={144}
-                    height={144}
-                    className="object-cover"
+                    className="w-full h-full object-cover"
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-gray-100">
@@ -246,4 +244,4 @@ export default function AlumniProfilePage() {
       </div>
     </div>
   );
-} 
+}

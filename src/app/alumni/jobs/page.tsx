@@ -316,13 +316,13 @@ export default function JobListings() {
               <input
                 type="search"
                 placeholder="Search jobs"
-                className="w-full pl-10 pr-16 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-16 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
               <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
-                <kbd className="px-2 py-1 text-xs rounded bg-white/5 text-gray-400">ctrl</kbd>
-                <kbd className="px-2 py-1 text-xs rounded bg-white/5 text-gray-400">K</kbd>
+                <kbd className="hidden sm:inline-block px-2 py-1 text-xs rounded bg-white/5 text-gray-400">ctrl</kbd>
+                <kbd className="hidden sm:inline-block px-2 py-1 text-xs rounded bg-white/5 text-gray-400">K</kbd>
               </div>
             </div>
           </div>
@@ -330,7 +330,7 @@ export default function JobListings() {
           {/* View toggle - right */}
           <button 
             onClick={toggleView} 
-            className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors flex items-center gap-2 border border-white/10"
+            className="px-2 py-2 sm:px-4 sm:py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors flex items-center gap-2 border border-white/10"
           >
             {isGridView ? (
               <>
@@ -345,13 +345,13 @@ export default function JobListings() {
         </motion.div>
 
         {/* Content area */}
-        <div className="flex gap-8">
+        <div className="flex flex-col sm:flex-row gap-8">
           {/* Sidebar */}
           <motion.aside 
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}
-            className={`w-64 flex-shrink-0 ${filterSidebarOpen ? 'block' : 'hidden'} lg:block`}
+            className="w-64 flex-shrink-0"
           >
             <div className="flex items-center gap-3 mb-4">
               <button
@@ -361,13 +361,15 @@ export default function JobListings() {
                 <Filter size={18} />
               </button>
             </div>
-            <FilterSidebar
-              isOpen={filterSidebarOpen}
-              setIsOpen={setFilterSidebarOpen}
-              onFilterChange={handleFilterChange}
-              showModal={() => setShowModal(true)}
-              activeFilters={activeFilters}
-            />
+            <div className={`${filterSidebarOpen ? 'block' : 'hidden'} lg:block`}>
+              <FilterSidebar
+                isOpen={filterSidebarOpen}
+                setIsOpen={setFilterSidebarOpen}
+                onFilterChange={handleFilterChange}
+                showModal={() => setShowModal(true)}
+                activeFilters={activeFilters}
+              />
+            </div>
           </motion.aside>
 
           {/* Main content */}
@@ -468,38 +470,42 @@ export default function JobListings() {
                   )}
                 </motion.div>
 
-                {/* Grid/List View */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.3 }}
-                  className={`grid ${isGridView ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'} gap-4`}
-                >
-                  {displayedJobs.length > 0 ? (
-                    displayedJobs.map((job, index) => (
-                      <motion.div
-                        key={index}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3, delay: index * 0.05 }}
-                        className="transition-colors"
-                      >
-                        {isGridView ? (
-                          <JobCard
-                            tags={job.tags}
-                            workMode={job.workMode.charAt(0).toUpperCase() + job.workMode.slice(1)}
-                            position={job.position}
-                            title={job.title}
-                            company={job.company}
-                            location={job.location}
-                            description={job.description}
-                            imageUrl={job.imageUrl}
-                            onDetailsClick={() => handleJobDetails(job)}
-                            onApplyClick={() => handleApply(job.title)}
-                          />
-                        ) : (
-                          <JobRow
-                          tags={job.tags}
+            {/* Grid/List View */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className={`grid ${
+                isGridView
+                  ? 'grid-cols-1 min-[400px]:grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'
+                  : 'grid-cols-1'
+              } gap-4 xs:gap-4 md:gap-4`}
+            >
+              {displayedJobs.length > 0 ? (
+                displayedJobs.map((job, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.05 }}
+                    className="transition-colors"
+                  >
+                    {isGridView ? (
+                      <JobCard
+                      tags={job.tags}
+                      workMode={job.workMode.charAt(0).toUpperCase() + job.workMode.slice(1)}
+                      position={job.position}
+                      title={job.title}
+                      company={job.company}
+                      location={job.location}
+                      description={job.description}
+                      imageUrl={job.imageUrl}
+                      onDetailsClick={() => handleJobDetails(job)}
+                      onApplyClick={() => handleApply(job.title)}
+                      />
+                    ) : (
+                      <JobRow
+                        tags={job.tags}
                           workMode={job.workMode.charAt(0).toUpperCase() + job.workMode.slice(1)}
                           position={job.position}
                           title={job.title}
@@ -509,42 +515,42 @@ export default function JobListings() {
                           imageUrl={job.imageUrl}
                           onDetailsClick={() => handleJobDetails(job)}
                           onApplyClick={() => handleApply(job.title)}
-                          />
-                        )}
-                      </motion.div>
-                    ))
-                  ) : (
-                    <div className="col-span-full text-center py-8">
-                      <p className="text-gray-400">
-                        No jobs found matching your filters.
-                      </p>
-                      <button
-                        className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors mt-4 border border-white/10"
-                        onClick={() =>
-                          handleFilterChange({
-                            jobType: {
-                              fullTime: false,
-                              partTime: false,
-                              contract: false,
-                            },
-                            workType: {
-                              onSite: false,
-                              remote: false,
-                              hybrid: false,
-                            },
-                            experienceLevel: {
-                              entry: false,
-                              midLevel: false,
-                              senior: false,
-                            }
-                          })
+                      />
+                    )}
+                  </motion.div>
+                ))
+              ) : (
+                <div className="col-span-full text-center py-8">
+                  <p className="text-gray-400">
+                    No jobs found matching your filters.
+                  </p>
+                  <button
+                    className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors mt-4 border border-white/10"
+                    onClick={() =>
+                      handleFilterChange({
+                        jobType: {
+                          fullTime: false,
+                          partTime: false,
+                          contract: false,
+                        },
+                        workType: {
+                          onSite: false,
+                          remote: false,
+                          hybrid: false,
+                        },
+                        experienceLevel: {
+                          entry: false,
+                          midLevel: false,
+                          senior: false,
                         }
-                      >
-                        Clear all filters
-                      </button>
-                    </div>
-                  )}
-                </motion.div>
+                      })
+                    }
+                  >
+                    Clear all filters
+                  </button>
+                </div>
+              )}
+            </motion.div>
 
                 {/* Job Details Modal */}
                 {selectedJob && (
