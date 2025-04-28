@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import {
   Edit2,
@@ -71,6 +71,67 @@ export default function AlumniProfile() {
     website: ""
   });
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files[0]) return;
+
+    const file = e.target.files[0];
+
+    // Check file size
+    if (file.size > 3 * 1024 * 1024) {
+      toast.error('Image size must be less than 3MB');
+      return;
+    }
+
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('File must be an image');
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const uploadResponse = await fetch('/api/cloudinary/upload_profile_image', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error('Failed to upload image');
+      }
+
+      const { url } = await uploadResponse.json();
+
+      // Update profile with new image URL
+      const updateResponse = await fetch('/api/users/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...profileData,
+          profilePicture: url
+        }),
+      });
+
+      if (!updateResponse.ok) {
+        throw new Error('Failed to update profile');
+      }
+
+      // Update local state
+      setProfileData(prev => ({
+        ...prev,
+        profilePicture: url
+      }));
+
+      toast.success('Profile picture updated successfully');
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('Failed to update profile picture');
+    }
+  };
+
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
@@ -138,6 +199,13 @@ export default function AlumniProfile() {
                     {/* Profile Picture Square */}
                     <div className="flex flex-col items-center mb-6">
                       <div className="relative mb-3">
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          className="hidden"
+                          accept="image/png,image/jpeg,image/jpg"
+                          onChange={handleImageUpload}
+                        />
                         <div className="w-44 h-44 rounded-lg border-4 border-white/20 bg-white/10">
                 {profileData.profilePicture ? (
                   <img
@@ -151,7 +219,10 @@ export default function AlumniProfile() {
                             </div>
                           )}
                         </div>
-                        <button className="absolute bottom-2 right-2 p-2 bg-white/20 hover:bg-white/30 rounded-full transition cursor-pointer">
+                        <button 
+                          className="absolute bottom-2 right-2 p-2 bg-white/20 hover:bg-white/30 rounded-full transition cursor-pointer"
+                          onClick={() => fileInputRef.current?.click()}
+                        >
                           <Camera size={22} className="text-white" />
                         </button>
                       </div>
