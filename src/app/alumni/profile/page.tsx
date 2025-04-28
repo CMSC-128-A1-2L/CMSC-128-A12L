@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useSession } from "next-auth/react";
 import {
   Edit2,
@@ -18,6 +18,7 @@ import {
   BookOpen,
   BriefcaseBusiness,
   FileText,
+  Linkedin
 } from "lucide-react";
 import EditProfileModal from "@/app/components/EditProfileModal";
 import { motion } from "framer-motion";
@@ -29,20 +30,13 @@ interface ProfileData {
   graduationYear?: number;
   department?: string;
   bio?: string;
-  profilePicture?: string;
+  profilePicture?: string; // Keep this for display purposes
   phoneNumber?: string;
   currentLocation?: string;
   currentCompany?: string;
   currentPosition?: string;
   linkedIn?: string;
   website?: string;
-  firstName?: string;
-  middleInitial?: string;
-  lastName?: string;
-  username?: string;
-  role?: string;
-  dateOfBirth?: string;
-  gender?: string;
 }
 
 interface Session {
@@ -61,6 +55,7 @@ export default function AlumniProfile() {
   const [isLastNameEditable, setIsLastNameEditable] = useState(false);
   const [isMiddleInitialEditable, setIsMiddleInitialEditable] = useState(false);
   const [selectedOption, setSelectedOption] = useState('personal');
+  const [isEditMode, setIsEditMode] = useState(false);
   const [profileData, setProfileData] = useState<ProfileData>({
     name: session?.user?.name || "",
     email: session?.user?.email || "",
@@ -73,24 +68,80 @@ export default function AlumniProfile() {
     currentCompany: "",
     currentPosition: "",
     linkedIn: "",
-    website: "",
-    firstName: "Juan",
-    middleInitial: "D",
-    lastName: "dela Cruz",
-    dateOfBirth: "2002-03-08",
-    gender: "",
+    website: ""
   });
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files[0]) return;
+
+    const file = e.target.files[0];
+
+    // Check file size
+    if (file.size > 3 * 1024 * 1024) {
+      toast.error('Image size must be less than 3MB');
+      return;
+    }
+
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('File must be an image');
+      return;
+    }
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const uploadResponse = await fetch('/api/cloudinary/upload_profile_image', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error('Failed to upload image');
+      }
+
+      const { url } = await uploadResponse.json();
+
+      // Update profile with new image URL
+      const updateResponse = await fetch('/api/users/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...profileData,
+          profilePicture: url
+        }),
+      });
+
+      if (!updateResponse.ok) {
+        throw new Error('Failed to update profile');
+      }
+
+      // Update local state
+      setProfileData(prev => ({
+        ...prev,
+        profilePicture: url
+      }));
+
+      toast.success('Profile picture updated successfully');
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('Failed to update profile picture');
+    }
+  };
 
   useEffect(() => {
     const fetchProfileData = async () => {
       try {
-        const response = await fetch("/api/alumni/profile");
+        const response = await fetch("/api/users/profile");
         if (!response.ok) throw new Error("Failed to fetch profile data");
-          const data = await response.json();
-          setProfileData((prevData) => ({
-            ...prevData,
-            ...data,
-          }));
+        const data = await response.json();
+        setProfileData(prev => ({
+          ...prev,
+          ...data,
+        }));
       } catch (error) {
         console.error("Error fetching profile:", error);
         toast.error("Failed to load profile data");
@@ -102,24 +153,26 @@ export default function AlumniProfile() {
     }
   }, [session]);
 
-  const handleUpdateProfile = async (updatedProfile: ProfileData) => {
+  const handleSaveProfile = async () => {
     try {
-      const response = await fetch("/api/alumni/profile", {
+      const response = await fetch("/api/users/profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updatedProfile),
+        body: JSON.stringify(profileData),
       });
 
       if (!response.ok) throw new Error("Failed to update profile");
-      
-      setProfileData(updatedProfile);
+
       toast.success("Profile updated successfully");
-      setIsEditModalOpen(false);
+      setIsEditMode(false);
     } catch (error) {
       console.error("Error updating profile:", error);
       toast.error("Failed to update profile");
     }
   };
+
+  // Add this right before the return statement
+  const canEdit = !isEditMode ? "readOnly" : "";
 
   return (
     <div className="h-screen overflow-hidden relative">
@@ -146,6 +199,13 @@ export default function AlumniProfile() {
                     {/* Profile Picture Square */}
                     <div className="flex flex-col items-center mb-6">
                       <div className="relative mb-3">
+                        <input
+                          type="file"
+                          ref={fileInputRef}
+                          className="hidden"
+                          accept="image/png,image/jpeg,image/jpg"
+                          onChange={handleImageUpload}
+                        />
                         <div className="w-44 h-44 rounded-lg border-4 border-white/20 bg-white/10">
                 {profileData.profilePicture ? (
                   <img
@@ -159,15 +219,22 @@ export default function AlumniProfile() {
                             </div>
                           )}
                         </div>
-                        <button className="absolute bottom-2 right-2 p-2 bg-white/20 hover:bg-white/30 rounded-full transition cursor-pointer">
+                        <button 
+                          className="absolute bottom-2 right-2 p-2 bg-white/20 hover:bg-white/30 rounded-full transition cursor-pointer"
+                          onClick={() => fileInputRef.current?.click()}
+                        >
                           <Camera size={22} className="text-white" />
                         </button>
                       </div>
-                      <h2 className="text-3xl font-semibold text-white mb-2">Juan dela Cruz</h2>
                       <div className="text-center space-y-1">
-                        <p className="text-lg text-white/80">Senior Software Engineer at TechCorp</p>
-                        <p className="text-base text-white/60">juan.delacruz@email.com</p>
-                        <p className="text-base text-white/60">+63 912 345 6789</p>
+                        <h2 className="text-3xl font-semibold text-white mb-2">{profileData.name}</h2>
+                        <p className="text-lg text-white/80">
+                          {profileData.currentPosition && `${profileData.currentPosition}`}
+                          {profileData.currentCompany && profileData.currentPosition && ' at '}
+                          {profileData.currentCompany}
+                        </p>
+                        <p className="text-base text-white/60">{profileData.email}</p>
+                        <p className="text-base text-white/60">{profileData.phoneNumber}</p>
                       </div>
                     </div>
 
@@ -269,6 +336,33 @@ export default function AlumniProfile() {
               {/* Right Column - Single Card */}
               <div className="lg:col-span-7 h-[calc(100vh-6rem)]">
                 <div className="bg-white/10 backdrop-blur-sm rounded-xl shadow-lg p-6 h-full">
+                  {/* Add Edit/Save Buttons */}
+                  <div className="flex justify-end mb-6">
+                    {isEditMode ? (
+                      <div className="space-x-2">
+                        <button
+                          onClick={() => setIsEditMode(false)}
+                          className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={handleSaveProfile}
+                          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                        >
+                          Save Changes
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setIsEditMode(true)}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      >
+                        Edit Profile
+                      </button>
+                    )}
+                  </div>
+
                   {/* Personal Information Section */}
                   {selectedOption === 'personal' && (
                     <div className="space-y-4">
@@ -276,124 +370,27 @@ export default function AlumniProfile() {
                         Personal Information
                       </h2>
                       <div className="space-y-3">
-                        {/* First Row: First Name, Middle Initial, and Last Name */}
-                        <div className="grid grid-cols-[2fr_1fr_2fr] gap-4">
-                          <div className="space-y-1">
-                            <label className="block text-base font-medium text-gray-200">
-                              First Name
-                            </label>
-                            <div className="relative">
-                              <input
-                                type="text"
-                                className="w-full px-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent pr-10"
-                                placeholder="Enter your first name"
-                                value={profileData.firstName || ""}
-                                onChange={(e) => {
-                                  setProfileData({ ...profileData, firstName: e.target.value });
-                                }}
-                                readOnly={!isFirstNameEditable}
-                              />
-                              <button
-                                className="absolute right-2 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors"
-                                onClick={() => setIsFirstNameEditable(!isFirstNameEditable)}
-                              >
-                                <Edit2 size={18} />
-                              </button>
-                            </div>
-                          </div>
-                          <div className="space-y-1">
-                            <label className="block text-base font-medium text-gray-200">
-                              M.I.
-                            </label>
-                            <div className="relative">
-                              <input
-                                type="text"
-                                className="w-full px-2 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent pr-8"
-                                placeholder="M.I."
-                                value={profileData.middleInitial || ""}
-                                onChange={(e) => {
-                                  setProfileData({ ...profileData, middleInitial: e.target.value });
-                                }}
-                                readOnly={!isMiddleInitialEditable}
-                                maxLength={2}
-                              />
-                              <button
-                                className="absolute right-1 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors"
-                                onClick={() => setIsMiddleInitialEditable(!isMiddleInitialEditable)}
-                              >
-                                <Edit2 size={18} />
-                              </button>
-                            </div>
-                          </div>
-                          <div className="space-y-1">
-                            <label className="block text-base font-medium text-gray-200">
-                              Last Name
-                            </label>
-                            <div className="relative">
-                              <input
-                                type="text"
-                                className="w-full px-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent pr-10"
-                                placeholder="Enter your last name"
-                                value={profileData.lastName || ""}
-                                onChange={(e) => {
-                                  setProfileData({ ...profileData, lastName: e.target.value });
-                                }}
-                                readOnly={!isLastNameEditable}
-                              />
-                              <button
-                                className="absolute right-2 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors"
-                                onClick={() => setIsLastNameEditable(!isLastNameEditable)}
-                              >
-                                <Edit2 size={18} />
-                              </button>
+                        {/* Name Field */}
+                        <div className="space-y-1">
+                          <label className="block text-base font-medium text-gray-200">
+                            Name
+                          </label>
+                          <div className="relative">
+                            <input
+                              type="text"
+                              className="w-full pl-10 pr-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent"
+                              placeholder="Enter your name"
+                              value={profileData.name}
+                              onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
+                              readOnly={!isEditMode}
+                            />
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                              <User className="h-5 w-5 text-gray-400" />
                             </div>
                           </div>
                         </div>
 
-                        {/* Second Row: Date of Birth and Gender */}
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-1">
-                            <label className="block text-base font-medium text-gray-200">
-                              Date of Birth
-                            </label>
-                            <input
-                              type="date"
-                              className="w-full px-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent"
-                              value={profileData.dateOfBirth || ""}
-                              onChange={(e) => {
-                                setProfileData({ ...profileData, dateOfBirth: e.target.value });
-                              }}
-                              readOnly
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <label className="block text-base font-medium text-gray-200">
-                              Gender
-                            </label>
-                            <div className="relative">
-                              <select
-                                className="w-full px-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent appearance-none pr-10"
-                                value={profileData.gender || ""}
-                                onChange={(e) => {
-                                  setProfileData({ ...profileData, gender: e.target.value });
-                                }}
-                                style={{
-                                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23ffffff'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`,
-                                  backgroundRepeat: 'no-repeat',
-                                  backgroundPosition: 'right 0.75rem center',
-                                  backgroundSize: '1.25rem'
-                                }}
-                              >
-                                <option value="" className="bg-[#0f172a] text-white">Select gender</option>
-                                <option value="male" className="bg-[#0f172a] text-white">Male</option>
-                                <option value="female" className="bg-[#0f172a] text-white">Female</option>
-                                <option value="other" className="bg-[#0f172a] text-white">Other</option>
-                              </select>
-                            </div>
-              </div>
-            </div>
-
-                        {/* Third Row: Email and Contact Number */}
+                        {/* Email and Contact Number */}
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-1">
                             <label className="block text-base font-medium text-gray-200">
@@ -402,41 +399,56 @@ export default function AlumniProfile() {
                             <div className="relative">
                               <input
                                 type="email"
-                                className="w-full px-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent pr-10"
+                                className="w-full pl-10 pr-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent"
                                 placeholder="Enter your email"
-                                value="juan.delacruz@email.com"
+                                value={profileData.email}
                                 readOnly
                               />
-                              <button
-                                className="absolute right-2 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors"
-                                onClick={() => {}}
-                              >
-                                <Edit2 size={18} />
-                              </button>
+                              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <Mail className="h-5 w-5 text-gray-400" />
+                              </div>
                             </div>
                           </div>
                           <div className="space-y-1">
                             <label className="block text-base font-medium text-gray-200">
-                              Contact Number
+                              Phone Number
                             </label>
                             <div className="relative">
                               <input
                                 type="tel"
-                                className="w-full px-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent pr-10"
-                                placeholder="Enter your contact number"
-                                value="+63 912 345 6789"
-                                readOnly
+                                className="w-full pl-10 pr-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent"
+                                placeholder="Enter your phone number"
+                                value={profileData.phoneNumber || ""}
+                                onChange={(e) => setProfileData({...profileData, phoneNumber: e.target.value})}
+                                readOnly={!isEditMode}
                               />
-                              <button
-                                className="absolute right-2 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors"
-                                onClick={() => {}}
-                              >
-                                <Edit2 size={18} />
-                              </button>
+                              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <Phone className="h-5 w-5 text-gray-400" />
+                              </div>
                             </div>
                           </div>
                         </div>
-                  </div>
+
+                        {/* Location */}
+                        <div className="space-y-1">
+                          <label className="block text-base font-medium text-gray-200">
+                            Current Location
+                          </label>
+                          <div className="relative">
+                            <input
+                              type="text"
+                              className="w-full pl-10 pr-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent"
+                              placeholder="Enter your current location"
+                              value={profileData.currentLocation || ""}
+                              onChange={(e) => setProfileData({...profileData, currentLocation: e.target.value})}
+                              readOnly={!isEditMode}
+                            />
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                              <MapPin className="h-5 w-5 text-gray-400" />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   )}
 
@@ -447,101 +459,43 @@ export default function AlumniProfile() {
                         Educational Information
                       </h2>
                       <div className="space-y-3">
-                        {/* College/University */}
-                        <div className="space-y-1">
-                          <label className="block text-base font-medium text-gray-200">
-                            College/University
-                          </label>
-                          <div className="relative">
-                            <input
-                              type="text"
-                              className="w-full px-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent pr-10"
-                              placeholder="Enter your college/university"
-                              value="University of the Philippines"
-                              readOnly
-                            />
-                            <button
-                              className="absolute right-2 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors"
-                              onClick={() => {}}
-                            >
-                              <Edit2 size={18} />
-                            </button>
-                          </div>
-                        </div>
-
-                        {/* Degree Earned */}
-                        <div className="space-y-1">
-                          <label className="block text-base font-medium text-gray-200">
-                            Degree Earned
-                          </label>
-                          <div className="relative">
-                            <input
-                              type="text"
-                              className="w-full px-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent pr-10"
-                              placeholder="Enter your degree"
-                              value="Bachelor of Science in Computer Science"
-                              readOnly
-                            />
-                            <button
-                              className="absolute right-2 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors"
-                              onClick={() => {}}
-                            >
-                              <Edit2 size={18} />
-                            </button>
-                          </div>
-                        </div>
-
                         {/* Graduation Year and Department */}
                         <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-1">
                             <label className="block text-base font-medium text-gray-200">
                               Graduation Year
                             </label>
-                            <input
-                              type="number"
-                              className="w-full px-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent"
-                              placeholder="Enter graduation year"
-                              value={profileData.graduationYear || ""}
-                              onChange={(e) => {
-                                setProfileData({ ...profileData, graduationYear: parseInt(e.target.value) });
-                              }}
-                            />
+                            <div className="relative">
+                              <input
+                                type="number"
+                                className="w-full pl-10 pr-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent"
+                                placeholder="Enter graduation year"
+                                value={profileData.graduationYear || ""}
+                                onChange={(e) => setProfileData({ ...profileData, graduationYear: parseInt(e.target.value) })}
+                                readOnly={!isEditMode}
+                              />
+                              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <GraduationCap className="h-5 w-5 text-gray-400" />
+                              </div>
+                            </div>
                           </div>
                           <div className="space-y-1">
                             <label className="block text-base font-medium text-gray-200">
                               Department
                             </label>
-                            <input
-                              type="text"
-                              className="w-full px-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent"
-                              placeholder="Enter department"
-                              value={profileData.department || ""}
-                              onChange={(e) => {
-                                setProfileData({ ...profileData, department: e.target.value });
-                              }}
-                            />
-                          </div>
-                        </div>
-
-                        {/* Club/Organization */}
-                        <div className="space-y-1">
-                          <label className="block text-base font-medium text-gray-200">
-                            Club/Organization
-                          </label>
-                          <div className="relative">
-                            <input
-                              type="text"
-                              className="w-full px-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent pr-10"
-                              placeholder="Enter your club/organization"
-                              value="UP Computer Science Society"
-                              readOnly
-                            />
-                            <button
-                              className="absolute right-2 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors"
-                              onClick={() => {}}
-                            >
-                              <Edit2 size={18} />
-                            </button>
+                            <div className="relative">
+                              <input
+                                type="text"
+                                className="w-full pl-10 pr-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent"
+                                placeholder="Enter department" 
+                                value={profileData.department || ""}
+                                onChange={(e) => setProfileData({...profileData, department: e.target.value})}
+                                readOnly={!isEditMode}
+                              />
+                              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <Building2 className="h-5 w-5 text-gray-400" />
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -555,47 +509,43 @@ export default function AlumniProfile() {
                         Professional Information
                       </h2>
                       <div className="space-y-3">
-                        {/* Company/Organization Name */}
-                        <div className="space-y-1">
-                          <label className="block text-base font-medium text-gray-200">
-                            Company/Organization Name
-                          </label>
-                          <div className="relative">
-                            <input
-                              type="text"
-                              className="w-full px-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent pr-10"
-                              placeholder="Enter company/organization name"
-                              value="TechCorp Solutions Inc."
-                              readOnly
-                            />
-                            <button
-                              className="absolute right-2 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors"
-                              onClick={() => {}}
-                            >
-                              <Edit2 size={18} />
-                            </button>
+                        {/* Current Position and Company */}
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-1">
+                            <label className="block text-base font-medium text-gray-200">
+                              Current Position
+                            </label>
+                            <div className="relative">
+                              <input
+                                type="text"
+                                className="w-full pl-10 pr-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent"
+                                placeholder="Enter current position"
+                                value={profileData.currentPosition || ""}
+                                onChange={(e) => setProfileData({...profileData, currentPosition: e.target.value})}
+                                readOnly={!isEditMode}
+                              />
+                              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <Briefcase className="h-5 w-5 text-gray-400" />
+                              </div>
+                            </div>
                           </div>
-                        </div>
-
-                        {/* Years of Experience */}
-                        <div className="space-y-1">
-                          <label className="block text-base font-medium text-gray-200">
-                            Years of Experience
-                          </label>
-                          <div className="relative">
-                            <input
-                              type="number"
-                              className="w-full px-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent pr-10"
-                              placeholder="Enter years of experience"
-                              value="5"
-                              readOnly
-                            />
-                            <button
-                              className="absolute right-2 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors"
-                              onClick={() => {}}
-                            >
-                              <Edit2 size={18} />
-                            </button>
+                          <div className="space-y-1">
+                            <label className="block text-base font-medium text-gray-200">
+                              Current Company
+                            </label>
+                            <div className="relative">
+                              <input
+                                type="text"
+                                className="w-full pl-10 pr-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent"
+                                placeholder="Enter current company"
+                                value={profileData.currentCompany || ""}
+                                onChange={(e) => setProfileData({...profileData, currentCompany: e.target.value})}
+                                readOnly={!isEditMode}
+                              />
+                              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <Building2 className="h-5 w-5 text-gray-400" />
+                              </div>
+                            </div>
                           </div>
                         </div>
 
@@ -607,17 +557,15 @@ export default function AlumniProfile() {
                           <div className="relative">
                             <input
                               type="url"
-                              className="w-full px-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent pr-10"
+                              className="w-full pl-10 pr-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent"
                               placeholder="Enter LinkedIn profile URL"
-                              value="https://linkedin.com/in/juandelacruz"
-                              readOnly
+                              value={profileData.linkedIn || ""}
+                              onChange={(e) => setProfileData({...profileData, linkedIn: e.target.value})}
+                              readOnly={!isEditMode}
                             />
-                            <button
-                              className="absolute right-2 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors"
-                              onClick={() => {}}
-                            >
-                              <Edit2 size={18} />
-                            </button>
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                              <Linkedin className="h-5 w-5 text-gray-400" />
+                            </div>
                           </div>
                         </div>
 
@@ -628,18 +576,16 @@ export default function AlumniProfile() {
                           </label>
                           <div className="relative">
                             <input
-                              type="url"
-                              className="w-full px-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent pr-10"
+                              type="url" 
+                              className="w-full pl-10 pr-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent"
                               placeholder="Enter personal website URL"
-                              value="https://juandelacruz.dev"
-                              readOnly
+                              value={profileData.website || ""}
+                              onChange={(e) => setProfileData({...profileData, website: e.target.value})}
+                              readOnly={!isEditMode}
                             />
-                            <button
-                              className="absolute right-2 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors"
-                              onClick={() => {}}
-                            >
-                              <Edit2 size={18} />
-                            </button>
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                              <Globe className="h-5 w-5 text-gray-400" />
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -661,14 +607,13 @@ export default function AlumniProfile() {
                             className="w-full px-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent min-h-[200px] resize-none"
                             placeholder="Tell us about yourself..."
                             value={profileData.bio || ""}
-                            onChange={(e) => {
-                              setProfileData({ ...profileData, bio: e.target.value });
-                            }}
+                            onChange={(e) => setProfileData({ ...profileData, bio: e.target.value })}
+                            readOnly={!isEditMode}
                           />
-                  </div>
-                  </div>
-                  </div>
-                )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -682,7 +627,7 @@ export default function AlumniProfile() {
           isOpen={isEditModalOpen}
           onClose={() => setIsEditModalOpen(false)}
           profileData={profileData}
-          onUpdateProfile={handleUpdateProfile}
+          onUpdateProfile={handleSaveProfile}
         />
       )}
     </div>
