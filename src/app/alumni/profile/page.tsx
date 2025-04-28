@@ -555,39 +555,96 @@ export default function AlumniProfile() {
                         Professional Information
                       </h2>
                       <div className="space-y-3">
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-1">
-                            <label className="block text-base font-medium text-gray-200">
-                              Current Company
-                            </label>
+                        {/* Company/Organization Name */}
+                        <div className="space-y-1">
+                          <label className="block text-base font-medium text-gray-200">
+                            Company/Organization Name
+                          </label>
+                          <div className="relative">
                             <input
                               type="text"
-                              className="w-full px-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent"
-                              placeholder="Enter current company"
-                              value={profileData.currentCompany || ""}
-                              onChange={(e) => {
-                                setProfileData({ ...profileData, currentCompany: e.target.value });
-                              }}
+                              className="w-full px-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent pr-10"
+                              placeholder="Enter company/organization name"
+                              value="TechCorp Solutions Inc."
+                              readOnly
                             />
-                </div>
-                          <div className="space-y-1">
-                            <label className="block text-base font-medium text-gray-200">
-                              Current Position
-                            </label>
+                            <button
+                              className="absolute right-2 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors"
+                              onClick={() => {}}
+                            >
+                              <Edit2 size={18} />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Years of Experience */}
+                        <div className="space-y-1">
+                          <label className="block text-base font-medium text-gray-200">
+                            Years of Experience
+                          </label>
+                          <div className="relative">
                             <input
-                              type="text"
-                              className="w-full px-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent"
-                              placeholder="Enter current position"
-                              value={profileData.currentPosition || ""}
-                              onChange={(e) => {
-                                setProfileData({ ...profileData, currentPosition: e.target.value });
-                              }}
+                              type="number"
+                              className="w-full px-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent pr-10"
+                              placeholder="Enter years of experience"
+                              value="5"
+                              readOnly
                             />
-              </div>
-                  </div>
-                  </div>
-                  </div>
-                )}
+                            <button
+                              className="absolute right-2 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors"
+                              onClick={() => {}}
+                            >
+                              <Edit2 size={18} />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* LinkedIn Profile */}
+                        <div className="space-y-1">
+                          <label className="block text-base font-medium text-gray-200">
+                            LinkedIn Profile
+                          </label>
+                          <div className="relative">
+                            <input
+                              type="url"
+                              className="w-full px-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent pr-10"
+                              placeholder="Enter LinkedIn profile URL"
+                              value="https://linkedin.com/in/juandelacruz"
+                              readOnly
+                            />
+                            <button
+                              className="absolute right-2 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors"
+                              onClick={() => {}}
+                            >
+                              <Edit2 size={18} />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Personal Website */}
+                        <div className="space-y-1">
+                          <label className="block text-base font-medium text-gray-200">
+                            Personal Website
+                          </label>
+                          <div className="relative">
+                            <input
+                              type="url"
+                              className="w-full px-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent pr-10"
+                              placeholder="Enter personal website URL"
+                              value="https://juandelacruz.dev"
+                              readOnly
+                            />
+                            <button
+                              className="absolute right-2 top-1/2 -translate-y-1/2 text-white/60 hover:text-white transition-colors"
+                              onClick={() => {}}
+                            >
+                              <Edit2 size={18} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Biographical Information Section */}
                   {selectedOption === 'biographical' && (
