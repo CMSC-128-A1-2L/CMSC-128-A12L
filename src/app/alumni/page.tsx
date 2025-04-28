@@ -36,6 +36,58 @@ interface DashboardStats {
   };
 }
 
+interface UserLog {
+  _id?: string;
+  userId?: string;
+  imageUrl?: string;
+  name: string;
+  action: string;
+  status?: string;
+  timestamp: Date;
+  ipAddress?: string;
+}
+
+interface ActivityItemProps {
+  icon: any;
+  title: string;
+  description: string;
+  time: string;
+  color: string;
+}
+
+declare global {
+  interface Date {
+    toRelativeString(): string;
+  }
+}
+
+Date.prototype.toRelativeString = function(): string {
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - this.getTime()) / 1000);
+
+  if (diffInSeconds < 60) {
+    return "Just now";
+  }
+
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  if (diffInMinutes < 60) {
+    return `${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`;
+  }
+
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) {
+    return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
+  }
+
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays < 30) {
+    return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+  }
+
+  const diffInMonths = Math.floor(diffInDays / 30);
+  return `${diffInMonths} month${diffInMonths > 1 ? 's' : ''} ago`;
+};
+
 export default function AlumniDashboard() {
   const { data: session } = useSession();
   const [loading, setLoading] = useState(true);
@@ -51,6 +103,7 @@ export default function AlumniDashboard() {
       notifications: ""
     }
   });
+  const [recentActivities, setRecentActivities] = useState<ActivityItemProps[]>([]);
 
   useEffect(() => {
     const fetchDashboardStats = async () => {
@@ -102,6 +155,52 @@ export default function AlumniDashboard() {
     if (session?.user) {
       fetchDashboardStats();
     }
+  }, [session]);
+
+  useEffect(() => {
+    const fetchRecentActivities = async () => {
+      if (!session?.user?.id) return;
+      
+      try {
+        const response = await fetch('/api/logs/user?limit=3');
+        const logs: UserLog[] = await response.json();
+        
+        const activities = logs.map(log => {
+          let icon = Users;
+          let color = "bg-blue-100/20";
+          let title = "Activity";
+          
+          // Map actions to icons and colors
+          if (log.action.includes('events')) {
+            icon = Calendar;
+            color = "bg-green-100/20";
+            title = "Event Activity";
+          } else if (log.action.includes('opportunities') || log.action.includes('jobs')) {
+            icon = Briefcase;
+            color = "bg-purple-100/20";
+            title = "Job Activity";
+          } else if (log.action.includes('notifications')) {
+            icon = Bell;
+            color = "bg-orange-100/20";
+            title = "Notification";
+          }
+
+          return {
+            icon,
+            color,
+            title,
+            description: log.action,
+            time: new Date(log.timestamp).toRelativeString()
+          };
+        });
+
+        setRecentActivities(activities);
+      } catch (error) {
+        console.error('Error fetching recent activities:', error);
+      }
+    };
+
+    fetchRecentActivities();
   }, [session]);
 
   const quickActions = [
@@ -254,27 +353,22 @@ export default function AlumniDashboard() {
           <h2 className="text-2xl font-bold text-white mb-6">Recent Activity</h2>
           <Card className="p-6 bg-white/10 backdrop-blur-sm border-0">
             <div className="space-y-6">
-              <ActivityItem
-                icon={Users}
-                title="New Connection"
-                description="John Doe connected with you"
-                time="2 hours ago"
-                color="bg-blue-100/20"
-              />
-              <ActivityItem
-                icon={Calendar}
-                title="Event Reminder"
-                description="Alumni Meetup starts in 3 days"
-                time="1 day ago"
-                color="bg-green-100/20"
-              />
-              <ActivityItem
-                icon={Briefcase}
-                title="New Job Posting"
-                description="Software Engineer position at Tech Corp"
-                time="2 days ago"
-                color="bg-purple-100/20"
-              />
+              {recentActivities.length > 0 ? (
+                recentActivities.map((activity, index) => (
+                  <ActivityItem
+                    key={index}
+                    icon={activity.icon}
+                    title={activity.title}
+                    description={activity.description}
+                    time={activity.time}
+                    color={activity.color}
+                  />
+                ))
+              ) : (
+                <div className="text-center text-gray-400 py-4">
+                  No recent activities
+                </div>
+              )}
             </div>
           </Card>
         </motion.div>

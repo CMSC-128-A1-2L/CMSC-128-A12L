@@ -45,14 +45,15 @@ export async function middleware(req: NextRequest) {
     if (req.nextUrl.pathname.startsWith('/api')) {
         // Log the API request
         const log: Logs = {
+            userId: token.sub || undefined,  // Add userId from token sub (subject)
             name: token.name || "unknown",
             imageUrl: token.imageUrl || "",
             action: req.method + " " + req.nextUrl.pathname,
-            status: req.method, // Use HTTP method as status
+            status: req.method,
             timestamp: new Date(),
             ipAddress: req.headers.get("x-forwarded-for") || "unknown"
         };
-        
+
         // Send log to the logs API
         try {
             // Create a clone of the request to avoid modifying the original
@@ -79,5 +80,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-    matcher: ["/alumni/:path*", "/admin/:path*", "/api/admin/:path*"], 
+    matcher: ["/alumni/:path*", "/admin/:path*", "/api/admin/:path*", "/api/alumni/:path*"], 
 };
