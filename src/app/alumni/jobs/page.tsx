@@ -351,7 +351,7 @@ export default function JobListings() {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}
-            className={`w-64 flex-shrink-0 ${filterSidebarOpen ? 'block' : 'hidden'} lg:block`}
+            className="w-64 flex-shrink-0"
           >
             <div className="flex items-center gap-3 mb-4">
               <button
@@ -361,13 +361,15 @@ export default function JobListings() {
                 <Filter size={18} />
               </button>
             </div>
-            <FilterSidebar
-              isOpen={filterSidebarOpen}
-              setIsOpen={setFilterSidebarOpen}
-              onFilterChange={handleFilterChange}
-              showModal={() => setShowModal(true)}
-              activeFilters={activeFilters}
-            />
+            <div className={`${filterSidebarOpen ? 'block' : 'hidden'} lg:block`}>
+              <FilterSidebar
+                isOpen={filterSidebarOpen}
+                setIsOpen={setFilterSidebarOpen}
+                onFilterChange={handleFilterChange}
+                showModal={() => setShowModal(true)}
+                activeFilters={activeFilters}
+              />
+            </div>
           </motion.aside>
 
           {/* Main content */}
