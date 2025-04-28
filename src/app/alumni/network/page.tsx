@@ -17,6 +17,7 @@ type Alumni = {
   suffix?: string | null;
   gender?: string;
   bio?: string;
+  imageUrl?: string;
   linkedIn?: string;
   phoneNumber?: string;
   currentLocation?: string;
@@ -274,53 +275,71 @@ export default function AlumniPage() {
                 displayedAlumni.map((alumni, index) => (
                   <div
                     key={alumni.id}
-                    className="w-full h-88 bg-white/10 backdrop-blur-sm rounded-lg shadow-md flex flex-col justify-end p-2 relative group transition-all duration-300 border border-white/20"
+                    className="w-full h-88 bg-white/10 backdrop-blur-sm rounded-lg overflow-hidden shadow-md flex flex-col relative group transition-all duration-300 border border-white/20"
                   >
                     {/* Front View - Default */}
-                    <div className="absolute inset-0 flex flex-col items-center justify-end opacity-100 group-hover:opacity-0 transition-opacity duration-300">
-                      <div className="w-full h-[85%] bg-white/20 rounded-t-lg absolute top-0"></div>
-                      <div className="absolute bottom-1 flex flex-col items-center">
-                        <p className="text-white font-medium">
-                          {alumni.name}
-                        </p>
-                        <p className="text-gray-300 text-sm -mt-1">
-                          Batch {alumni.graduationYear || "N/A"}
-                        </p>
+                    <div className="absolute inset-0 flex flex-col items-center justify-between opacity-100 group-hover:opacity-0 transition-all duration-300">
+                      <div className="w-full h-[85%] bg-white/20 overflow-hidden">
+                        {alumni.imageUrl ? (
+                          <img
+                            src={alumni.imageUrl}
+                            alt={alumni.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-white/5">
+                            <FiUsers className="text-gray-400" size={64} />
+                          </div>
+                        )}
+                      </div>
+                      <div className="w-full py-3 px-2 text-center bg-black/20 backdrop-blur-sm">
+                        <p className="text-white font-medium">{alumni.name}</p>
+                        <p className="text-gray-300 text-sm">Batch {alumni.graduationYear || "N/A"}</p>
                       </div>
                     </div>
 
                     {/* Hover View - Detailed Info */}
-                    <div className="absolute inset-0 flex flex-col justify-center items-center bg-white/10 backdrop-blur-sm rounded-lg shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-4 border border-white/20">
-                      <p className="text-gray-200 mb-1">
-                        <strong>Role:</strong> {alumni.role.join(", ") || "N/A"}
-                      </p>
-                      <p className="text-gray-200 mb-1">
-                        <strong>Department:</strong> {alumni.department || "N/A"}
-                      </p>
-                      <p className="text-gray-200 mb-1">
-                        <strong>Current Position:</strong> {alumni.currentPosition || "N/A"}
-                      </p>
-                      <p className="text-gray-200 mb-1">
-                        <strong>Current Company:</strong> {alumni.currentCompany || "N/A"}
-                      </p>
-                      {alumni.linkedIn && (
-                        <p className="text-gray-200 mb-3">
-                          <strong>LinkedIn:</strong>{" "}
-                          <a
-                            href={alumni.linkedIn}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-500 underline"
-                          >
-                            Profile
-                          </a>
-                        </p>
-                      )}
+                    <div className="absolute inset-0 flex flex-col justify-center items-center bg-[#1a1f4d]/90 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all duration-300 p-6">
+                      <div className="w-full space-y-4">
+                        <div className="text-center mb-2">
+                          <h3 className="text-xl font-semibold text-white">{alumni.name}</h3>
+                          <p className="text-gray-300">Class of {alumni.graduationYear || "N/A"}</p>
+                        </div>
+                        
+                        {/* Academic Info */}
+                        <div className="text-gray-200 text-sm">
+                          <p className="mb-1 text-center">{alumni.department || "Department not specified"}</p>
+                        </div>
+
+                        {/* Professional Info */}
+                        {(alumni.currentPosition || alumni.currentCompany) && (
+                          <div className="text-gray-200 text-center border-t border-white/10 pt-4">
+                            <p>{alumni.currentPosition}</p>
+                            <p className="text-gray-300">{alumni.currentCompany}</p>
+                          </div>
+                        )}
+
+                        {/* Contact Links */}
+                        <div className="flex justify-center gap-2 pt-4">
+                          {alumni.linkedIn && (
+                            <a
+                              href={alumni.linkedIn}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-blue-400 hover:text-blue-300 underline text-sm"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              LinkedIn Profile
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                      
                       <button 
                         onClick={() => router.push(`/alumni/network/${alumni.id}`)}
-                        className="btn btn-outline btn-sm border-white text-white hover:bg-white hover:text-black"
+                        className="mt-6 px-6 py-2 bg-white/10 hover:bg-white/20 border border-white/40 rounded-lg text-white transition-colors"
                       >
-                        View Profile
+                        View Full Profile
                       </button>
                     </div>
                   </div>
