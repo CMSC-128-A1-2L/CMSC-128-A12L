@@ -628,6 +628,7 @@ export default function JobListings() {
           onClose={() => setShowModal(false)}
           onSuccess={() => {
             toast.success('Job posted successfully');
+            
             setShowModal(false);
             fetchJobs(jobView); // Refresh jobs list
           }}

@@ -28,25 +28,196 @@ interface DashboardStats {
   upcomingEvents: number;
   jobOpportunities: number;
   unreadNotifications: number;
+  trends: {
+    connections: string;
+    events: string;
+    jobs: string;
+    notifications: string;
+  };
 }
+
+interface UserLog {
+  _id?: string;
+  userId?: string;
+  imageUrl?: string;
+  name: string;
+  action: string;
+  status?: string;
+  timestamp: Date;
+  ipAddress?: string;
+}
+
+interface ActivityItemProps {
+  icon: any;
+  title: string;
+  description: string;
+  time: string;
+  color: string;
+}
+
+declare global {
+  interface Date {
+    toRelativeString(): string;
+  }
+}
+
+Date.prototype.toRelativeString = function(): string {
+  const now = new Date();
+  const diffInSeconds = Math.floor((now.getTime() - this.getTime()) / 1000);
+
+  if (diffInSeconds < 60) {
+    return "Just now";
+  }
+
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  if (diffInMinutes < 60) {
+    return `${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`;
+  }
+
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) {
+    return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
+  }
+
+  const diffInDays = Math.floor(diffInHours / 24);
+  if (diffInDays < 30) {
+    return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+  }
+
+  const diffInMonths = Math.floor(diffInDays / 30);
+  return `${diffInMonths} month${diffInMonths > 1 ? 's' : ''} ago`;
+};
 
 export default function AlumniDashboard() {
   const { data: session } = useSession();
+  const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<DashboardStats>({
     connections: 0,
     upcomingEvents: 0,
     jobOpportunities: 0,
-    unreadNotifications: 0
+    unreadNotifications: 0,
+    trends: {
+      connections: "",
+      events: "",
+      jobs: "",
+      notifications: ""
+    }
   });
+  const [recentActivities, setRecentActivities] = useState<ActivityItemProps[]>([]);
 
   useEffect(() => {
-    setStats({
-      connections: 42,
-      upcomingEvents: 3,
-      jobOpportunities: 5,
-      unreadNotifications: 2
-    });
-  }, []);
+    const fetchDashboardStats = async () => {
+      setLoading(true);
+      try {
+        // Get current date and last week's date
+        const now = new Date();
+        const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+        // Fetch alumni with timestamps
+        const alumniResponse = await fetch('/api/users?includeTimestamp=true');
+        const alumniData = await alumniResponse.json();
+        const newAlumniCount = alumniData.filter((a: any) => new Date(a.createdAt) > lastWeek).length;
+        
+        // Fetch events
+        const eventsResponse = await fetch('/api/events?timeline=ongoing');
+        const eventsData = await eventsResponse.json();
+        const newEventsCount = eventsData.filter((e: any) => new Date(e.createdAt) > lastWeek).length;
+        
+        // Fetch job opportunities
+        const jobsResponse = await fetch('/api/alumni/opportunities');
+        const jobsData = await jobsResponse.json();
+        const newJobsCount = jobsData.filter((j: any) => new Date(j.createdAt) > lastWeek).length;
+        
+        // Fetch notifications
+        const notificationsResponse = await fetch(`/api/notifications?userId=${session?.user?.id}&unread=true`);
+        const notificationsData = await notificationsResponse.json();
+        const newNotificationsCount = notificationsData.filter((n: any) => new Date(n.createdAt) > lastWeek).length;
+
+        setStats({
+          connections: alumniData.length || 0,
+          upcomingEvents: eventsData.length || 0,
+          jobOpportunities: jobsData.length || 0,
+          unreadNotifications: notificationsData.length || 0,
+          trends: {
+            connections: `+${newAlumniCount} this week`,
+            events: newEventsCount > 0 ? `${newEventsCount} new` : "No new events",
+            jobs: newJobsCount > 0 ? `${newJobsCount} new posts` : "No new posts",
+            notifications: newNotificationsCount > 0 ? `${newNotificationsCount} new` : "No new"
+          }
+        });
+      } catch (error) {
+        console.error('Error fetching dashboard stats:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (session?.user) {
+      fetchDashboardStats();
+    }
+  }, [session]);
+
+  useEffect(() => {
+    const fetchRecentActivities = async () => {
+      if (!session?.user?.id) return;
+      
+      try {
+        const response = await fetch('/api/logs/user?limit=3');
+        const logs: UserLog[] = await response.json();
+        
+        const activities = logs.map(log => {
+          let icon = Users;
+          let color = "bg-blue-100/20";
+          let title = "Activity";
+          let description = '';
+
+          // Parse the action string
+          const [method, path] = log.action.split(' ');
+
+          // Determine activity type and description
+          if (path.includes('profile')) {
+            if (method === 'PUT') {
+              description = 'Updated your profile information';
+            }
+          } else if (path.includes('events')) {
+            icon = Calendar;
+            color = "bg-green-100/20";
+            title = "Event Activity";
+            if (path.includes('interested')) {
+              description = 'Marked interest in attending an event';
+            } else if (path.includes('not-going')) {
+              description = 'Marked as not attending an event';
+            } else if (path.includes('maybe-going')) {
+              description = 'Marked as maybe attending an event';
+            }
+          } else if (path.includes('opportunities') || path.includes('jobs')) {
+            icon = Briefcase;
+            color = "bg-purple-100/20";
+            title = "Job Activity";
+            if (method === 'POST') {
+              description = 'Posted a new job opportunity';
+            } else if (method === 'PUT') {
+              description = 'Updated a job posting';
+            }
+          }
+
+          return {
+            icon,
+            color,
+            title,
+            description: description || 'Performed an activity',
+            time: new Date(log.timestamp).toRelativeString()
+          };
+        });
+
+        setRecentActivities(activities);
+      } catch (error) {
+        console.error('Error fetching recent activities:', error);
+      }
+    };
+
+    fetchRecentActivities();
+  }, [session]);
 
   const quickActions = [
     {
@@ -119,32 +290,36 @@ export default function AlumniDashboard() {
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12"
         >
           <StatCard
-            title="Connections"
+            title="Active Alumni"
             value={stats.connections}
             icon={Users}
             color="text-blue-500"
-            trend="+5 this week"
+            trend={stats.trends.connections}
+            loading={loading}
           />
           <StatCard
             title="Upcoming Events"
             value={stats.upcomingEvents}
             icon={Calendar}
             color="text-green-500"
-            trend="2 new events"
+            trend={stats.trends.events}
+            loading={loading}
           />
           <StatCard
             title="Job Opportunities"
             value={stats.jobOpportunities}
             icon={Briefcase}
             color="text-purple-500"
-            trend="3 new postings"
+            trend={stats.trends.jobs}
+            loading={loading}
           />
           <StatCard
             title="Notifications"
             value={stats.unreadNotifications}
             icon={Bell}
             color="text-orange-500"
-            trend="2 unread"
+            trend={stats.trends.notifications}
+            loading={loading}
           />
         </motion.div>
 
@@ -194,27 +369,22 @@ export default function AlumniDashboard() {
           <h2 className="text-2xl font-bold text-white mb-6">Recent Activity</h2>
           <Card className="p-6 bg-white/10 backdrop-blur-sm border-0">
             <div className="space-y-6">
-              <ActivityItem
-                icon={Users}
-                title="New Connection"
-                description="John Doe connected with you"
-                time="2 hours ago"
-                color="bg-blue-100/20"
-              />
-              <ActivityItem
-                icon={Calendar}
-                title="Event Reminder"
-                description="Alumni Meetup starts in 3 days"
-                time="1 day ago"
-                color="bg-green-100/20"
-              />
-              <ActivityItem
-                icon={Briefcase}
-                title="New Job Posting"
-                description="Software Engineer position at Tech Corp"
-                time="2 days ago"
-                color="bg-purple-100/20"
-              />
+              {recentActivities.length > 0 ? (
+                recentActivities.map((activity, index) => (
+                  <ActivityItem
+                    key={index}
+                    icon={activity.icon}
+                    title={activity.title}
+                    description={activity.description}
+                    time={activity.time}
+                    color={activity.color}
+                  />
+                ))
+              ) : (
+                <div className="text-center text-gray-400 py-4">
+                  No recent activities
+                </div>
+              )}
             </div>
           </Card>
         </motion.div>
@@ -223,12 +393,13 @@ export default function AlumniDashboard() {
   );
 }
 
-function StatCard({ title, value, icon: Icon, color, trend }: { 
+function StatCard({ title, value, icon: Icon, color, trend, loading }: { 
   title: string; 
   value: number; 
   icon: any; 
   color: string;
   trend: string;
+  loading: boolean;
 }) {
   return (
     <motion.div
@@ -239,10 +410,19 @@ function StatCard({ title, value, icon: Icon, color, trend }: {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-gray-300">{title}</p>
-            <h3 className="text-3xl font-bold mt-1 text-white">{value}</h3>
-            <p className="text-sm text-gray-400 mt-1">{trend}</p>
+            {loading ? (
+              <div className="mt-1 space-y-2">
+                <div className="h-8 w-16 bg-white/10 rounded animate-pulse" />
+                <div className="h-4 w-24 bg-white/10 rounded animate-pulse" />
+              </div>
+            ) : (
+              <>
+                <h3 className="text-3xl font-bold mt-1 text-white">{value}</h3>
+                <p className="text-sm text-gray-400 mt-1">{trend}</p>
+              </>
+            )}
           </div>
-          <div className={`p-4 rounded-xl ${color} bg-opacity-10`}>
+          <div className={`p-4 rounded-xl ${color} bg-opacity-10 ${loading ? 'animate-pulse' : ''}`}>
             <Icon className={`w-8 h-8 ${color}`} />
           </div>
         </div>

@@ -9,7 +9,7 @@ import { getNotificationRepository } from "@/repositories/notifications_reposito
 export async function POST(req: NextRequest) {
     const session = await getServerSession(authOptions);
 
-    if (!session || !session.user.role.includes(UserRole.ADMIN)) {
+    if (!session) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
