@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { motion } from 'framer-motion';
+import Link from 'next/link';
 import ConstellationBackground from '../components/constellation_background';
 import Modal from '../components/modal';
 
@@ -121,18 +122,33 @@ useEffect(() => {
           <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-black">Quick Actions</h2>
           <div className="border-b-2 border-gray-800 mb-4"></div>
           <div className="space-y-3 sm:space-y-4">
-            <button className="w-full bg-[#1a1f4d] hover:bg-[#0d47a1] text-white rounded-lg p-3 sm:p-4 text-left flex items-center justify-between transition-colors cursor-pointer">
-              <span className="text-sm sm:text-base">Create New Event</span>
-              <span className="text-lg sm:text-xl">+</span>
-            </button>
-            <button className="w-full bg-[#1a1f4d] hover:bg-[#0d47a1] text-white rounded-lg p-3 sm:p-4 text-left flex items-center justify-between transition-colors cursor-pointer">
-              <span className="text-sm sm:text-base">Add New Alumni</span>
-              <span className="text-lg sm:text-xl">+</span>
-            </button>
-            <button className="w-full bg-[#1a1f4d] hover:bg-[#0d47a1] text-white rounded-lg p-3 sm:p-4 text-left flex items-center justify-between transition-colors cursor-pointer">
-              <span className="text-sm sm:text-base">Generate Reports</span>
-              <span className="text-lg sm:text-xl">+</span>
-            </button>
+            <Link href="/admin/events" className="block">
+              <button className="w-full bg-[#1a1f4d] hover:bg-[#0d47a1] text-white rounded-lg p-3 sm:p-4 text-left flex items-center justify-between transition-colors cursor-pointer">
+                <span className="text-sm sm:text-base">Create New Event</span>
+                <span className="text-lg sm:text-xl">+</span>
+              </button>
+            </Link>
+
+            <Link href="/admin/user-management" className="block">
+              <button className="w-full bg-[#1a1f4d] hover:bg-[#0d47a1] text-white rounded-lg p-3 sm:p-4 text-left flex items-center justify-between transition-colors cursor-pointer">
+                <span className="text-sm sm:text-base">Manage Users</span>
+                <span className="text-lg sm:text-xl">+</span>
+              </button>
+            </Link>
+
+            <Link href="/admin/reports" className="block">
+              <button className="w-full bg-[#1a1f4d] hover:bg-[#0d47a1] text-white rounded-lg p-3 sm:p-4 text-left flex items-center justify-between transition-colors cursor-pointer">
+                <span className="text-sm sm:text-base">Generate Reports</span>
+                <span className="text-lg sm:text-xl">+</span>
+              </button>
+            </Link>
+
+            <Link href="/admin/communications" className="block">
+              <button className="w-full bg-[#1a1f4d] hover:bg-[#0d47a1] text-white rounded-lg p-3 sm:p-4 text-left flex items-center justify-between transition-colors cursor-pointer">
+                <span className="text-sm sm:text-base">Send Communications</span>
+                <span className="text-lg sm:text-xl">+</span>
+              </button>
+            </Link>
           </div>
         </div>
 
