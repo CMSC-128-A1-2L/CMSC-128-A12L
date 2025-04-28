@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Bell, Lock, Mail, User, Globe, X } from "lucide-react";
+import { Bell, Lock, X } from "lucide-react";
 import { useSession, signOut } from "next-auth/react";
-import { getUserRepository } from "@/repositories/user_repository";
+import ConstellationBackground from "@/app/components/constellationBackground";
 
 export default function SettingsPage() {
   const { data: session } = useSession();
@@ -31,39 +31,25 @@ export default function SettingsPage() {
   const [passwordSuccess, setPasswordSuccess] = useState(false);
 
   const handleNotificationChange = (key: keyof typeof notifications) => {
-    setNotifications(prev => ({
-      ...prev,
-      [key]: !prev[key]
-    }));
+    setNotifications(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
   const handlePrivacyChange = (key: keyof typeof privacy, value: string | boolean) => {
-    setPrivacy(prev => ({
-      ...prev,
-      [key]: value
-    }));
+    setPrivacy(prev => ({ ...prev, [key]: value }));
   };
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setPasswordData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    setPasswordData(prev => ({ ...prev, [name]: value }));
     setPasswordError("");
   };
 
   const validatePassword = async () => {
     try {
-      // Validate current password
       const response = await fetch("/api/auth/validate-password", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          currentPassword: passwordData.currentPassword,
-        }),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentPassword: passwordData.currentPassword }),
       });
 
       if (!response.ok) {
@@ -77,7 +63,6 @@ export default function SettingsPage() {
         return false;
       }
 
-      // these are the form fields that does not really need api calls
       if (passwordData.newPassword.length < 8) {
         setPasswordError("Password must be at least 8 characters long");
         return false;
@@ -110,9 +95,7 @@ export default function SettingsPage() {
         if (session?.user.id) {
           const response = await fetch("/api/auth/change-password", {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               userId: session.user.id,
               newPassword: passwordData.newPassword,
@@ -121,7 +104,6 @@ export default function SettingsPage() {
 
           if (response.ok) {
             setPasswordSuccess(true);
-            // Wait for 2 seconds to show the success message
             setTimeout(() => {
               setShowPasswordModal(false);
               setPasswordData({
@@ -130,7 +112,6 @@ export default function SettingsPage() {
                 confirmPassword: "",
               });
               setPasswordSuccess(false);
-              // Sign out the user
               signOut({ callbackUrl: '/login' });
             }, 2000);
           } else {
@@ -146,93 +127,65 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0f172a] text-white">
-      <div className="container mx-auto px-4 py-8">
-        <motion.h1 
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-3xl font-bold mb-8 bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent"
-        >
-          Settings
-        </motion.h1>
+    <div className="min-h-screen">
+      {/* Hero Section */}
+      <div className="relative text-white -mt-16 pt-16 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-[#1a1f4d]/90 to-[#2a3f8f]/90"></div>
+        <ConstellationBackground />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="text-center"
+          >
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">Settings</h1>
+            <p className="text-xl text-gray-200">Manage your account preferences</p>
+          </motion.div>
+        </div>
+      </div>
 
+      {/* Main Content */}
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 z-10">
         <div className="space-y-8">
+
           {/* Notifications Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="backdrop-blur-sm bg-white/5 rounded-xl p-6 border border-white/10 hover:border-white/20 transition-all"
+            className="bg-white/5 rounded-xl p-6 border border-white/10 hover:border-white/20 backdrop-blur-md transition-all"
           >
             <div className="flex items-center gap-3 mb-6">
-              <Bell className="text-white" size={24} />
-              <h2 className="text-xl font-semibold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">Notifications</h2>
+              <Bell size={24} className="text-white" />
+              <h2 className="text-xl font-semibold text-white">Notifications</h2>
             </div>
 
-            <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 rounded-lg hover:bg-white/5 transition-colors">
-                <div>
-                  <h3 className="font-medium text-white">Email Notifications</h3>
-                  <p className="text-sm text-gray-300">Receive notifications via email</p>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={notifications.email}
-                    onChange={() => handleNotificationChange('email')}
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                </label>
+            {/* Notification toggles */}
+            {[
+            { key: "email", title: "Email Notifications", description: "Receive notifications via email" },
+            { key: "push", title: "Push Notifications", description: "Receive push notifications" },
+            { key: "events", title: "Event Updates", description: "Get notified about upcoming events" },
+            { key: "jobs", title: "Job Alerts", description: "Receive job posting notifications" },
+          ].map(({ key, title, description }) => (
+            <div
+              key={key}
+              className="flex items-center justify-between p-4 rounded-lg hover:bg-white/10 transition-colors"
+            >
+              <div>
+                <h3 className="font-medium text-white">{title}</h3>
+                <p className="text-sm text-gray-300">{description}</p>
               </div>
-
-              <div className="flex items-center justify-between p-4 rounded-lg hover:bg-white/5 transition-colors">
-                <div>
-                  <h3 className="font-medium text-white">Push Notifications</h3>
-                  <p className="text-sm text-gray-300">Receive push notifications</p>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={notifications.push}
-                    onChange={() => handleNotificationChange('push')}
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                </label>
-              </div>
-
-              <div className="flex items-center justify-between p-4 rounded-lg hover:bg-white/5 transition-colors">
-                <div>
-                  <h3 className="font-medium text-white">Event Updates</h3>
-                  <p className="text-sm text-gray-300">Get notified about upcoming events</p>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={notifications.events}
-                    onChange={() => handleNotificationChange('events')}
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                </label>
-              </div>
-
-              <div className="flex items-center justify-between p-4 rounded-lg hover:bg-white/5 transition-colors">
-                <div>
-                  <h3 className="font-medium text-white">Job Alerts</h3>
-                  <p className="text-sm text-gray-300">Receive job posting notifications</p>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={notifications.jobs}
-                    onChange={() => handleNotificationChange('jobs')}
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                </label>
-              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={notifications[key as keyof typeof notifications]}
+                  onChange={() => handleNotificationChange(key as keyof typeof notifications)}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:bg-blue-600 after:content-[''] after:absolute after:left-[2px] after:top-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
+              </label>
             </div>
+          ))}
           </motion.div>
 
           {/* Privacy Section */}
@@ -240,15 +193,16 @@ export default function SettingsPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="backdrop-blur-sm bg-white/5 rounded-xl p-6 border border-white/10 hover:border-white/20 transition-all"
+            className="bg-white/5 rounded-xl p-6 border border-white/10 hover:border-white/20 backdrop-blur-md transition-all"
           >
             <div className="flex items-center gap-3 mb-6">
-              <Lock className="text-white" size={24} />
-              <h2 className="text-xl font-semibold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">Privacy</h2>
+              <Lock size={24} className="text-white" />
+              <h2 className="text-xl font-semibold text-white">Privacy</h2>
             </div>
 
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 rounded-lg hover:bg-white/5 transition-colors">
+              {/* Profile Visibility */}
+              <div className="flex items-center justify-between p-4 rounded-lg hover:bg-white/10 transition-colors">
                 <div>
                   <h3 className="font-medium text-white">Profile Visibility</h3>
                   <p className="text-sm text-gray-300">Who can see your profile</p>
@@ -264,50 +218,39 @@ export default function SettingsPage() {
                 </select>
               </div>
 
-              <div className="flex items-center justify-between p-4 rounded-lg hover:bg-white/5 transition-colors">
+              {/* Show Email Toggle */}
+              {(["showEmail", "showPhone"] as const).map(key => (
+              <div key={key} className="flex items-center justify-between p-4 rounded-lg hover:bg-white/10 transition-colors">
                 <div>
-                  <h3 className="font-medium text-white">Show Email</h3>
-                  <p className="text-sm text-gray-300">Display your email on profile</p>
+                  <h3 className="font-medium text-white">{key === "showEmail" ? "Show Email" : "Show Phone"}</h3>
+                  <p className="text-sm text-gray-300">
+                    {key === "showEmail" ? "Display your email" : "Display your phone number"} on profile
+                  </p>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
                     type="checkbox"
-                    checked={privacy.showEmail}
-                    onChange={(e) => handlePrivacyChange('showEmail', e.target.checked)}
+                    checked={privacy[key]}
+                    onChange={(e) => handlePrivacyChange(key, e.target.checked)}
                     className="sr-only peer"
                   />
-                  <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                  <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:bg-blue-600 after:content-[''] after:absolute after:left-[2px] after:top-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full"></div>
                 </label>
               </div>
-
-              <div className="flex items-center justify-between p-4 rounded-lg hover:bg-white/5 transition-colors">
-                <div>
-                  <h3 className="font-medium text-white">Show Phone</h3>
-                  <p className="text-sm text-gray-300">Display your phone number on profile</p>
-                </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={privacy.showPhone}
-                    onChange={(e) => handlePrivacyChange('showPhone', e.target.checked)}
-                    className="sr-only peer"
-                  />
-                  <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                </label>
-              </div>
+            ))}
             </div>
           </motion.div>
 
-          {/* Password Change Section */}
+          {/* Change Password Section */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="backdrop-blur-sm bg-white/5 rounded-xl p-6 border border-white/10 hover:border-white/20 transition-all"
+            className="bg-white/5 rounded-xl p-6 border border-white/10 hover:border-white/20 backdrop-blur-md transition-all"
           >
             <div className="flex items-center gap-3 mb-6">
-              <Lock className="text-white" size={24} />
-              <h2 className="text-xl font-semibold bg-gradient-to-r from-white to-gray-300 bg-clip-text text-transparent">Change Password</h2>
+              <Lock size={24} className="text-white" />
+              <h2 className="text-xl font-semibold text-white">Change Password</h2>
             </div>
 
             <button
@@ -326,70 +269,34 @@ export default function SettingsPage() {
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="backdrop-blur-sm bg-[#0f172a] p-6 rounded-xl border border-white/10 w-full max-w-md"
+            className="bg-[#0f172a] p-6 rounded-xl border border-white/10 w-full max-w-md"
           >
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-semibold text-white">Change Password</h3>
-              <button
-                onClick={() => setShowPasswordModal(false)}
-                className="text-gray-400 hover:text-white"
-              >
+              <button onClick={() => setShowPasswordModal(false)} className="text-gray-400 hover:text-white">
                 <X size={24} />
               </button>
             </div>
 
             <form onSubmit={handlePasswordSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">
-                  Current Password
-                </label>
-                <input
-                  type="password"
-                  name="currentPassword"
-                  value={passwordData.currentPassword}
-                  onChange={handlePasswordChange}
-                  className="w-full bg-gray-700/50 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
+              {["currentPassword", "newPassword", "confirmPassword"].map(name => (
+                <div key={name}>
+                  <label className="block text-sm font-medium text-gray-300 mb-1 capitalize">
+                    {name.replace(/Password/, " Password")}
+                  </label>
+                  <input
+                    type="password"
+                    name={name}
+                    value={passwordData[name as keyof typeof passwordData]}
+                    onChange={handlePasswordChange}
+                    className="w-full bg-gray-700/50 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                </div>
+              ))}
+              {passwordError && <p className="text-red-400 text-sm">{passwordError}</p>}
+              {passwordSuccess && <p className="text-green-400 text-sm">Password changed successfully!</p>}
 
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">
-                  New Password
-                </label>
-                <input
-                  type="password"
-                  name="newPassword"
-                  value={passwordData.newPassword}
-                  onChange={handlePasswordChange}
-                  className="w-full bg-gray-700/50 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-1">
-                  Confirm New Password
-                </label>
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  value={passwordData.confirmPassword}
-                  onChange={handlePasswordChange}
-                  className="w-full bg-gray-700/50 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              {passwordError && (
-                <p className="text-red-400 text-sm">{passwordError}</p>
-              )}
-
-              {passwordSuccess && (
-                <p className="text-green-400 text-sm">Password changed successfully!</p>
-              )}
-
-              <button
-                type="submit"
-                className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-              >
+              <button type="submit" className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
                 Change Password
               </button>
             </form>
@@ -398,4 +305,4 @@ export default function SettingsPage() {
       )}
     </div>
   );
-} 
+}
