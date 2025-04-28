@@ -3,23 +3,49 @@ import mongoose, { Connection } from "mongoose";
 
 dotenv.config();
 
-let existingConnection: Connection | undefined = undefined;
+declare global {
+  var mongoConnection: Connection | undefined;
+}
+
+let cachedConnection: Connection | undefined;
 
 export function connectDB(): Connection {
-    if (existingConnection !== undefined) {
-        return existingConnection;
-    }
+  if (cachedConnection) {
+    return cachedConnection;
+  }
 
-    const mongoDbUri = process.env.MONGODB_URI;
+  // Check if we have a connection cached in the global namespace
+  if (global.mongoConnection) {
+    return global.mongoConnection;
+  }
 
-    if (mongoDbUri === undefined) {
-        throw new Error("Missing MongoDB in environment variables.");
-    }
+  const mongoDbUri = process.env.MONGODB_URI;
 
-    existingConnection = mongoose.createConnection(mongoDbUri, {
-        dbName: "DEV_ARTMS",
-        bufferCommands: true
-    });
+  if (!mongoDbUri) {
+    throw new Error("Missing MongoDB URI in environment variables.");
+  }
 
-    return existingConnection;
+  // Create new connection
+  const connection = mongoose.createConnection(mongoDbUri, {
+    dbName: "DEV_ARTMS",
+    bufferCommands: true,
+    maxPoolSize: 10
+  });
+
+  // Cache the connection
+  if (process.env.NODE_ENV === 'development') {
+    global.mongoConnection = connection;
+  }
+  cachedConnection = connection;
+
+  // Handle connection events
+  connection.on('connected', () => {
+    console.log('MongoDB connected successfully');
+  });
+
+  connection.on('error', (err) => {
+    console.error('MongoDB connection error:', err);
+  });
+
+  return connection;
 }
