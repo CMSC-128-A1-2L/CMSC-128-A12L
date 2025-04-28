@@ -32,6 +32,7 @@ export function connectDB(): Connection {
     maxPoolSize: 10
   });
 
+
   // Cache the connection
   if (process.env.NODE_ENV === 'development') {
     global.mongoConnection = connection;
