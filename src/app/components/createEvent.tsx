@@ -295,7 +295,8 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ isOpen, onClose, on
                   type="datetime-local"
                   value={formData.startDate ? formData.startDate.toISOString().slice(0, 16) : ""}
                   onChange={(e) => setFormData({ ...formData, startDate: new Date(e.target.value) })}
-                  className="input input-bordered w-full pl-10 bg-white border-gray-200"
+                  className="input input-bordered w-full pl-10 bg-white border-gray-200 no-input-date"
+                  onKeyDown={(e) => e.preventDefault()}
                   required
                 />
               </div>
@@ -309,7 +310,8 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ isOpen, onClose, on
                   type="datetime-local"
                   value={formData.endDate ? formData.endDate.toISOString().slice(0, 16) : ""}
                   onChange={(e) => setFormData({ ...formData, endDate: new Date(e.target.value) })}
-                  className="input input-bordered w-full pl-10 bg-white border-gray-200"
+                  className="input input-bordered w-full pl-10 bg-white border-gray-200 no-input-date"
+                  onKeyDown={(e) => e.preventDefault()}
                   required
                 />
               </div>
@@ -416,4 +418,4 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ isOpen, onClose, on
   );
 };
 
-export default CreateEventModal; 
+export default CreateEventModal;
