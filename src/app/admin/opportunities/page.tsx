@@ -4,8 +4,9 @@
 
 import { useState, useEffect } from 'react';
 import { Opportunity } from '@/entities/opportunity';
-import { Plus, Trash2, Briefcase, Building2, MapPin, Tag, Clock, Loader2, Menu, X } from 'lucide-react';
+import { Plus, Trash2, Briefcase, Building2, MapPin, Tag, Clock, Loader2, Menu, X, Edit, User } from 'lucide-react';
 import { createNotification } from '@/services/notification.service';
+
 export default function OpportunitiesTestPage() {
     const [opportunities, setOpportunities] = useState<Opportunity[]>([]);
     const [loading, setLoading] = useState(false);
@@ -20,6 +21,9 @@ export default function OpportunitiesTestPage() {
         tags: [],
         workMode: '',
     });
+    const [editingOpportunity, setEditingOpportunity] = useState<Opportunity | null>(null);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [users, setUsers] = useState<{[key: string]: {name: string, email: string}}>({});
 
     const fetchOpportunities = async () => {
         try {
@@ -34,6 +38,28 @@ export default function OpportunitiesTestPage() {
             setLoading(false);
         }
     };
+
+    // Add this function to fetch user info
+    const fetchUserInfo = async (userId: string) => {
+        if (users[userId]) return;
+        try {
+            const response = await fetch(`/api/admin/users/${userId}`);
+            if (!response.ok) throw new Error('Failed to fetch user info');
+            const userData = await response.json();
+            setUsers(prev => ({...prev, [userId]: userData}));
+        } catch (err) {
+            console.error('Error fetching user info:', err);
+        }
+    };
+
+    // Add this useEffect to fetch user info for opportunities
+    useEffect(() => {
+        opportunities.forEach(opp => {
+            if (opp.userId) {
+                fetchUserInfo(opp.userId);
+            }
+        });
+    }, [opportunities]);
 
     useEffect(() => {
         fetchOpportunities();
@@ -79,6 +105,37 @@ export default function OpportunitiesTestPage() {
         }
     };
 
+    const handleEdit = (opportunity: Opportunity) => {
+        setEditingOpportunity(opportunity);
+        setShowEditModal(true);
+    };
+
+    const handleEditSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!editingOpportunity?._id) return;
+
+        try {
+            setLoading(true);
+            const response = await fetch(`/api/admin/opportunities/${editingOpportunity._id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(editingOpportunity),
+            });
+
+            if (!response.ok) throw new Error('Failed to update opportunity');
+            
+            await fetchOpportunities();
+            setShowEditModal(false);
+            setEditingOpportunity(null);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'An error occurred');
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleDelete = async (id: string) => {
         try {
             setLoading(true);
@@ -106,9 +163,19 @@ export default function OpportunitiesTestPage() {
                     </div>
                     <button 
                         onClick={() => setShowForm(!showForm)}
-                        className="lg:hidden bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors flex items-center gap-2"
                     >
-                        {showForm ? <X className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
+                        {showForm ? (
+                            <>
+                                <X className="h-5 w-5" />
+                                <span>Close</span>
+                            </>
+                        ) : (
+                            <>
+                                <Plus className="h-5 w-5" />
+                                <span>Add Opportunity</span>
+                            </>
+                        )}
                     </button>
                 </div>
             </div>
@@ -128,9 +195,9 @@ export default function OpportunitiesTestPage() {
                 </div>
             )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
+            <div className="space-y-6">
                 {/* Create Opportunity Form */}
-                <div className={`lg:col-span-1 ${showForm ? 'block' : 'hidden lg:block'}`}>
+                <div className={showForm ? 'block' : 'hidden'}>
                     <div className="bg-white p-4 sm:p-6 rounded-xl shadow-lg border border-gray-100 text-gray-700">
                         <div className="flex items-center mb-4 sm:mb-6">
                             <div className="bg-blue-100 p-2 rounded-lg mr-3">
@@ -279,39 +346,49 @@ export default function OpportunitiesTestPage() {
                 </div>
 
                 {/* Opportunities List */}
-                <div className="lg:col-span-2">
-                    <div className="bg-white p-4 sm:p-6 rounded-xl shadow-lg border border-gray-100">
-                        <div className="flex items-center mb-4 sm:mb-6">
-                            <div className="bg-green-100 p-2 rounded-lg mr-3">
-                                <Briefcase className="h-5 w-5 text-green-600" />
-                            </div>
-                            <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Existing Opportunities</h2>
+                <div className="bg-white p-4 sm:p-6 rounded-xl shadow-lg border border-gray-100">
+                    <div className="flex items-center mb-4 sm:mb-6">
+                        <div className="bg-green-100 p-2 rounded-lg mr-3">
+                            <Briefcase className="h-5 w-5 text-green-600" />
                         </div>
-                        
-                        {loading ? (
-                            <div className="flex justify-center items-center py-8 sm:py-12">
-                                <Loader2 className="animate-spin h-6 w-6 sm:h-8 sm:w-8 text-blue-500" />
-                                <span className="ml-2 text-gray-600">Loading opportunities...</span>
+                        <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Existing Opportunities</h2>
+                    </div>
+                    
+                    {loading ? (
+                        <div className="flex justify-center items-center py-8 sm:py-12">
+                            <Loader2 className="animate-spin h-6 w-6 sm:h-8 sm:w-8 text-blue-500" />
+                            <span className="ml-2 text-gray-600">Loading opportunities...</span>
+                        </div>
+                    ) : opportunities.length === 0 ? (
+                        <div className="text-center py-8 sm:py-12">
+                            <div className="bg-gray-100 p-3 sm:p-4 rounded-full inline-block mb-3 sm:mb-4">
+                                <Briefcase className="h-6 w-6 sm:h-8 sm:w-8 text-gray-400" />
                             </div>
-                        ) : opportunities.length === 0 ? (
-                            <div className="text-center py-8 sm:py-12">
-                                <div className="bg-gray-100 p-3 sm:p-4 rounded-full inline-block mb-3 sm:mb-4">
-                                    <Briefcase className="h-6 w-6 sm:h-8 sm:w-8 text-gray-400" />
-                                </div>
-                                <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-1">No opportunities yet</h3>
-                                <p className="text-gray-500">Create your first opportunity using the form.</p>
-                            </div>
-                        ) : (
-                            <div className="overflow-hidden rounded-lg border border-gray-200">
-                                {/* Mobile Card View */}
-                                <div className="block lg:hidden">
-                                    {opportunities.map((opportunity) => (
-                                        <div key={opportunity._id} className="p-4 border-b border-gray-200 last:border-b-0">
-                                            <div className="flex justify-between items-start mb-2">
-                                                <div>
-                                                    <h3 className="font-medium text-gray-900">{opportunity.title}</h3>
-                                                    <p className="text-sm text-gray-500">{opportunity.position}</p>
-                                                </div>
+                            <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-1">No opportunities yet</h3>
+                            <p className="text-gray-500">Create your first opportunity using the form.</p>
+                        </div>
+                    ) : (
+                        <div className="overflow-hidden rounded-lg border border-gray-200">
+                            {/* Mobile Card View */}
+                            <div className="block lg:hidden">
+                                {opportunities.map((opportunity) => (
+                                    <div key={opportunity._id} className="p-4 border-b border-gray-200 last:border-b-0">
+                                        <div className="flex justify-between items-start mb-2">
+                                            <div>
+                                                <h3 className="font-medium text-gray-900">{opportunity.title}</h3>
+                                                <p className="text-sm text-gray-500">{opportunity.position}</p>
+                                                <p className="text-xs text-gray-400 flex items-center gap-1">
+                                                    <User size={12} />
+                                                    {users[opportunity.userId]?.name || 'Loading...'}
+                                                </p>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={() => handleEdit(opportunity)}
+                                                    className="text-blue-600 hover:text-blue-900 p-1"
+                                                >
+                                                    <Edit className="h-4 w-4" />
+                                                </button>
                                                 <button
                                                     onClick={() => handleDelete(opportunity._id!)}
                                                     className="text-red-600 hover:text-red-900 p-1"
@@ -319,86 +396,254 @@ export default function OpportunitiesTestPage() {
                                                     <Trash2 className="h-4 w-4" />
                                                 </button>
                                             </div>
-                                            <div className="grid grid-cols-2 gap-2 text-sm mb-3">
-                                                <div>
-                                                    <span className="text-gray-500">Company:</span>
-                                                    <span className="ml-1 text-gray-900">{opportunity.company}</span>
-                                                </div>
-                                                <div>
-                                                    <span className="text-gray-500">Location:</span>
-                                                    <span className="ml-1 text-gray-900">{opportunity.location}</span>
-                                                </div>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-2 text-sm mb-3">
+                                            <div>
+                                                <span className="text-gray-500">Company:</span>
+                                                <span className="ml-1 text-gray-900">{opportunity.company}</span>
                                             </div>
-                                            <div className="flex items-center">
-                                                <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                                    opportunity.workMode === 'remote' 
-                                                        ? 'bg-purple-100 text-purple-800' 
-                                                        : opportunity.workMode === 'hybrid'
-                                                        ? 'bg-yellow-100 text-yellow-800'
-                                                        : 'bg-green-100 text-green-800'
-                                                }`}>
-                                                    {opportunity.workMode.charAt(0).toUpperCase() + opportunity.workMode.slice(1)}
-                                                </span>
+                                            <div>
+                                                <span className="text-gray-500">Location:</span>
+                                                <span className="ml-1 text-gray-900">{opportunity.location}</span>
                                             </div>
                                         </div>
-                                    ))}
-                                </div>
-                                
-                                {/* Desktop Table View */}
-                                <div className="hidden lg:block overflow-x-auto">
-                                    <table className="min-w-full divide-y divide-gray-200">
-                                        <thead className="bg-gray-50">
-                                            <tr>
-                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
-                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company</th>
-                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Work Mode</th>
-                                                <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="bg-white divide-y divide-gray-200">
-                                            {opportunities.map((opportunity) => (
-                                                <tr key={opportunity._id} className="hover:bg-gray-50 transition-colors">
-                                                    <td className="px-6 py-4">
-                                                        <div className="text-sm font-medium text-gray-900">{opportunity.title}</div>
-                                                        <div className="text-sm text-gray-500">{opportunity.position}</div>
-                                                    </td>
-                                                    <td className="px-6 py-4">
-                                                        <div className="text-sm text-gray-900">{opportunity.company}</div>
-                                                    </td>
-                                                    <td className="px-6 py-4">
-                                                        <div className="text-sm text-gray-900">{opportunity.location}</div>
-                                                    </td>
-                                                    <td className="px-6 py-4">
-                                                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                                            opportunity.workMode === 'remote' 
-                                                                ? 'bg-purple-100 text-purple-800' 
-                                                                : opportunity.workMode === 'hybrid'
-                                                                ? 'bg-yellow-100 text-yellow-800'
-                                                                : 'bg-green-100 text-green-800'
-                                                        }`}>
-                                                            {opportunity.workMode.charAt(0).toUpperCase() + opportunity.workMode.slice(1)}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-6 py-4 text-right text-sm font-medium">
+                                        <div className="flex items-center">
+                                            <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                                opportunity.workMode === 'remote' 
+                                                    ? 'bg-purple-100 text-purple-800' 
+                                                    : opportunity.workMode === 'hybrid'
+                                                    ? 'bg-yellow-100 text-yellow-800'
+                                                    : 'bg-green-100 text-green-800'
+                                            }`}>
+                                                {opportunity.workMode.charAt(0).toUpperCase() + opportunity.workMode.slice(1)}
+                                            </span>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                            
+                            {/* Desktop Table View */}
+                            <div className="hidden lg:block overflow-x-auto">
+                                <table className="min-w-full divide-y divide-gray-200">
+                                    <thead className="bg-gray-50">
+                                        <tr>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Company</th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Work Mode</th>
+                                            <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created By</th>
+                                            <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="bg-white divide-y divide-gray-200">
+                                        {opportunities.map((opportunity) => (
+                                            <tr key={opportunity._id} className="hover:bg-gray-50 transition-colors">
+                                                <td className="px-6 py-4">
+                                                    <div className="text-sm font-medium text-gray-900">{opportunity.title}</div>
+                                                    <div className="text-sm text-gray-500">{opportunity.position}</div>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="text-sm text-gray-900">{opportunity.company}</div>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="text-sm text-gray-900">{opportunity.location}</div>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                                        opportunity.workMode === 'remote' 
+                                                            ? 'bg-purple-100 text-purple-800' 
+                                                            : opportunity.workMode === 'hybrid'
+                                                            ? 'bg-yellow-100 text-yellow-800'
+                                                            : 'bg-green-100 text-green-800'
+                                                    }`}>
+                                                        {opportunity.workMode.charAt(0).toUpperCase() + opportunity.workMode.slice(1)}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="text-sm text-gray-900 flex items-center gap-1">
+                                                        <User size={14} className="text-gray-400" />
+                                                        {users[opportunity.userId]?.name || 'Loading...'}
+                                                    </div>
+                                                    <div className="text-xs text-gray-500">{users[opportunity.userId]?.email}</div>
+                                                </td>
+                                                <td className="px-6 py-4 text-right text-sm font-medium">
+                                                    <div className="flex justify-end gap-2">
+                                                        <button
+                                                            onClick={() => handleEdit(opportunity)}
+                                                            className="text-blue-600 hover:text-blue-900 flex items-center"
+                                                        >
+                                                            <Edit className="h-4 w-4 mr-1" />
+                                                            Edit
+                                                        </button>
                                                         <button
                                                             onClick={() => handleDelete(opportunity._id!)}
-                                                            className="text-red-600 hover:text-red-900 flex items-center justify-end"
+                                                            className="text-red-600 hover:text-red-900 flex items-center"
                                                         >
                                                             <Trash2 className="h-4 w-4 mr-1" />
                                                             Delete
                                                         </button>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
                             </div>
-                        )}
-                    </div>
+                        </div>
+                    )}
                 </div>
             </div>
+
+            {/* Add Edit Modal */}
+            {showEditModal && editingOpportunity && (
+                <dialog open={showEditModal} className="modal modal-bottom sm:modal-middle">
+                    <div className="modal-box">
+                        <h3 className="font-bold text-lg mb-4">Edit Opportunity</h3>
+                        <form onSubmit={handleEditSubmit}>
+                            <div className="space-y-4 sm:space-y-5">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                                    <input
+                                        type="text"
+                                        value={editingOpportunity.title}
+                                        onChange={(e) => setEditingOpportunity({ ...editingOpportunity, title: e.target.value })}
+                                        className="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                        placeholder="e.g. Senior Software Engineer"
+                                        required
+                                    />
+                                </div>
+                                
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                                    <textarea
+                                        value={editingOpportunity.description}
+                                        onChange={(e) => setEditingOpportunity({ ...editingOpportunity, description: e.target.value })}
+                                        className="w-full px-3 sm:px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                        rows={4}
+                                        placeholder="Describe the opportunity..."
+                                        required
+                                    />
+                                </div>
+                                
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Position</label>
+                                    <div className="relative">
+                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <Briefcase className="h-5 w-5 text-gray-400" />
+                                        </div>
+                                        <input
+                                            type="text"
+                                            value={editingOpportunity.position}
+                                            onChange={(e) => setEditingOpportunity({ ...editingOpportunity, position: e.target.value })}
+                                            className="w-full pl-10 pr-3 sm:pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                            placeholder="e.g. Software Engineer"
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Company</label>
+                                    <div className="relative">
+                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <Building2 className="h-5 w-5 text-gray-400" />
+                                        </div>
+                                        <input
+                                            type="text"
+                                            value={editingOpportunity.company}
+                                            onChange={(e) => setEditingOpportunity({ ...editingOpportunity, company: e.target.value })}
+                                            className="w-full pl-10 pr-3 sm:pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                            placeholder="e.g. Tech Company Inc."
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                                    <div className="relative">
+                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <MapPin className="h-5 w-5 text-gray-400" />
+                                        </div>
+                                        <input
+                                            type="text"
+                                            value={editingOpportunity.location}
+                                            onChange={(e) => setEditingOpportunity({ ...editingOpportunity, location: e.target.value })}
+                                            className="w-full pl-10 pr-3 sm:pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                            placeholder="e.g. Manila, Philippines"
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Tags (comma-separated)</label>
+                                    <div className="relative">
+                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <Tag className="h-5 w-5 text-gray-400" />
+                                        </div>
+                                        <input
+                                            type="text"
+                                            value={editingOpportunity.tags?.join(', ')}
+                                            onChange={(e) => setEditingOpportunity({ ...editingOpportunity, tags: e.target.value.split(',').map(tag => tag.trim()) })}
+                                            className="w-full pl-10 pr-3 sm:pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                            placeholder="e.g. React, Node.js, TypeScript"
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Work Mode</label>
+                                    <div className="relative">
+                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <Clock className="h-5 w-5 text-gray-400" />
+                                        </div>
+                                        <select
+                                            value={editingOpportunity.workMode}
+                                            onChange={(e) => setEditingOpportunity({ ...editingOpportunity, workMode: e.target.value })}
+                                            className="w-full pl-10 pr-3 sm:pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors appearance-none bg-white"
+                                            required
+                                        >
+                                            <option value="">Select work mode</option>
+                                            <option value="remote">Remote</option>
+                                            <option value="hybrid">Hybrid</option>
+                                            <option value="onsite">On-site</option>
+                                        </select>
+                                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                            <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                                <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="modal-action">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowEditModal(false);
+                                        setEditingOpportunity(null);
+                                    }}
+                                    className="btn btn-ghost"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    className="btn btn-primary"
+                                    disabled={loading}
+                                >
+                                    {loading ? 'Saving...' : 'Save Changes'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    <form method="dialog" className="modal-backdrop">
+                        <button onClick={() => setShowEditModal(false)}>close</button>
+                    </form>
+                </dialog>
+            )}
         </div>
     );
-} 
+}
