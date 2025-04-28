@@ -186,10 +186,10 @@ export default function SignUp() {
             onClick={() => router.push('/')}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="flex items-center gap-3 text-gray-600 hover:text-gray-900 transition-colors duration-200 bg-white/50 hover:bg-white/80 px-4 py-2 rounded-lg w-fit"
+            className="flex items-center gap-3 text-gray-600 hover:text-gray-900 transition-colors duration-200 bg-white/50 hover:bg-white/80 px-4 py-2 rounded-lg w-fit lg:ml-[-150px]"
           >
-            <ArrowLeft className="h-5 w-5" />
-            <span className="text-base font-medium">Back to Home</span>
+            <ArrowLeft className="h-5 w-5 cursor-pointer" />
+            <span className="text-base font-medium cursor-pointer">Back to Home</span>
           </motion.button>
 
           {/* Create Account Section */}
