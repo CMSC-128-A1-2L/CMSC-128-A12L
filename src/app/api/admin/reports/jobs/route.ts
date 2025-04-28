@@ -19,7 +19,7 @@ export async function GET(){
         const jobPostsPerMonth: {[key: string]: number} = {};
         for (const log of logs) {
             const timestamp = new Date(log.timestamp);
-            if(timestamp >= sixMonthsAgo && log.action === "POST /api/admin/opportunities"){
+            if(timestamp >= sixMonthsAgo && (log.action === "POST /api/admin/opportunities" || log.action === "POST /api/alumni/jobs" )){
                 const month = timestamp.getMonth() + 1;
                 const year = timestamp.getFullYear();
                 const key = `${year}-${month.toString().padStart(2,"0")}`;

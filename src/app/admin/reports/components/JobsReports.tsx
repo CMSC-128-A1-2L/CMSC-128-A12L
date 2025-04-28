@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
@@ -18,62 +18,74 @@ interface JobsReportsProps {
 }
 
 interface JobListing {
-  id: string;
   title: string;
   company: string;
-  date: string;
   location: string;
   type: string;
 }
 
+interface MonthlyJobPosting {
+  year: number;
+  month: number;
+  numOfJobPostings: number;
+}
+
 export default function JobsReports({ className }: JobsReportsProps) {
   const [searchTerm, setSearchTerm] = useState("");
+  const [jobListings, setJobListings] = useState<JobListing[]>([]);
+  const [monthlyJobPostings, setMonthlyJobPostings] = useState<MonthlyJobPosting[]>([]);
 
-  // Sample data - replace with actual data from your API
-  const jobPostingsData = {
-    labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-    datasets: [
-      {
-        label: "Number of Job Postings",
-        data: [25, 32, 28, 35, 42, 38],
-        backgroundColor: "rgba(75, 192, 192, 0.5)",
-      },
-    ],
-  };
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const res = await fetch("/api/admin/reports/jobs", { method: "GET" });
+        const data = await res.json();
 
-  const sampleJobListings: JobListing[] = [
-    {
-      id: "1",
-      title: "Senior Software Engineer",
-      company: "Tech Corp",
-      date: "2024-03-15",
-      location: "Manila",
-      type: "Full-time",
-    },
-    {
-      id: "2",
-      title: "Data Scientist",
-      company: "Analytics Inc",
-      date: "2024-03-14",
-      location: "Cebu",
-      type: "Full-time",
-    },
-    {
-      id: "3",
-      title: "UX Designer",
-      company: "Design Studio",
-      date: "2024-03-13",
-      location: "Makati",
-      type: "Contract",
-    },
-    // Add more sample job listings as needed
-  ];
+        setJobListings(data.jobListings || []);
+        setMonthlyJobPostings(data.monthlyJobPostings || []);
+      } catch (error) {
+        console.error("Failed to fetch jobs report data", error);
+      }
+    }
 
-  const filteredJobs = sampleJobListings.filter(
+    fetchData();
+  }, []);
+
+  const filteredJobs = jobListings.filter(
     (job) =>
       job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       job.company.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  // Prepare chart data
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"];
+  const currentDate = new Date();
+  const last6Months = [];
+
+  for (let i = 5; i >= 0; i--) {
+    const date = new Date(currentDate.getFullYear(), currentDate.getMonth() - i, 1);
+    last6Months.push({ year: date.getFullYear(), month: date.getMonth() + 1 });
+  }
+
+  const monthLabels = last6Months.map(
+    (date) => months[date.month - 1]
+  );
+
+  const jobPostingsData = {
+    labels: monthLabels,
+    datasets: [
+      {
+        label: "Number of Job Postings",
+        data: last6Months.map((date) => {
+          const matching = monthlyJobPostings.find(
+            (item) => item.year === date.year && item.month === date.month
+          );
+          return matching ? matching.numOfJobPostings : 0;
+        }),
+        backgroundColor: "rgba(75, 192, 192, 0.5)",
+      },
+    ],
+  };
 
   return (
     <div className={className}>
@@ -106,17 +118,15 @@ export default function JobsReports({ className }: JobsReportsProps) {
                   <TableRow>
                     <TableHead>Title</TableHead>
                     <TableHead>Company</TableHead>
-                    <TableHead>Date Posted</TableHead>
                     <TableHead>Location</TableHead>
                     <TableHead>Type</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredJobs.map((job) => (
-                    <TableRow key={job.id}>
+                  {filteredJobs.map((job, index) => (
+                    <TableRow key={index}>
                       <TableCell className="font-medium">{job.title}</TableCell>
                       <TableCell>{job.company}</TableCell>
-                      <TableCell>{job.date}</TableCell>
                       <TableCell>{job.location}</TableCell>
                       <TableCell>{job.type}</TableCell>
                     </TableRow>
