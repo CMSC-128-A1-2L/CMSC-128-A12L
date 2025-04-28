@@ -48,7 +48,10 @@ export async function POST(request: NextRequest) {
       ]
     });
 
-    return NextResponse.json({ url: result.secure_url });
+    return NextResponse.json({
+      url: result.secure_url,
+      public_id: result.public_id
+    });
   } catch (error) {
     console.error('Error uploading image:', error);
     return NextResponse.json(

@@ -30,7 +30,7 @@ interface ProfileData {
   graduationYear?: number;
   department?: string;
   bio?: string;
-  profilePicture?: string; // Keep this for display purposes
+  imageUrl?: string; // Changed from profilePicture to imageUrl
   phoneNumber?: string;
   currentLocation?: string;
   currentCompany?: string;
@@ -62,7 +62,7 @@ export default function AlumniProfile() {
     graduationYear: undefined,
     department: "",
     bio: "",
-    profilePicture: session?.user?.image || "",
+    imageUrl: session?.user?.image || "", // Changed from profilePicture to imageUrl
     phoneNumber: "",
     currentLocation: "",
     currentCompany: "",
@@ -86,11 +86,15 @@ export default function AlumniProfile() {
 
     // Check file type
     if (!file.type.startsWith('image/')) {
-      toast.error('File must be an image');
+      toast.error('File must be an image (PNG or JPEG)');
       return;
     }
 
     try {
+      // Show loading toast
+      const loadingToast = toast.loading('Uploading image...');
+
+      // First upload to Cloudinary
       const formData = new FormData();
       formData.append('file', file);
 
@@ -103,15 +107,16 @@ export default function AlumniProfile() {
         throw new Error('Failed to upload image');
       }
 
-      const { url } = await uploadResponse.json();
+      const { url, public_id } = await uploadResponse.json();
 
-      // Update profile with new image URL
+      // Then update the user profile with the new image URL
       const updateResponse = await fetch('/api/users/profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...profileData,
-          profilePicture: url
+          imageUrl: url, // Changed from profilePicture to imageUrl
+          cloudinaryPublicId: public_id // Store this if you need to manage/delete images later
         }),
       });
 
@@ -122,9 +127,11 @@ export default function AlumniProfile() {
       // Update local state
       setProfileData(prev => ({
         ...prev,
-        profilePicture: url
+        imageUrl: url // Changed from profilePicture to imageUrl
       }));
 
+      // Dismiss loading toast and show success
+      toast.dismiss(loadingToast);
       toast.success('Profile picture updated successfully');
     } catch (error) {
       console.error('Error:', error);
@@ -205,15 +212,16 @@ export default function AlumniProfile() {
                           className="hidden"
                           accept="image/png,image/jpeg,image/jpg"
                           onChange={handleImageUpload}
+                          onClick={(e) => (e.currentTarget.value = '')} // Reset input
                         />
                         <div className="w-44 h-44 rounded-lg border-4 border-white/20 bg-white/10">
-                {profileData.profilePicture ? (
-                  <img
-                    src={profileData.profilePicture}
-                    alt="Profile"
+                          {profileData.imageUrl ? ( // Changed from profilePicture to imageUrl
+                            <img
+                              src={profileData.imageUrl}
+                              alt="Profile"
                               className="w-full h-full rounded-lg object-cover"
-                  />
-                ) : (
+                            />
+                          ) : (
                             <div className="w-full h-full rounded-lg bg-white/10 flex items-center justify-center">
                               <UserIcon size={72} className="text-white" />
                             </div>
