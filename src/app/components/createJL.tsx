@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Briefcase, Building2, MapPin, Tag, Clock, X } from "lucide-react";
 import { toast } from "react-hot-toast";
-
+import { createNotification } from '@/services/notification.service';
 export default function CreateJL({ onClose, onSuccess }: { onClose: () => void, onSuccess?: () => void }) {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -30,6 +30,14 @@ export default function CreateJL({ onClose, onSuccess }: { onClose: () => void, 
       if (!response.ok) throw new Error('Failed to create job');
       
       toast.success('Job posted successfully');
+      // First notify all users about the new job
+      await createNotification({
+        type: 'job',
+        entity: formData,
+        entityName: formData.title ?? '',
+        action: 'created',
+        sendAll: true
+    });
       onSuccess?.();
       onClose();
     } catch (err) {
