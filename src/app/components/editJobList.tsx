@@ -6,9 +6,7 @@ interface EditJobModalProps {
     title: string;
     company: string;
     location: string;
-    jobType: string;
-    workType: string;
-    salary?: string;
+    workMode: string;
     description: string;
     tags?: string[];
   };
@@ -22,9 +20,7 @@ const EditJobModal: React.FC<EditJobModalProps> = ({
     title: "",
     company: "",
     location: "",
-    jobType: "Full-time",
-    workType: "On-site",
-    salary: "",
+    workMode: "On-site",
     description: "",
     tags: [],
   },
@@ -65,8 +61,7 @@ const EditJobModal: React.FC<EditJobModalProps> = ({
     if (!jobData.title) newErrors.title = "Job title is required";
     if (!jobData.company) newErrors.company = "Company is required";
     if (!jobData.location) newErrors.location = "Location is required";
-    if (!jobData.jobType) newErrors.jobType = "Job type is required";
-    if (!jobData.workType) newErrors.workType = "Work type is required";
+    if (!jobData.workMode) newErrors.workMode = "Work mode is required";
     if (!jobData.description) newErrors.description = "Description is required";
     
     setErrors(newErrors);
@@ -80,6 +75,27 @@ const EditJobModal: React.FC<EditJobModalProps> = ({
     }
   };
 
+  const handleTagsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (value.endsWith(',')) {
+      // Remove the comma and update tags
+      const newTags = value
+        .slice(0, -1)
+        .split(',')
+        .map(tag => tag.trim())
+        .filter(Boolean);
+      setJobData(prev => ({
+        ...prev,
+        tags: [...new Set(newTags)] // Remove duplicates
+      }));
+    } else {
+      // Just update the input value
+      setJobData(prev => ({
+        ...prev,
+        tags: value.split(',').map(tag => tag.trim()).filter(Boolean)
+      }));
+    }
+  };
 
   return (
     <dialog id="edit_job_modal" className="modal">
@@ -95,6 +111,7 @@ const EditJobModal: React.FC<EditJobModalProps> = ({
 
         <h3 className="font-bold text-xl text-gray-900 mt-4">Edit Job Post</h3>
 
+        {/* Form fields */}
         <div className="pt-4 space-y-4">
           <div>
             <p className="font-bold text-left text-gray-800">Job Title</p>
@@ -121,36 +138,6 @@ const EditJobModal: React.FC<EditJobModalProps> = ({
           </div>
 
           <div>
-            <p className="font-bold text-left text-gray-800">Job Type</p>
-            <select
-              name="jobType"
-              value={jobData.jobType}
-              onChange={handleChange}
-              className="w-full p-2 border rounded-md bg-white text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-            >
-              <option value="Full-time">Full-time</option>
-              <option value="Part-time">Part-time</option>
-              <option value="Contract">Contract</option>
-            </select>
-            {errors.jobType && <p className="text-red-500 text-sm">{errors.jobType}</p>}
-          </div>
-
-          <div>
-            <p className="font-bold text-left text-gray-800">Work Type</p>
-            <select
-              name="workType"
-              value={jobData.workType}
-              onChange={handleChange}
-              className="w-full p-2 border rounded-md bg-white text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-            >
-              <option value="On-site">On-site</option>
-              <option value="Remote">Remote</option>
-              <option value="Hybrid">Hybrid</option>
-            </select>
-            {errors.workType && <p className="text-red-500 text-sm">{errors.workType}</p>}
-          </div>
-
-          <div>
             <p className="font-bold text-left text-gray-800">Location</p>
             <input
               type="text"
@@ -160,6 +147,21 @@ const EditJobModal: React.FC<EditJobModalProps> = ({
               className="w-full p-2 border rounded-md bg-white text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
             />
             {errors.location && <p className="text-red-500 text-sm">{errors.location}</p>}
+          </div>
+
+          <div>
+            <p className="font-bold text-left text-gray-800">Work Mode</p>
+            <select
+              name="workMode"
+              value={jobData.workMode}
+              onChange={handleChange}
+              className="w-full p-2 border rounded-md bg-white text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            >
+              <option value="on-site">On-site</option>
+              <option value="remote">Remote</option>
+              <option value="hybrid">Hybrid</option>
+            </select>
+            {errors.workMode && <p className="text-red-500 text-sm">{errors.workMode}</p>}
           </div>
 
           <div>
@@ -174,28 +176,13 @@ const EditJobModal: React.FC<EditJobModalProps> = ({
           </div>
 
           <div>
-            <p className="font-bold text-left text-gray-800">Salary (Optional)</p>
-            <input
-              type="text"
-              name="salary"
-              value={jobData.salary}
-              onChange={handleChange}
-              className="w-full p-2 border rounded-md bg-white text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-              placeholder="e.g. $50,000 - $70,000"
-            />
-          </div>
-
-          <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Tags (comma-separated)</label>
             <input
               type="text"
               name="tags"
-              value={jobData.tags?.join(', ') || ''}
-              onChange={(e) => setJobData({
-                ...jobData,
-                tags: e.target.value.split(',').map(tag => tag.trim()).filter(Boolean)
-              })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              value={jobData.tags?.join(', ')}
+              onChange={handleTagsChange}
+              className="w-full p-2 border rounded-md bg-white text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
               placeholder="e.g. React, TypeScript, Node.js"
             />
           </div>

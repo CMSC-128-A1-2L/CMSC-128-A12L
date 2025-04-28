@@ -77,23 +77,14 @@ export default function JobListings() {
     setIsGridView(!isGridView);
   };
 
-  // Add filter state
+  // Update filter state to remove jobType and rename workType to workMode
   const [activeFilters, setActiveFilters] = useState({
-    jobType: {
-      fullTime: false,
-      partTime: false,
-      contract: false,
-    },
-    workType: {
+    workMode: {
       onSite: false,
       remote: false,
       hybrid: false,
     },
-    experienceLevel: {
-      entry: false,
-      midLevel: false,
-      senior: false,
-    }
+    sort: 'newest' // Add sort property with default value
   });
 
   // Handle filter changes from FilterSidebar
@@ -103,43 +94,39 @@ export default function JobListings() {
     setCurrentPage(1);
   };
 
-  // Update filtered jobs to use fetched data instead of dummy data
+  // Update filtered jobs logic to remove experienceLevel checks
   const filteredJobs = jobs.filter((job) => {
     const searchMatch =
       job.title.toLowerCase().includes(search.toLowerCase()) ||
       job.company.toLowerCase().includes(search.toLowerCase()) ||
       job.description.toLowerCase().includes(search.toLowerCase());
 
-    const jobTypeFiltersActive =
-      activeFilters.jobType.fullTime ||
-      activeFilters.jobType.partTime ||
-      activeFilters.jobType.contract;
+    const workModeFiltersActive =
+      activeFilters.workMode.onSite ||
+      activeFilters.workMode.remote ||
+      activeFilters.workMode.hybrid;
 
-    const jobTypeMatch =
-      !jobTypeFiltersActive ||
-      (activeFilters.jobType.fullTime && job.job_type === "full-time") ||
-      (activeFilters.jobType.partTime && job.job_type === "part-time") ||
-      (activeFilters.jobType.contract && job.job_type === "contract");
+    const workModeMatch =
+      !workModeFiltersActive ||
+      (activeFilters.workMode.onSite && job.workMode.toLowerCase() === "on-site") ||
+      (activeFilters.workMode.remote && job.workMode.toLowerCase() === "remote") ||
+      (activeFilters.workMode.hybrid && job.workMode.toLowerCase() === "hybrid");
 
-    const workTypeFiltersActive =
-      activeFilters.workType.onSite ||
-      activeFilters.workType.remote ||
-      activeFilters.workType.hybrid;
-
-    const workTypeMatch =
-      !workTypeFiltersActive ||
-      (activeFilters.workType.onSite && job.work_type === "on-site") ||
-      (activeFilters.workType.remote && job.work_type === "remote") ||
-      (activeFilters.workType.hybrid && job.work_type === "hybrid");
-
-    const experienceLevelFiltersActive =
-      activeFilters.experienceLevel.entry ||
-      activeFilters.experienceLevel.midLevel ||
-      activeFilters.experienceLevel.senior;
-
-    const experienceLevelMatch = !experienceLevelFiltersActive;
-
-    return searchMatch && jobTypeMatch && workTypeMatch && experienceLevelMatch;
+    return searchMatch && workModeMatch;
+  }).sort((a, b) => {
+    // Add sorting logic
+    switch (activeFilters.sort) {
+      case 'newest':
+        return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+      case 'oldest':
+        return new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
+      case 'a-z':
+        return a.title.localeCompare(b.title);
+      case 'z-a':
+        return b.title.localeCompare(a.title);
+      default:
+        return 0;
+    }
   });
 
   // Handle Pagination
@@ -387,32 +374,7 @@ export default function JobListings() {
                   transition={{ delay: 0.2 }}
                   className="flex flex-wrap items-center gap-2 mb-4"
                 >
-                  {Object.entries(activeFilters.jobType).map(([key, value]) =>
-                    value ? (
-                      <div
-                        key={key}
-                        className="px-3 py-2 bg-white/5 rounded-lg text-white border border-white/10 flex items-center gap-2"
-                      >
-                        {key === "fullTime"
-                          ? "Full-time"
-                          : key === "partTime"
-                          ? "Part-time"
-                          : "Contract"}
-                        <button
-                          className="opacity-60 hover:opacity-100 cursor-pointer"
-                          onClick={() => {
-                            const newFilters = { ...activeFilters };
-                            newFilters.jobType[key as keyof typeof newFilters.jobType] = false;
-                            handleFilterChange(newFilters);
-                          }}
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    ) : null
-                  )}
-
-                  {Object.entries(activeFilters.workType).map(([key, value]) =>
+                  {Object.entries(activeFilters.workMode).map(([key, value]) =>
                     value ? (
                       <div
                         key={key}
@@ -427,32 +389,7 @@ export default function JobListings() {
                           className="opacity-60 hover:opacity-100 cursor-pointer"
                           onClick={() => {
                             const newFilters = { ...activeFilters };
-                            newFilters.workType[key as keyof typeof newFilters.workType] = false;
-                            handleFilterChange(newFilters);
-                          }}
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    ) : null
-                  )}
-
-                  {Object.entries(activeFilters.experienceLevel).map(([key, value]) =>
-                    value ? (
-                      <div
-                        key={key}
-                        className="px-3 py-2 bg-white/5 rounded-lg text-white border border-white/10 flex items-center gap-2"
-                      >
-                        {key === "entry"
-                          ? "Entry Level"
-                          : key === "midLevel"
-                          ? "Mid-Level"
-                          : "Senior"}
-                        <button
-                          className="opacity-60 hover:opacity-100 cursor-pointer"
-                          onClick={() => {
-                            const newFilters = { ...activeFilters };
-                            newFilters.experienceLevel[key as keyof typeof newFilters.experienceLevel] = false;
+                            newFilters.workMode[key as keyof typeof newFilters.workMode] = false;
                             handleFilterChange(newFilters);
                           }}
                         >
@@ -528,20 +465,10 @@ export default function JobListings() {
                     className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors mt-4 border border-white/10"
                     onClick={() =>
                       handleFilterChange({
-                        jobType: {
-                          fullTime: false,
-                          partTime: false,
-                          contract: false,
-                        },
-                        workType: {
+                        workMode: {
                           onSite: false,
                           remote: false,
                           hybrid: false,
-                        },
-                        experienceLevel: {
-                          entry: false,
-                          midLevel: false,
-                          senior: false,
                         }
                       })
                     }
@@ -559,8 +486,7 @@ export default function JobListings() {
                     title={selectedJob.title}
                     company={selectedJob.company}
                     location={selectedJob.location}
-                    jobType={selectedJob.job_type}
-                    workType={selectedJob.work_type}
+                    workMode={selectedJob.workMode}
                     description={selectedJob.description}
                     tags={selectedJob.tags}
                     isOpen={showDetailsModal}
@@ -582,9 +508,7 @@ export default function JobListings() {
                       title: selectedJob.title,
                       company: selectedJob.company,
                       location: selectedJob.location,
-                      jobType: selectedJob.job_type,
-                      workType: selectedJob.work_type,
-                      salary: selectedJob.salary,
+                      workMode: selectedJob.workMode,
                       description: selectedJob.description,
                       tags: selectedJob.tags || [],
                     }}
