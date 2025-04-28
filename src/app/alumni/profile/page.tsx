@@ -200,7 +200,7 @@ export default function AlumniProfile() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full">
               {/* Left Card - Main Profile */}
-              <div className="lg:col-span-5 bg-white/10 backdrop-blur-sm rounded-xl shadow-lg overflow-hidden h-[calc(100vh-6rem)]">
+              <div className="lg:col-span-5 bg-white/10 backdrop-blur-sm rounded-xl shadow-lg overflow-hidden">
                 <div className="p-6 h-full flex flex-col">
                   <div className="flex-grow overflow-y-auto">
                     {/* Profile Picture Square */}
@@ -342,7 +342,7 @@ export default function AlumniProfile() {
               </div>
 
               {/* Right Column - Single Card */}
-              <div className="lg:col-span-7 h-[calc(100vh-6rem)]">
+              <div className="lg:col-span-7">
                 <div className="bg-white/10 backdrop-blur-sm rounded-xl shadow-lg p-6 h-full">
                   {/* Add Edit/Save Buttons */}
                   <div className="flex justify-end mb-6">
