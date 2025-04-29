@@ -11,10 +11,7 @@ export async function GET(request: NextRequest) {
     try {
         // Check alumni authentication
         const session = await getServerSession(authOptions);
-        if (!session || !session.user.role.includes(UserRole.ALUMNI)) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
-
+       //removed checking if user is an alumni (for now)
         const announcementRepository = getAnnouncementRepository();
         // Get announcements visible to alumni (ALUMNI or ALL visibility)
         const announcements = await announcementRepository.getAnnouncementsByVisibility([
