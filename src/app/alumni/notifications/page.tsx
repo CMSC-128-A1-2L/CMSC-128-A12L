@@ -9,7 +9,7 @@ import { EllipsisVertical, Trash } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { Notification } from "@/entities/notifications";
-import { motion } from "framer-motion";
+import ConstellationBackground from "@/app/components/constellationBackground";
 
 export default function NotificationsPage() {
     const { data: session, status } = useSession();
@@ -76,7 +76,7 @@ export default function NotificationsPage() {
             
             setNotifications(prevNotifications =>
                 prevNotifications.map(notif => ({
-                    ...notif,
+        ...notif,
                     isRead: true
                 }))
             );
@@ -84,7 +84,7 @@ export default function NotificationsPage() {
             console.error(err);
         }
     };
-
+  
     const handleMarkAsRead = async (id: string) => {
         console.log("did it go here")
         try {
@@ -98,13 +98,13 @@ export default function NotificationsPage() {
             setNotifications(prevNotifications =>
                 prevNotifications.map(notif =>
                     notif._id === id ? { ...notif, isRead: true } : notif
-                )
-            );
+        )
+      );
         } catch (err) {
             console.error(err);
         }
     };
-
+  
     const handleMarkAsUnread = async (id: string) => {
         console.log("did it go here")
         try {
@@ -118,13 +118,13 @@ export default function NotificationsPage() {
             setNotifications(prevNotifications =>
                 prevNotifications.map(notif =>
                     notif._id === id ? { ...notif, isRead: false } : notif
-                )
-            );
+        )
+      );
         } catch (err) {
             console.error(err);
         }
     };
-
+  
     const handleDelete = async (id: string) => {
         try {
             const response = await fetch(`/api/notifications/${id}`, {
@@ -147,7 +147,7 @@ export default function NotificationsPage() {
     const formatTimeAgo = (date: Date) => {
         const now = new Date();
         const diff = now.getTime() - new Date(date).getTime();
-
+        
         const minutes = Math.floor(diff / 60000);
         const hours = Math.floor(minutes / 60);
         const days = Math.floor(hours / 24);
@@ -177,75 +177,74 @@ export default function NotificationsPage() {
             </div>
         );
     }
-   
+  
     return (
-    <div className="flex-1 overflow-y-auto p-6 text-white font-montserrat relative">
-      {/* Background Elements */}
-      <div className="fixed inset-0 bg-[#0f172a]" />
-      <div className="fixed inset-0 bg-gradient-to-br from-[#1a1f4d]/80 via-[#1a237e]/60 to-[#0d47a1]/40" />
-      
-      {/* Content */}
-      <motion.div 
-        className="relative z-10"
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.9 }}
-      >
-        <h1 className="text-2xl font-bold mb-4 text-white">Notifications</h1>
-
+      <div className="relative flex-1 overflow-y-auto p-6 bg-[#153A93] text-[#0c0051] font-montserrat">
+        <ConstellationBackground />
+        <h1 className="text-2xl font-bold mb-4 text-[#ffffff]">Notifications</h1>
+  
         {/* Tab Navigation */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex space-x-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+          <div className="flex flex-wrap gap-2 sm:gap-4">
             <button
-              className={`px-4 py-2 rounded-md transition-colors ${tab === 'all' ? 'bg-blue-500/20 border border-blue-500/50 text-blue-400' : 'bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10'}`}
+              className={`px-4 py-2 rounded-md transition-colors duration-200 ${
+                tab === 'all' 
+                  ? 'bg-[#0c0051] text-white' 
+                  : 'bg-gray-100 text-[#0c0051] hover:bg-gray-200'
+              }`}
               onClick={() => setTab('all')}
             >
               All Notifications
             </button>
             <button
-              className={`px-4 py-2 rounded-md transition-colors ${tab === 'unread' ? 'bg-blue-500/20 border border-blue-500/50 text-blue-400' : 'bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10'}`}
+              className={`px-4 py-2 rounded-md transition-colors duration-200 ${
+                tab === 'unread' 
+                  ? 'bg-[#0c0051] text-white' 
+                  : 'bg-gray-100 text-[#0c0051] hover:bg-gray-200'
+              }`}
               onClick={() => setTab('unread')}
             >
               Unread Notifications
             </button>
           </div>
-
+  
           {/* Mark All as Read Button */}
           <button
-            className="px-4 py-2 bg-blue-500/20 border border-blue-500/50 text-blue-400 rounded-md hover:bg-blue-500/30 transition-colors"
+            className="px-4 py-2 bg-[#0c0051] text-white rounded-md hover:bg-[#0c0051]/90 transition-colors duration-200"
             onClick={handleMarkAllAsRead}
           >
             Mark all as read
           </button>
         </div>
-
+  
         {/* Notifications List */}
         <div className="w-full max-w-[1200px] h-[calc(100vh-200px)] overflow-y-auto mx-auto">
           {filtered.length === 0 ? (
-            <p className="text-gray-300">No notifications available.</p>
+            <p className="text-gray-500">No notifications available.</p>
           ) : (
             filtered.map((notif) => (
               <div
                 key={notif._id}
-                className={`p-4 mb-4 bg-white/5 backdrop-blur-sm rounded-lg shadow-sm transition-all duration-200 hover:bg-white/10 border border-white/10 ${
-                  !notif.isRead ? 'border-l-4 border-blue-500/50' : ''
+                className={`p-4 mb-4 bg-[#f0f0f0] rounded-lg shadow-sm transition-all duration-200 hover:bg-[#0c0051] hover:text-white ${
+                  notif.isRead ? 'border-l-4 border-[#0c0051]' : ''
                 } relative group`}
+                onClick={() => handleNotificationClick(notif._id!)}
               >
                 <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <p className="font-semibold text-white">{notif.message}</p>
-                    <div className="flex items-center space-x-2">
-                      <span className="text-sm text-gray-300 group-hover:text-gray-200">
+                  <div className="flex-1 min-w-0 pr-2">
+                    <p className="font-semibold text-sm sm:text-base break-words whitespace-pre-wrap">{notif.message}</p>
+                    <div className="flex flex-wrap items-center gap-1 sm:gap-2 mt-1">
+                      <span className="text-xs sm:text-sm text-gray-500 group-hover:text-gray-300">
                         {formatTimeAgo(notif.createdAt)} ago
                       </span>
-                      <span className="text-sm text-gray-300 group-hover:text-gray-200">•</span>
-                      <span className="text-sm text-gray-300 capitalize group-hover:text-gray-200">
+                      <span className="text-xs sm:text-sm text-gray-500 group-hover:text-gray-300">•</span>
+                      <span className="text-xs sm:text-sm text-gray-500 capitalize group-hover:text-gray-300">
                         {notif.type}
                       </span>
                       {!notif.userId && (
                         <>
-                          <span className="text-sm text-gray-300 group-hover:text-gray-200">•</span>
-                          <span className="text-sm text-gray-300 group-hover:text-gray-200">
+                          <span className="text-xs sm:text-sm text-gray-500 group-hover:text-gray-300">•</span>
+                          <span className="text-xs sm:text-sm text-gray-500 group-hover:text-gray-300">
                             Global
                           </span>
                         </>
@@ -254,26 +253,36 @@ export default function NotificationsPage() {
                   </div>
 
                   {/* Action Buttons */}
-                  <div className="flex items-center space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className={`flex items-center gap-1.5 sm:space-x-2 transition-opacity duration-200 ${
+                    window.innerWidth >= 1024 
+                      ? 'opacity-0 group-hover:opacity-100' 
+                      : activeNotification === notif._id 
+                        ? 'opacity-100' 
+                        : 'opacity-0'
+                  }`}>
                     <button
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         if (!notif.isRead) {
                           handleMarkAsRead(notif._id!);
                         } else {
                           handleMarkAsUnread(notif._id!);
                         }
                       }}
-                      className="px-3 py-1 text-sm bg-white/10 text-white rounded-md hover:bg-white/20 transition-colors"
+                      className="px-2 sm:px-3 py-1 text-xs sm:text-sm bg-white/90 text-[#0c0051] rounded-md hover:bg-white transition-colors whitespace-nowrap"
                     >
                       {!notif.isRead ? "Mark as read" : "Mark as unread"}
                     </button>
 
                     {notif.userId === session?.user?.id && (
                       <button
-                        onClick={() => handleDelete(notif._id!)}
-                        className="px-3 py-1 text-sm bg-white/10 text-white rounded-md hover:bg-white/20 transition-colors flex items-center"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(notif._id!);
+                        }}
+                        className="px-2 sm:px-3 py-1 text-xs sm:text-sm bg-gray-100/90 text-gray-700 rounded-md hover:bg-gray-100 hover:text-gray-900 transition-colors flex items-center whitespace-nowrap"
                       >
-                        <Trash size={14} className="mr-1" />
+                        <Trash size={12} className="mr-1" />
                         Delete
                       </button>
                     )}
@@ -281,14 +290,13 @@ export default function NotificationsPage() {
 
                   {/* Unread Dot */}
                   {!notif.isRead && (
-                    <div className="w-2.5 h-2.5 bg-blue-400 rounded-full ml-2" />
+                    <div className="w-2.5 h-2.5 bg-[#0c0051] rounded-full ml-2"></div>
                   )}
                 </div>
               </div>
             ))
           )}
         </div>
-      </motion.div>
-    </div>
-  );
-}
+      </div>
+    );
+  }
