@@ -1,4 +1,5 @@
 "use client";
+
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Bell, ArrowRight, Calendar, MessageSquare } from "lucide-react";
@@ -6,48 +7,64 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import ConstellationBackground from "@/app/components/constellationBackground";
 import AnnouncementModal from "@/app/components/announcementModal";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+interface Announcement {
+  id: number;
+  title: string;
+  description: string;
+  date: string;
+  category: string;
+  color: string;
+  icon: any;
+}
 
 export default function AnnouncementsPage() {
-  const [selectedAnnouncement, setSelectedAnnouncement] = useState<{
-    id: number;
-    title: string;
-    description: string;
-    date: string;
-    category: string;
-    icon: any;
-    color: string;
-  } | null>(null);
+  const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null);
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
 
-  const announcements = [
-    {
-      id: 1,
-      title: "Annual Alumni Homecoming",
-      description: "Join us for our annual homecoming event on December 15th, 2024. Reconnect with old friends and make new connections!",
-      date: "2024-12-15",
-      category: "Event",
-      icon: Calendar,
-      color: "bg-green-500"
-    },
-    {
-      id: 2,
-      title: "New Career Development Program",
-      description: "We're launching a new career development program for recent graduates. Applications open next month.",
-      date: "2024-11-01",
-      category: "Program",
-      icon: Bell,
-      color: "bg-blue-500"
-    },
-    {
-      id: 3,
-      title: "Alumni Survey",
-      description: "Help us improve our alumni services by participating in our annual survey.",
-      date: "2024-10-20",
-      category: "Survey",
-      icon: MessageSquare,
-      color: "bg-purple-500"
-    }
-  ];
+  useEffect(() => {
+    const fetchAnnouncements = async () => {
+      try {
+        const response = await fetch('/api/alumni/announcements'); // Your route.ts should handle this
+        if (!response.ok) throw new Error('Failed to fetch announcements');
+        const data = await response.json();
+
+        // Category -> Color & Icon mapping
+        const categoryStyles: { [key: string]: { color: string; icon: any } } = {
+          "Event": { color: "bg-green-500", icon: Calendar },
+          "Program": { color: "bg-blue-500", icon: Bell },
+          "Survey": { color: "bg-purple-500", icon: MessageSquare },
+          // Add more if needed
+        };
+
+        const enhancedData: Announcement[] = data.map((announcement: any) => {
+          const category = "Event"; // Default category, adjust based on actual logic or data
+
+          return {
+            id: announcement._id,  // Use _id from the fetched data
+            title: announcement.title,
+            description: announcement.content, // Mapping content to description
+            date: new Date(announcement.publishDate).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            }),
+            category, // You may need to adjust how categories are determined based on your data
+            color: categoryStyles[category]?.color || "bg-gray-500",
+            icon: categoryStyles[category]?.icon || Bell,
+          };
+        });
+
+        setAnnouncements(enhancedData);
+      } catch (error) {
+        console.error('Error loading announcements:', error);
+      }
+    };
+
+    fetchAnnouncements();
+  }, []);
+
 
   return (
     <div className="min-h-screen">
@@ -83,11 +100,12 @@ export default function AnnouncementsPage() {
         >
           {announcements.map((announcement) => (
             <motion.div
-              key={announcement.id}
+              key={announcement.id ?? `${announcement.title}-${announcement.date}`}
+
               whileHover={{ y: -5 }}
               transition={{ duration: 0.2 }}
             >
-              <Card 
+              <Card
                 className="p-6 hover:shadow-lg transition-all duration-300 cursor-pointer bg-white/10 backdrop-blur-sm border-0 h-full"
                 onClick={() => setSelectedAnnouncement(announcement)}
               >
@@ -105,7 +123,11 @@ export default function AnnouncementsPage() {
                 </p>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-400">
-                    {new Date(announcement.date).toLocaleDateString()}
+                    {new Date(announcement.date).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}
                   </span>
                   <ArrowRight className="w-5 h-5 text-gray-400" />
                 </div>
@@ -123,4 +145,4 @@ export default function AnnouncementsPage() {
       />
     </div>
   );
-} 
+}
