@@ -3,10 +3,9 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { FiFilter, FiUsers, FiMapPin, FiBriefcase, FiCalendar } from "react-icons/fi";
 import { IoIosArrowForward, IoIosArrowBack } from "react-icons/io";
-import userData from "@/dummy_data/user.json";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { Ranchers } from "next/font/google";
+import { Search } from "lucide-react";
 
 
 
@@ -77,27 +76,22 @@ export default function AlumniPage() {
     setPageInput(currentPage.toString());
   }, [currentPage]);
 
-  // filters based on role and gender
+  // filters 
   const filteredAlumni = alumni.filter((alumni) => {
     const fullName = `${alumni.name}`.toLowerCase();
     const searchMatch = fullName.includes(search.toLowerCase());
     const departmentMatch =
     selectedFilter.department === "" ||
     alumni.department?.toLowerCase() === selectedFilter.department?.toLowerCase()
-
-
     const yearMatch =
       selectedFilter.graduationYear === "" ||
       alumni.graduationYear?.toString() === selectedFilter.graduationYear;
-
     const locationMatch =
       selectedFilter.currentLocation === "" ||
       alumni.currentLocation?.toLowerCase() === selectedFilter.currentLocation.toLowerCase();
-
     const companyMatch =
       selectedFilter.currentCompany === "" ||
       alumni.currentCompany?.toLowerCase() === selectedFilter.currentCompany.toLowerCase();
-
     return (
       searchMatch &&
       departmentMatch &&
@@ -158,19 +152,21 @@ export default function AlumniPage() {
       {/* Main container */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Search and Filter */}
-        <div className="flex items-center gap-4 py-4">
+        <div className="flex items-center justify-center gap-2 sm:gap-4 py-4 max-w-3xl mx-auto w-full">
           {/* Search bar - center */}
           <div className="flex-1 max-w-2xl mx-auto">
             <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
               <input
-                type="text"
-                placeholder="Search"
+                type="search"
+                placeholder="Search jobs"
+                className="w-full pl-10 pr-16 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="input input-bordered w-full pl-10 pr-16 bg-white/10 backdrop-blur-sm border-white/20 text-white placeholder-gray-300"
               />
-              <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-300">
-                <FiFilter size={18} />
+              <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
+                <kbd className="hidden sm:inline-block px-2 py-1 text-xs rounded bg-white/5 text-gray-400">ctrl</kbd>
+                <kbd className="hidden sm:inline-block px-2 py-1 text-xs rounded bg-white/5 text-gray-400">K</kbd>
               </div>
             </div>
           </div>
