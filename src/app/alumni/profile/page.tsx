@@ -77,6 +77,8 @@ interface Session {
   };
 }
 
+const LINKEDIN_REGEX = /^https?:\/\/(www\.)?linkedin\.com\/[a-zA-Z0-9\-_/]+$/i;
+
 export default function AlumniProfile() {
   const { data: session } = useSession() as { data: Session | null };
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -239,16 +241,25 @@ export default function AlumniProfile() {
         break;
 
       case 'linkedIn':
-        if (value && !value.startsWith('https://www.linkedin.com/')) {
-          errors.linkedIn = 'Must be a valid LinkedIn URL';
+        if (value && (!LINKEDIN_REGEX.test(value) || value.length > 100)) {
+          errors.linkedIn = 'Must be a valid LinkedIn URL (e.g. https://linkedin.com/in/username) and less than 100 characters';
         } else {
           delete errors.linkedIn;
         }
         break;
 
       case 'website':
-        if (value && !validateUrl(value)) {
-          errors.website = 'Must be a valid URL';
+        if (value) {
+          try {
+            new URL(value);
+            if (value.length > 100) {
+              errors.website = 'Website must be less than 100 characters';
+            } else {
+              delete errors.website;
+            }
+          } catch {
+            errors.website = 'Must be a valid URL (e.g. https://example.com)';
+          }
         } else {
           delete errors.website;
         }
@@ -261,11 +272,12 @@ export default function AlumniProfile() {
   // Modify handleSaveProfile to check for validation errors
   const handleSaveProfile = async () => {
     // Check if there are any validation errors
+    console.log(profileData)
+
     if (Object.keys(validationErrors).length > 0) {
       toast.error('Please fix validation errors before saving');
       return;
     }
-
     try {
       const response = await fetch("/api/users/profile", {
         method: "PUT",
@@ -363,7 +375,7 @@ export default function AlumniProfile() {
                 </div>
               </div>
 
-              {/* Edit Button */}
+              {/* Edit Button - moved above navigation and content */}
               <div className="flex justify-end mb-4">
                 {isEditMode ? (
                   <div className="space-x-2">
@@ -494,6 +506,9 @@ export default function AlumniProfile() {
                                 }}
                                 readOnly={!isEditMode}
                               />
+                              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <Phone className="h-5 w-5 text-gray-400" />
+                              </div>
                               {validationErrors.phoneNumber && (
                                 <p className="text-red-500 text-sm mt-1">{validationErrors.phoneNumber}</p>
                               )}
@@ -563,6 +578,9 @@ export default function AlumniProfile() {
                             {validationErrors.graduationYear && (
                               <p className="text-red-500 text-sm mt-1">{validationErrors.graduationYear}</p>
                             )}
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                              <GraduationCap className="h-5 w-5 text-gray-400" />
+                            </div>
                           </div>
                         </div>
                         <div className="space-y-1">
@@ -657,11 +675,15 @@ export default function AlumniProfile() {
                               handleValidation('linkedIn', value);
                             }}
                             readOnly={!isEditMode}
+                            maxLength={100}
                           />
                           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <Linkedin className="h-5 w-5 text-gray-400" />
                           </div>
                         </div>
+                        {validationErrors.linkedIn && (
+                          <p className="text-red-500 text-sm mt-1">{validationErrors.linkedIn}</p>
+                        )}
                       </div>
 
                       {/* Personal Website */}
@@ -681,17 +703,21 @@ export default function AlumniProfile() {
                               handleValidation('website', value);
                             }}
                             readOnly={!isEditMode}
+                            maxLength={100}
                           />
                           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <Globe className="h-5 w-5 text-gray-400" />
                           </div>
                         </div>
+                        {validationErrors.website && (
+                          <p className="text-red-500 text-sm mt-1">{validationErrors.website}</p>
+                        )}
                       </div>
                     </div>
                   </div>
                 )}
 
-                {/* Biographical Information Section */}
+                {/* Biographical Information Section */} 
                 {selectedOption === 'biographical' && (
                   <div className="space-y-4">
                     <h2 className="text-2xl font-semibold text-white mb-4">
@@ -835,7 +861,7 @@ export default function AlumniProfile() {
                 {/* Right Column - Single Card */}
                 <div className="lg:col-span-7 h-[calc(100vh-6rem)]">
                   <div className="bg-white/10 backdrop-blur-sm rounded-xl shadow-lg p-6 h-full">
-                    {/* Add Edit/Save Buttons */}
+                    {/* Edit/Save Buttons - moved above tab content */}
                     <div className="flex justify-end mb-6">
                       {isEditMode ? (
                         <div className="space-x-2">
@@ -1016,6 +1042,9 @@ export default function AlumniProfile() {
                                 {validationErrors.graduationYear && (
                                   <p className="text-red-500 text-sm mt-1">{validationErrors.graduationYear}</p>
                                 )}
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                  <GraduationCap className="h-5 w-5 text-gray-400" />
+                                </div>
                               </div>
                             </div>
                             <div className="space-y-1">
@@ -1110,11 +1139,15 @@ export default function AlumniProfile() {
                                   handleValidation('linkedIn', value);
                                 }}
                                 readOnly={!isEditMode}
+                                maxLength={100}
                               />
                               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <Linkedin className="h-5 w-5 text-gray-400" />
                               </div>
                             </div>
+                            {validationErrors.linkedIn && (
+                              <p className="text-red-500 text-sm mt-1">{validationErrors.linkedIn}</p>
+                            )}
                           </div>
 
                           {/* Personal Website */}
@@ -1134,17 +1167,21 @@ export default function AlumniProfile() {
                                   handleValidation('website', value);
                                 }}
                                 readOnly={!isEditMode}
+                                maxLength={100}
                               />
                               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <Globe className="h-5 w-5 text-gray-400" />
                               </div>
                             </div>
+                            {validationErrors.website && (
+                              <p className="text-red-500 text-sm mt-1">{validationErrors.website}</p>
+                            )}
                           </div>
                         </div>
                       </div>
                     )}
 
-                    {/* Biographical Information Section */}
+                    {/* Biographical Information Section */} 
                     {selectedOption === 'biographical' && (
                       <div className="space-y-4">
                         <h2 className="text-2xl font-semibold text-white mb-4">
