@@ -32,21 +32,11 @@ export function connectDB(): Connection {
     maxPoolSize: process.env.NODE_ENV === 'development' ? 10 : undefined
   });
 
-
   // Cache the connection in the global namespace for hot-reloading in development
   if (process.env.NODE_ENV === 'development') {
     globalWithMongoConnection.mongoConnection = connection;
   }
   cachedConnection = connection;
-
-  // Handle connection events
-  connection.on('connected', () => {
-    console.log('MongoDB connected successfully');
-  });
-
-  connection.on('error', (err) => {
-    console.error('MongoDB connection error:', err);
-  });
 
   return connection;
 }
