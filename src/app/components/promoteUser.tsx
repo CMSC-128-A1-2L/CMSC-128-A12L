@@ -15,7 +15,7 @@ export default function PromoteUser({ person }: {person: UserDto}) {
           method: "PUT",
           body: JSON.stringify({
             ...person,
-            role: ["admin"]
+            role: ["admin", "alumni"]
           }),
         })
         if (response.ok) {

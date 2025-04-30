@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
         }
 
-        const notification = await notificationRepository.createNotificationById(body);
+        const notification = await notificationRepository.createNotification(body);
         return NextResponse.json(notification, { status: 200 });
     } catch (error) {
         console.error("Error creating notification:", error);
