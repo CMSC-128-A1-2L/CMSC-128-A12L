@@ -159,7 +159,7 @@ export default function NotificationsPage() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
           <div className="flex gap-4">
             <button
-              className={`px-4 py-2 rounded-md transition-colors ${
+              className={`px-4 py-2 rounded-md transition-colors cursor-pointer ${
                 tab === 'all'
                   ? 'bg-white/10 text-white'
                   : 'bg-white/5 text-gray-300 hover:bg-white/10'
@@ -169,7 +169,7 @@ export default function NotificationsPage() {
               All
             </button>
             <button
-              className={`px-4 py-2 rounded-md transition-colors ${
+              className={`px-4 py-2 rounded-md transition-colors cursor-pointer ${
                 tab === 'unread'
                   ? 'bg-white/10 text-white'
                   : 'bg-white/5 text-gray-300 hover:bg-white/10'
@@ -180,7 +180,7 @@ export default function NotificationsPage() {
             </button>
           </div>
           <button
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors cursor-pointer"
             onClick={handleMarkAllAsRead}
           >
             Mark all as read
@@ -224,7 +224,7 @@ export default function NotificationsPage() {
                         e.stopPropagation();
                         notif.isRead ? handleMarkAsUnread(notif._id!) : handleMarkAsRead(notif._id!);
                       }}
-                      className="px-3 py-1 rounded-md bg-white/10 hover:bg-white/20 text-gray-200 text-xs"
+                      className="px-3 py-1 rounded-md bg-white/10 hover:bg-white/20 text-gray-200 text-xs cursor-pointer"
                     >
                       {notif.isRead ? "Mark as Unread" : "Mark as Read"}
                     </button>
@@ -234,7 +234,7 @@ export default function NotificationsPage() {
                           e.stopPropagation();
                           handleDelete(notif._id!);
                         }}
-                        className="px-3 py-1 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-xs flex items-center"
+                        className="px-3 py-1 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-xs flex items-center cursor-pointer"
                       >
                         <Trash size={14} className="mr-1" />
                         Delete
