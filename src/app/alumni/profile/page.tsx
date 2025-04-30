@@ -23,6 +23,36 @@ import {
 import EditProfileModal from "@/app/components/EditProfileModal";
 import { motion } from "framer-motion";
 import { toast } from 'react-hot-toast';
+import debounce from 'lodash/debounce';
+import { COUNTRIES, validatePhoneNumber } from '@/lib/countries';
+
+// Add validation functions at the top level
+const CURRENT_YEAR = new Date().getFullYear();
+const FOUNDING_YEAR = 1909; // UPLB founding year
+
+const validateGraduationYear = (year: number) => {
+  return year >= FOUNDING_YEAR && year <= CURRENT_YEAR;
+};
+
+const validateUrl = (url: string) => {
+  try {
+    new URL(url);
+    return true;
+  } catch {
+    return false;
+  }
+};
+
+// Add these interfaces before the component
+interface ValidationErrors {
+  graduationYear?: string;
+  phoneNumber?: string;
+  currentLocation?: string;
+  department?: string;
+  bio?: string;
+  linkedIn?: string;
+  website?: string;
+}
 
 interface ProfileData {
   name: string;
@@ -70,6 +100,9 @@ export default function AlumniProfile() {
     linkedIn: "",
     website: ""
   });
+  const [phoneFormat, setPhoneFormat] = useState('PH');
+  const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
+  const [backupData, setBackupData] = useState<ProfileData | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -160,7 +193,79 @@ export default function AlumniProfile() {
     }
   }, [session]);
 
+  // Add validation handler
+  const handleValidation = debounce((field: string, value: any) => {
+    const errors = { ...validationErrors };
+
+    switch (field) {
+      case 'graduationYear':
+        if (value && !validateGraduationYear(value)) {
+          errors.graduationYear = `Year must be between ${FOUNDING_YEAR} and ${CURRENT_YEAR}`;
+        } else {
+          delete errors.graduationYear;
+        }
+        break;
+
+      case 'phoneNumber':
+        if (value && !validatePhoneNumber(value, phoneFormat)) {
+          errors.phoneNumber = 'Invalid phone number format';
+        } else {
+          delete errors.phoneNumber;
+        }
+        break;
+
+      case 'currentLocation':
+        if (value?.length > 100) {
+          errors.currentLocation = 'Location must be less than 100 characters';
+        } else {
+          delete errors.currentLocation;
+        }
+        break;
+
+      case 'department':
+        if (value?.length > 100) {
+          errors.department = 'Department must be less than 100 characters';
+        } else {
+          delete errors.department;
+        }
+        break;
+
+      case 'bio':
+        if (value?.length > 500) {
+          errors.bio = 'Bio must be less than 500 characters';
+        } else {
+          delete errors.bio;
+        }
+        break;
+
+      case 'linkedIn':
+        if (value && !value.startsWith('https://www.linkedin.com/')) {
+          errors.linkedIn = 'Must be a valid LinkedIn URL';
+        } else {
+          delete errors.linkedIn;
+        }
+        break;
+
+      case 'website':
+        if (value && !validateUrl(value)) {
+          errors.website = 'Must be a valid URL';
+        } else {
+          delete errors.website;
+        }
+        break;
+    }
+
+    setValidationErrors(errors);
+  }, 300);
+
+  // Modify handleSaveProfile to check for validation errors
   const handleSaveProfile = async () => {
+    // Check if there are any validation errors
+    if (Object.keys(validationErrors).length > 0) {
+      toast.error('Please fix validation errors before saving');
+      return;
+    }
+
     try {
       const response = await fetch("/api/users/profile", {
         method: "PUT",
@@ -171,6 +276,7 @@ export default function AlumniProfile() {
       if (!response.ok) throw new Error("Failed to update profile");
 
       toast.success("Profile updated successfully");
+      setBackupData(null); // Clear backup after successful save
       setIsEditMode(false);
     } catch (error) {
       console.error("Error updating profile:", error);
@@ -180,6 +286,22 @@ export default function AlumniProfile() {
 
   // Add this right before the return statement
   const canEdit = !isEditMode ? "readOnly" : "";
+
+  // Modify the edit mode handling
+  const handleEditMode = (isEditing: boolean) => {
+    if (isEditing) {
+      // Store current data as backup before entering edit mode
+      setBackupData(profileData);
+    } else {
+      // Restore from backup when canceling
+      if (backupData) {
+        setProfileData(backupData);
+        setValidationErrors({});
+      }
+      setBackupData(null);
+    }
+    setIsEditMode(isEditing);
+  };
 
   return (
     <div className="h-screen overflow-hidden relative">
@@ -246,7 +368,7 @@ export default function AlumniProfile() {
                 {isEditMode ? (
                   <div className="space-x-2">
                     <button
-                      onClick={() => setIsEditMode(false)}
+                      onClick={() => handleEditMode(false)}
                       className="px-3 py-1.5 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm"
                     >
                       Cancel
@@ -260,7 +382,7 @@ export default function AlumniProfile() {
                   </div>
                 ) : (
                   <button
-                    onClick={() => setIsEditMode(true)}
+                    onClick={() => handleEditMode(true)}
                     className="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
                   >
                     Edit Profile
@@ -337,17 +459,44 @@ export default function AlumniProfile() {
                           <label className="block text-base font-medium text-gray-200">
                             Phone Number
                           </label>
-                          <div className="relative">
-                            <input
-                              type="tel"
-                              className="w-full pl-10 pr-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent"
-                              placeholder="Enter your phone number"
-                              value={profileData.phoneNumber || ""}
-                              onChange={(e) => setProfileData({...profileData, phoneNumber: e.target.value})}
-                              readOnly={!isEditMode}
-                            />
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                              <Phone className="h-5 w-5 text-gray-400" />
+                          <div className="flex gap-2">
+                            <select
+                              className="w-36 pl-3 pr-8 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white appearance-none cursor-pointer hover:bg-white/20 transition-colors"
+                              value={phoneFormat}
+                              onChange={(e) => setPhoneFormat(e.target.value)}
+                              disabled={!isEditMode}
+                              style={{
+                                backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                                backgroundPosition: 'right 0.5rem center',
+                                backgroundRepeat: 'no-repeat',
+                                backgroundSize: '1.5em 1.5em',
+                                paddingRight: '2.5rem'
+                              }}
+                            >
+                              {COUNTRIES.map(country => (
+                                <option key={country.code} value={country.code}>
+                                  {country.name} ({country.prefix})
+                                </option>
+                              ))}
+                            </select>
+                            <div className="relative flex-1">
+                              <input
+                                type="tel"
+                                className={`w-full pl-10 pr-3 py-2 text-lg bg-white/10 border ${
+                                  validationErrors.phoneNumber ? 'border-red-500' : 'border-white/20'
+                                } rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent`}
+                                placeholder="Enter your phone number"
+                                value={profileData.phoneNumber || ""}
+                                onChange={(e) => {
+                                  const value = e.target.value;
+                                  setProfileData({...profileData, phoneNumber: value});
+                                  handleValidation('phoneNumber', value);
+                                }}
+                                readOnly={!isEditMode}
+                              />
+                              {validationErrors.phoneNumber && (
+                                <p className="text-red-500 text-sm mt-1">{validationErrors.phoneNumber}</p>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -364,7 +513,12 @@ export default function AlumniProfile() {
                             className="w-full pl-10 pr-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent"
                             placeholder="Enter your current location"
                             value={profileData.currentLocation || ""}
-                            onChange={(e) => setProfileData({...profileData, currentLocation: e.target.value})}
+                            maxLength={100}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              setProfileData({...profileData, currentLocation: value});
+                              handleValidation('currentLocation', value);
+                            }}
                             readOnly={!isEditMode}
                           />
                           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -392,15 +546,23 @@ export default function AlumniProfile() {
                           <div className="relative">
                             <input
                               type="number"
-                              className="w-full pl-10 pr-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent"
+                              className={`w-full pl-10 pr-3 py-2 text-lg bg-white/10 border ${
+                                validationErrors.graduationYear ? 'border-red-500' : 'border-white/20'
+                              } rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent`}
                               placeholder="Enter graduation year"
                               value={profileData.graduationYear || ""}
-                              onChange={(e) => setProfileData({ ...profileData, graduationYear: parseInt(e.target.value) })}
+                              min={FOUNDING_YEAR}
+                              max={CURRENT_YEAR}
+                              onChange={(e) => {
+                                const value = parseInt(e.target.value);
+                                setProfileData({ ...profileData, graduationYear: value });
+                                handleValidation('graduationYear', value);
+                              }}
                               readOnly={!isEditMode}
                             />
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                              <GraduationCap className="h-5 w-5 text-gray-400" />
-                            </div>
+                            {validationErrors.graduationYear && (
+                              <p className="text-red-500 text-sm mt-1">{validationErrors.graduationYear}</p>
+                            )}
                           </div>
                         </div>
                         <div className="space-y-1">
@@ -413,7 +575,12 @@ export default function AlumniProfile() {
                               className="w-full pl-10 pr-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent"
                               placeholder="Enter department" 
                               value={profileData.department || ""}
-                              onChange={(e) => setProfileData({...profileData, department: e.target.value})}
+                              maxLength={100}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                setProfileData({...profileData, department: value});
+                                handleValidation('department', value);
+                              }}
                               readOnly={!isEditMode}
                             />
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -484,7 +651,11 @@ export default function AlumniProfile() {
                             className="w-full pl-10 pr-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent"
                             placeholder="Enter LinkedIn profile URL"
                             value={profileData.linkedIn || ""}
-                            onChange={(e) => setProfileData({...profileData, linkedIn: e.target.value})}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              setProfileData({...profileData, linkedIn: value});
+                              handleValidation('linkedIn', value);
+                            }}
                             readOnly={!isEditMode}
                           />
                           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -504,7 +675,11 @@ export default function AlumniProfile() {
                             className="w-full pl-10 pr-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent"
                             placeholder="Enter personal website URL"
                             value={profileData.website || ""}
-                            onChange={(e) => setProfileData({...profileData, website: e.target.value})}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              setProfileData({...profileData, website: value});
+                              handleValidation('website', value);
+                            }}
                             readOnly={!isEditMode}
                           />
                           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -531,9 +706,17 @@ export default function AlumniProfile() {
                           className="w-full px-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent min-h-[200px] resize-none"
                           placeholder="Tell us about yourself..."
                           value={profileData.bio || ""}
-                          onChange={(e) => setProfileData({ ...profileData, bio: e.target.value })}
+                          maxLength={500}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            setProfileData({...profileData, bio: value});
+                            handleValidation('bio', value);
+                          }}
                           readOnly={!isEditMode}
                         />
+                        {validationErrors.bio && (
+                          <p className="text-red-500 text-sm mt-1">{validationErrors.bio}</p>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -657,7 +840,7 @@ export default function AlumniProfile() {
                       {isEditMode ? (
                         <div className="space-x-2">
                           <button
-                            onClick={() => setIsEditMode(false)}
+                            onClick={() => handleEditMode(false)}
                             className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
                           >
                             Cancel
@@ -671,7 +854,7 @@ export default function AlumniProfile() {
                         </div>
                       ) : (
                         <button
-                          onClick={() => setIsEditMode(true)}
+                          onClick={() => handleEditMode(true)}
                           className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                         >
                           Edit Profile
@@ -729,17 +912,44 @@ export default function AlumniProfile() {
                               <label className="block text-base font-medium text-gray-200">
                                 Phone Number
                               </label>
-                              <div className="relative">
-                                <input
-                                  type="tel"
-                                  className="w-full pl-10 pr-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent"
-                                  placeholder="Enter your phone number"
-                                  value={profileData.phoneNumber || ""}
-                                  onChange={(e) => setProfileData({...profileData, phoneNumber: e.target.value})}
-                                  readOnly={!isEditMode}
-                                />
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                  <Phone className="h-5 w-5 text-gray-400" />
+                              <div className="flex gap-2">
+                                <select
+                                  className="w-36 pl-3 pr-8 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white appearance-none cursor-pointer hover:bg-white/20 transition-colors"
+                                  value={phoneFormat}
+                                  onChange={(e) => setPhoneFormat(e.target.value)}
+                                  disabled={!isEditMode}
+                                  style={{
+                                    backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+                                    backgroundPosition: 'right 0.5rem center',
+                                    backgroundRepeat: 'no-repeat',
+                                    backgroundSize: '1.5em 1.5em',
+                                    paddingRight: '2.5rem'
+                                  }}
+                                >
+                                  {COUNTRIES.map(country => (
+                                    <option key={country.code} value={country.code}>
+                                      {country.name} ({country.prefix})
+                                    </option>
+                                  ))}
+                                </select>
+                                <div className="relative flex-1">
+                                  <input
+                                    type="tel"
+                                    className={`w-full pl-10 pr-3 py-2 text-lg bg-white/10 border ${
+                                      validationErrors.phoneNumber ? 'border-red-500' : 'border-white/20'
+                                    } rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent`}
+                                    placeholder="Enter your phone number"
+                                    value={profileData.phoneNumber || ""}
+                                    onChange={(e) => {
+                                      const value = e.target.value;
+                                      setProfileData({...profileData, phoneNumber: value});
+                                      handleValidation('phoneNumber', value);
+                                    }}
+                                    readOnly={!isEditMode}
+                                  />
+                                  {validationErrors.phoneNumber && (
+                                    <p className="text-red-500 text-sm mt-1">{validationErrors.phoneNumber}</p>
+                                  )}
                                 </div>
                               </div>
                             </div>
@@ -756,7 +966,12 @@ export default function AlumniProfile() {
                                 className="w-full pl-10 pr-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent"
                                 placeholder="Enter your current location"
                                 value={profileData.currentLocation || ""}
-                                onChange={(e) => setProfileData({...profileData, currentLocation: e.target.value})}
+                                maxLength={100}
+                                onChange={(e) => {
+                                  const value = e.target.value;
+                                  setProfileData({...profileData, currentLocation: value});
+                                  handleValidation('currentLocation', value);
+                                }}
                                 readOnly={!isEditMode}
                               />
                               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -784,15 +999,23 @@ export default function AlumniProfile() {
                               <div className="relative">
                                 <input
                                   type="number"
-                                  className="w-full pl-10 pr-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent"
+                                  className={`w-full pl-10 pr-3 py-2 text-lg bg-white/10 border ${
+                                    validationErrors.graduationYear ? 'border-red-500' : 'border-white/20'
+                                  } rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent`}
                                   placeholder="Enter graduation year"
                                   value={profileData.graduationYear || ""}
-                                  onChange={(e) => setProfileData({ ...profileData, graduationYear: parseInt(e.target.value) })}
+                                  min={FOUNDING_YEAR}
+                                  max={CURRENT_YEAR}
+                                  onChange={(e) => {
+                                    const value = parseInt(e.target.value);
+                                    setProfileData({ ...profileData, graduationYear: value });
+                                    handleValidation('graduationYear', value);
+                                  }}
                                   readOnly={!isEditMode}
                                 />
-                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                  <GraduationCap className="h-5 w-5 text-gray-400" />
-                                </div>
+                                {validationErrors.graduationYear && (
+                                  <p className="text-red-500 text-sm mt-1">{validationErrors.graduationYear}</p>
+                                )}
                               </div>
                             </div>
                             <div className="space-y-1">
@@ -805,7 +1028,12 @@ export default function AlumniProfile() {
                                   className="w-full pl-10 pr-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent"
                                   placeholder="Enter department" 
                                   value={profileData.department || ""}
-                                  onChange={(e) => setProfileData({...profileData, department: e.target.value})}
+                                  maxLength={100}
+                                  onChange={(e) => {
+                                    const value = e.target.value;
+                                    setProfileData({...profileData, department: value});
+                                    handleValidation('department', value);
+                                  }}
                                   readOnly={!isEditMode}
                                 />
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -876,7 +1104,11 @@ export default function AlumniProfile() {
                                 className="w-full pl-10 pr-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent"
                                 placeholder="Enter LinkedIn profile URL"
                                 value={profileData.linkedIn || ""}
-                                onChange={(e) => setProfileData({...profileData, linkedIn: e.target.value})}
+                                onChange={(e) => {
+                                  const value = e.target.value;
+                                  setProfileData({...profileData, linkedIn: value});
+                                  handleValidation('linkedIn', value);
+                                }}
                                 readOnly={!isEditMode}
                               />
                               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -896,7 +1128,11 @@ export default function AlumniProfile() {
                                 className="w-full pl-10 pr-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent"
                                 placeholder="Enter personal website URL"
                                 value={profileData.website || ""}
-                                onChange={(e) => setProfileData({...profileData, website: e.target.value})}
+                                onChange={(e) => {
+                                  const value = e.target.value;
+                                  setProfileData({...profileData, website: value});
+                                  handleValidation('website', value);
+                                }}
                                 readOnly={!isEditMode}
                               />
                               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -923,9 +1159,17 @@ export default function AlumniProfile() {
                               className="w-full px-3 py-2 text-lg bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent min-h-[200px] resize-none"
                               placeholder="Tell us about yourself..."
                               value={profileData.bio || ""}
-                              onChange={(e) => setProfileData({ ...profileData, bio: e.target.value })}
+                              maxLength={500}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                setProfileData({...profileData, bio: value});
+                                handleValidation('bio', value);
+                              }}
                               readOnly={!isEditMode}
                             />
+                            {validationErrors.bio && (
+                              <p className="text-red-500 text-sm mt-1">{validationErrors.bio}</p>
+                            )}
                           </div>
                         </div>
                       </div>
