@@ -299,48 +299,9 @@ export default function AlumniProfile() {
 
                     {/* Divider */}
                     <div className="w-full h-px bg-white/20 mb-4"></div>
-
-                    {/* Password Change Section */}
-                    <div className="space-y-4">
-                      {showPasswordFields && (
-                        <>
-                          <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-200">
-                              Old Password
-                            </label>
-                            <input
-                              type="password"
-                              className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent"
-                              placeholder="Enter your current password"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <label className="block text-sm font-medium text-gray-200">
-                              New Password
-                            </label>
-                            <input
-                              type="password"
-                              className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white/20 focus:border-transparent"
-                              placeholder="Enter your new password"
-                            />
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Change Password Button */}
-                  <div className="mt-auto pt-4">
-                <button
-                      className="w-full px-4 py-2 bg-[#0f172a] hover:bg-[#1a1f4d] text-white font-medium rounded-lg transition border border-white/20 cursor-pointer text-lg"
-                      onClick={() => setShowPasswordFields(!showPasswordFields)}
-                    >
-                      {showPasswordFields ? "Set New Password" : "Change Password"}
-                </button>
                   </div>
                 </div>
               </div>
-
               {/* Right Column - Single Card */}
               <div className="lg:col-span-7 h-[calc(100vh-6rem)]">
                 <div className="bg-white/10 backdrop-blur-sm rounded-xl shadow-lg p-6 h-full">
