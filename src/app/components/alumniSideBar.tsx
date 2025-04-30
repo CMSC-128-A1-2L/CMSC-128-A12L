@@ -17,6 +17,7 @@ import { motion } from "framer-motion";
 import { useSession } from "next-auth/react";
 import { Montserrat } from "next/font/google";
 import Image from "next/image";
+import { UserRole } from "@/entities/user";
 
 const montserrat = Montserrat({ subsets: ["latin"] });
 
@@ -42,14 +43,28 @@ export default function AlumniSidebar({
   const displayName = userEmail.split("@")[0] || "Alumni User";
   const userImage = session?.user?.image;
   const initial = (displayName[0] || "A").toUpperCase();
-
+  const getRole = () => {
+    if(session?.user?.role?.includes(UserRole.ADMIN) && session?.user?.role?.includes(UserRole.ALUMNI)){
+      return "Alumni Admin"
+    }
+    else if (session?.user?.role?.includes(UserRole.ADMIN)){
+      return "Admin"
+    }
+    else if (session?.user?.role?.includes(UserRole.ALUMNI)){
+      return "Alumni"
+    }
+    else{
+      return "Unknown"
+    }
+  }
+  const currentRole = getRole();
   const sidebarItems = {
     account: [
       {
         name: displayName,
         icon: <User size={20} />,
         path: "/alumni/profile",
-        subtitle: "Alumni",
+        subtitle: currentRole,
       },
     ],
     general: [
@@ -216,7 +231,7 @@ export default function AlumniSidebar({
           </div>
         </div>
 
-        {role == "admin" && (
+        {role?.includes("admin") && (
           <div className="border-t pt-2 px-2 pb-4 mt-2">
             <Link
               href="/admin"

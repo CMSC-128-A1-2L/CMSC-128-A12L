@@ -132,7 +132,7 @@ export default function AdminSidebar({
           </ul>
         </div>
         <div className="h-px bg-gray-200 mx-4 my-4" />
-        {role == "admin" && (
+        {role?.includes("alumni") && (
           <div className="mt-auto border-t pt-2 px-2 pb-4">
             <h3 className="text-gray-500 text-sm font-medium mb-2 px-4">
               Others
