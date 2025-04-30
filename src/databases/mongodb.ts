@@ -27,9 +27,9 @@ export function connectDB(): Connection {
 
   // Create new connection
   const connection = mongoose.createConnection(mongoDbUri, {
-    dbName: "DEV_ARTMS",
+    dbName: process.env.NODE_ENV === 'development' ? "DEV_ARTMS" : "ARTMS",
     bufferCommands: true,
-    maxPoolSize: 10
+    maxPoolSize: process.env.NODE_ENV === 'development' ? 10 : undefined
   });
 
 
