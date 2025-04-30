@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import BarChart from "./charts/BarChart";
 import PieChart from "./charts/PieChart";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Select,
   SelectTrigger,
@@ -17,70 +17,71 @@ interface EventsReportsProps {
 }
 
 export default function EventsReports({ className }: EventsReportsProps) {
-  // Mock event list (replace with API call in real app)
-  const events = [
-    { id: "1", name: "Event A" },
-    { id: "2", name: "Event B" },
-    { id: "3", name: "Event C" },
-  ];
-  const [selectedEvent, setSelectedEvent] = useState<string>(events[0].id);
+  const [events, setEvents] = useState<{ id: string; name: string }[]>([]);
+  const [selectedEvent, setSelectedEvent] = useState<string>("");
+  const [eventsPerMonthData, setEventsPerMonthData] = useState<any>(null);
+  const [rsvpDataByEvent, setRsvpDataByEvent] = useState<Record<string, any>>({});
 
-  // Sample data - replace with actual data from your API
-  const eventsPerMonthData = {
-    labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
-    datasets: [
-      {
-        label: "Number of Events",
-        data: [3, 4, 5, 3, 6, 4],
-        backgroundColor: "rgba(255, 159, 64, 0.5)",
-      },
-    ],
-  };
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const res = await fetch("/api/admin/reports/events");
+        const data = await res.json();
 
-  // RSVP data per event (mocked)
-  const rsvpDataByEvent: Record<string, any> = {
-    "1": {
-      labels: ["Attending", "Not Attending", "Pending"],
-      datasets: [
-        {
-          data: [65, 20, 15],
-          backgroundColor: [
-            "rgba(75, 192, 192, 0.5)",
-            "rgba(255, 99, 132, 0.5)",
-            "rgba(255, 206, 86, 0.5)",
-          ],
-        },
-      ],
-    },
-    "2": {
-      labels: ["Attending", "Not Attending", "Pending"],
-      datasets: [
-        {
-          data: [30, 40, 10],
-          backgroundColor: [
-            "rgba(75, 192, 192, 0.5)",
-            "rgba(255, 99, 132, 0.5)",
-            "rgba(255, 206, 86, 0.5)",
-          ],
-        },
-      ],
-    },
-    "3": {
-      labels: ["Attending", "Not Attending", "Pending"],
-      datasets: [
-        {
-          data: [10, 5, 25],
-          backgroundColor: [
-            "rgba(75, 192, 192, 0.5)",
-            "rgba(255, 99, 132, 0.5)",
-            "rgba(255, 206, 86, 0.5)",
-          ],
-        },
-      ],
-    },
-  };
+        // Build events list from rsvpStats
+        const fetchedEvents = data.rsvpStats.map((event: any, index: number) => ({
+          id: index.toString(),  // generate id based on index
+          name: event.name,
+        }));
+        setEvents(fetchedEvents);
 
-  const rsvpStatusData = rsvpDataByEvent[selectedEvent];
+        // Default select the first event
+        if (fetchedEvents.length > 0) {
+          setSelectedEvent(fetchedEvents[0].id);
+        }
+
+        // Prepare bar chart data
+        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const eventsPerMonth = {
+          labels: data.monthlyStats.map((item: any) => months[item.month - 1]),
+          datasets: [
+            {
+              label: "Number of Events",
+              data: data.monthlyStats.map((item: any) => item.numberOfEvents),
+              backgroundColor: "rgba(255, 159, 64, 0.5)",
+            },
+          ],
+        };
+        setEventsPerMonthData(eventsPerMonth);
+
+        // Prepare RSVP data per event
+        const rsvpByEvent: Record<string, any> = {};
+        data.rsvpStats.forEach((event: any, index: number) => {
+          rsvpByEvent[index.toString()] = {
+            labels: ["Attending", "Not Attending", "Pending"],
+            datasets: [
+              {
+                data: [event.wouldGo, event.wouldNotGo, event.wouldMaybeGo],
+                backgroundColor: [
+                  "rgba(75, 192, 192, 0.5)",
+                  "rgba(255, 99, 132, 0.5)",
+                  "rgba(255, 206, 86, 0.5)",
+                ],
+              },
+            ],
+          };
+        });
+        setRsvpDataByEvent(rsvpByEvent);
+
+      } catch (error) {
+        console.error("Failed to fetch event reports:", error);
+      }
+    }
+
+    fetchData();
+  }, []);
+
+  const rsvpStatusData = selectedEvent ? rsvpDataByEvent[selectedEvent] : null;
 
   return (
     <div className={className}>
@@ -90,7 +91,9 @@ export default function EventsReports({ className }: EventsReportsProps) {
             <CardTitle>Events per Month</CardTitle>
           </CardHeader>
           <CardContent>
-            <BarChart title="Monthly Events" data={eventsPerMonthData} />
+            {eventsPerMonthData && (
+              <BarChart title="Monthly Events" data={eventsPerMonthData} />
+            )}
           </CardContent>
         </Card>
 
@@ -99,19 +102,12 @@ export default function EventsReports({ className }: EventsReportsProps) {
             <CardTitle>RSVP Status Distribution</CardTitle>
             <div className="mt-2 text-black">
               <Select value={selectedEvent} onValueChange={setSelectedEvent}>
-                <SelectTrigger className="w-[220px] text-black">
-                  <SelectValue
-                    placeholder="Select Event"
-                    className="text-black"
-                  />
+                <SelectTrigger className="w-[220px] text-black bg-white">
+                  <SelectValue placeholder="Select Event" className="text-black bg-white" />
                 </SelectTrigger>
                 <SelectContent>
                   {events.map((event) => (
-                    <SelectItem
-                      key={event.id}
-                      value={event.id}
-                      className="text-black"
-                    >
+                    <SelectItem key={event.id} value={event.id} className="text-black bg-white">
                       {event.name}
                     </SelectItem>
                   ))}
@@ -120,7 +116,9 @@ export default function EventsReports({ className }: EventsReportsProps) {
             </div>
           </CardHeader>
           <CardContent>
-            <PieChart title="RSVP Status" data={rsvpStatusData} />
+            {rsvpStatusData && (
+              <PieChart title="RSVP Status" data={rsvpStatusData} />
+            )}
           </CardContent>
         </Card>
       </div>

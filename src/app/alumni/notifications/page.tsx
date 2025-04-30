@@ -10,6 +10,7 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import ConstellationBackground from "@/app/components/constellationBackground";
 import { Notification } from "@/entities/notifications";
+import { motion } from "framer-motion";
 
 export default function NotificationsPage() {
   const { data: session, status } = useSession();
