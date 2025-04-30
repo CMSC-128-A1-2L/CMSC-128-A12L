@@ -255,7 +255,7 @@ export default function SettingsPage() {
 
             <button
               onClick={() => setShowPasswordModal(true)}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors cursor-pointer"
             >
               Change Password
             </button>
@@ -273,7 +273,7 @@ export default function SettingsPage() {
           >
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-semibold text-white">Change Password</h3>
-              <button onClick={() => setShowPasswordModal(false)} className="text-gray-400 hover:text-white">
+              <button onClick={() => setShowPasswordModal(false)} className="text-gray-400 hover:text-white cursor-pointer">
                 <X size={24} />
               </button>
             </div>
@@ -296,7 +296,7 @@ export default function SettingsPage() {
               {passwordError && <p className="text-red-400 text-sm">{passwordError}</p>}
               {passwordSuccess && <p className="text-green-400 text-sm">Password changed successfully!</p>}
 
-              <button type="submit" className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors">
+              <button type="submit" className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors cursor-pointer">
                 Change Password
               </button>
             </form>
