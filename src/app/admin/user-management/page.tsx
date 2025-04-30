@@ -62,6 +62,9 @@ export default function UsersManagement(){
     const [alumniUsers, setAlumniUsers] = useState<UserDto[]>([]);
     const [pendingVerificationUsers, setPendingVerificationUsers] = useState<UserDto[]>([]);
 
+
+    
+    
     const handleAccept = async (userId: string) => {
         console.log(userId);
         const response = await fetch(`/api/admin/users/${userId}`, {
@@ -329,9 +332,14 @@ export default function UsersManagement(){
                                                 ) : (
                                                     <span className="text-gray-500 text-sm">Promoted</span>
                                                 )
-                                            ) : (
+                                            ) : (user.alumniStatus === "pending" ? (
                                                 <span className="text-gray-500 text-sm">Pending Verification</span>
-                                            )}
+                                            ) : (
+                                                <div className="flex items-center gap-x-2">
+                                                    <span className="text-gray-500 text-sm mr-5">Rejected</span>
+                                                    <DeleteUser person={user} deleteSuccess={deleteSuccess} />
+                                                </div>
+                                            ))}
                                 </div>
                             </motion.div>
                         ))}
@@ -372,7 +380,14 @@ export default function UsersManagement(){
                                                     <span className="text-gray-500 text-sm">Promoted</span>
                                                 )
                                             ) : (
-                                                <span className="text-gray-500 text-sm">Pending Verification</span>
+                                                user.alumniStatus === "pending" ? (
+                                                    <span className="text-gray-500 text-sm">Pending Verification</span>
+                                                ) : (
+                                                    <div className="flex items-center gap-x-2">
+                                                        <span className="text-gray-500 text-sm mr-5">Rejected</span>
+                                                        <DeleteUser person={user} deleteSuccess={deleteSuccess} />
+                                                    </div>
+                                                )
                                             )}
                                             {user.role[0] && user.role[0] !== "admin" && (
                                                 <DeleteUser person={user} deleteSuccess={deleteSuccess} />
