@@ -6,16 +6,15 @@ import { IoIosArrowForward, IoIosArrowBack } from "react-icons/io";
 import userData from "@/dummy_data/user.json";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import { Ranchers } from "next/font/google";
 
 
 
 type Alumni = {
   id: string;
-  role: string[];
   name: string;
   lastName: string;
   suffix?: string | null;
-  gender?: string;
   bio?: string;
   imageUrl?: string;
   linkedIn?: string;
@@ -31,8 +30,10 @@ export default function AlumniPage() {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [selectedFilter, setSelectedFilter] = useState({
-    role: "",
-    gender: "",
+    department: "",
+    graduationYear: "",
+    currentLocation: "",
+    currentCompany: "",
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [pageInput, setPageInput] = useState("1");
@@ -80,17 +81,40 @@ export default function AlumniPage() {
   const filteredAlumni = alumni.filter((alumni) => {
     const fullName = `${alumni.name}`.toLowerCase();
     const searchMatch = fullName.includes(search.toLowerCase());
-    const roleMatch =
-      selectedFilter.role === "" || alumni.role.includes(selectedFilter.role);
-    const genderMatch =
-      selectedFilter.gender === "" || alumni.gender === selectedFilter.gender;
+    const departmentMatch =
+    selectedFilter.department === "" ||
+    alumni.department?.toLowerCase() === selectedFilter.department?.toLowerCase()
 
-    return searchMatch && roleMatch && genderMatch;
+
+    const yearMatch =
+      selectedFilter.graduationYear === "" ||
+      alumni.graduationYear?.toString() === selectedFilter.graduationYear;
+
+    const locationMatch =
+      selectedFilter.currentLocation === "" ||
+      alumni.currentLocation?.toLowerCase() === selectedFilter.currentLocation.toLowerCase();
+
+    const companyMatch =
+      selectedFilter.currentCompany === "" ||
+      alumni.currentCompany?.toLowerCase() === selectedFilter.currentCompany.toLowerCase();
+
+    return (
+      searchMatch &&
+      departmentMatch &&
+      yearMatch &&
+      locationMatch &&
+      companyMatch
+    );
   });
 
   // clear filter
   const clearFilters = () => {
-    setSelectedFilter({ role: "", gender: "" });
+    setSelectedFilter({ 
+      department: "",
+      graduationYear: "",
+      currentLocation: "",
+      currentCompany: "",
+    });
     setSearch("");
   };
 
@@ -162,89 +186,110 @@ export default function AlumniPage() {
 
             {showFilter && (
               <ul className="absolute z-50 mt-2 bg-white/10 backdrop-blur-sm shadow-lg rounded-md w-[280px] sm:w-[320px] right-0 sm:right-auto sm:left-0 border border-white/20 max-h-[80vh] overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
-                {/* Role Filter */}
-                <li className="p-2 font-bold text-white sticky top-0 bg-white/10 backdrop-blur-sm z-10 border-b border-white/20">
-                  <div className="flex items-center justify-between">
-                    <span>Role</span>
+              {/* Department Filter */}
+              <li className="p-2 font-bold text-white sticky top-0 bg-white/10 backdrop-blur-sm z-10 border-b border-white/20">
+                <div className="flex items-center justify-between">
+                  <span>Department</span>
+                  <button
+                    onClick={() => setSelectedFilter({ ...selectedFilter, department: "" })}
+                    className="text-sm text-gray-300 hover:text-white"
+                  >
+                    Clear
+                  </button>
+                </div>
+              </li>
+              {[...new Set(alumni.map((a) => a.department).filter(Boolean))].map((dept) => (
+                <li key={dept}>
+                  <button
+                    onClick={() => setSelectedFilter({ ...selectedFilter, department: dept! })}
+                    className="block w-full text-left px-4 py-2 hover:bg-white/20 cursor-pointer text-gray-200"
+                  >
+                    {dept} {selectedFilter.department === dept && "✓"}
+                  </button>
+                </li>
+              ))}
+          
+              {/* Graduation Year Filter */}
+              <li className="p-2 font-bold text-white sticky top-0 bg-white/10 backdrop-blur-sm z-10 border-b border-white/20">
+                <div className="flex items-center justify-between">
+                  <span>Graduation Year</span>
+                  <button
+                    onClick={() => setSelectedFilter({ ...selectedFilter, graduationYear: "" })}
+                    className="text-sm text-gray-300 hover:text-white"
+                  >
+                    Clear
+                  </button>
+                </div>
+              </li>
+              {[...new Set(alumni.map((a) => a.graduationYear).filter(Boolean))]
+                .sort((a, b) => (b ?? 0) - (a ?? 0))
+                .map((year) => (
+                  <li key={year}>
                     <button
-                      onClick={() => setSelectedFilter({ ...selectedFilter, role: "" })}
-                      className="text-sm text-gray-300 hover:text-white"
+                      onClick={() => setSelectedFilter({ ...selectedFilter, graduationYear: year!.toString() })}
+                      className="block w-full text-left px-4 py-2 hover:bg-white/20 cursor-pointer text-gray-200"
                     >
-                      Clear
+                      {year} {selectedFilter.graduationYear === year?.toString() && "✓"}
                     </button>
-                  </div>
-                </li>
-                <li>
+                  </li>
+                ))}
+          
+              {/* Current Location Filter */}
+              <li className="p-2 font-bold text-white sticky top-0 bg-white/10 backdrop-blur-sm z-10 border-b border-white/20">
+                <div className="flex items-center justify-between">
+                  <span>Current Location</span>
                   <button
-                    onClick={() => setSelectedFilter({ ...selectedFilter, role: "" })}
+                    onClick={() => setSelectedFilter({ ...selectedFilter, currentLocation: "" })}
+                    className="text-sm text-gray-300 hover:text-white"
+                  >
+                    Clear
+                  </button>
+                </div>
+              </li>
+              {[...new Set(alumni.map((a) => a.currentLocation).filter(Boolean))].map((location) => (
+                <li key={location}>
+                  <button
+                    onClick={() => setSelectedFilter({ ...selectedFilter, currentLocation: location! })}
                     className="block w-full text-left px-4 py-2 hover:bg-white/20 cursor-pointer text-gray-200"
                   >
-                    All {selectedFilter.role === "" && "✓"}
+                    {location} {selectedFilter.currentLocation === location && "✓"}
                   </button>
                 </li>
-                <li>
+              ))}
+          
+              {/* Current Company Filter */}
+              <li className="p-2 font-bold text-white sticky top-0 bg-white/10 backdrop-blur-sm z-10 border-b border-white/20">
+                <div className="flex items-center justify-between">
+                  <span>Current Company</span>
                   <button
-                    onClick={() =>
-                      setSelectedFilter({ ...selectedFilter, role: "alumni" })
-                    }
+                    onClick={() => setSelectedFilter({ ...selectedFilter, currentCompany: "" })}
+                    className="text-sm text-gray-300 hover:text-white"
+                  >
+                    Clear
+                  </button>
+                </div>
+              </li>
+              {[...new Set(alumni.map((a) => a.currentCompany).filter(Boolean))].map((company) => (
+                <li key={company}>
+                  <button
+                    onClick={() => setSelectedFilter({ ...selectedFilter, currentCompany: company! })}
                     className="block w-full text-left px-4 py-2 hover:bg-white/20 cursor-pointer text-gray-200"
                   >
-                    Alumni {selectedFilter.role === "alumni" && "✓"}
+                    {company} {selectedFilter.currentCompany === company && "✓"}
                   </button>
                 </li>
+              ))}
+              
 
-                {/* Gender Filter */}
-                <li className="p-2 font-bold text-white sticky top-0 bg-white/10 backdrop-blur-sm z-10 border-b border-white/20">
-                  <div className="flex items-center justify-between">
-                    <span>Gender</span>
+                {/* Clear All Filters */}
+                  <li className="p-2 sticky bottom-0 bg-white/10 backdrop-blur-sm z-10 border-t border-white/20">
                     <button
-                      onClick={() => setSelectedFilter({ ...selectedFilter, gender: "" })}
-                      className="text-sm text-gray-300 hover:text-white"
+                      onClick={clearFilters}
+                      className="w-full text-center px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-md cursor-pointer transition-colors duration-200"
                     >
-                      Clear
+                      Clear All Filters
                     </button>
-                  </div>
-                </li>
-                <li>
-                  <button
-                    onClick={() =>
-                      setSelectedFilter({ ...selectedFilter, gender: "" })
-                    }
-                    className="block w-full text-left px-4 py-2 hover:bg-white/20 cursor-pointer text-gray-200"
-                  >
-                    All {selectedFilter.gender === "" && "✓"}
-                  </button>
-                </li>
-                <li>
-                  <button
-                    onClick={() =>
-                      setSelectedFilter({ ...selectedFilter, gender: "Male" })
-                    }
-                    className="block w-full text-left px-4 py-2 hover:bg-white/20 cursor-pointer text-gray-200"
-                  >
-                    Male {selectedFilter.gender === "Male" && "✓"}
-                  </button>
-                </li>
-                <li>
-                  <button
-                    onClick={() =>
-                      setSelectedFilter({ ...selectedFilter, gender: "Female" })
-                    }
-                    className="block w-full text-left px-4 py-2 hover:bg-white/20 cursor-pointer text-gray-200"
-                  >
-                    Female {selectedFilter.gender === "Female" && "✓"}
-                  </button>
-                </li>
-
-                {/* Clear Filter */}
-                <li className="p-2 sticky bottom-0 bg-white/10 backdrop-blur-sm z-10 border-t border-white/20">
-                  <button
-                    onClick={clearFilters}
-                    className="w-full text-center px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-md cursor-pointer transition-colors duration-200"
-                  >
-                    Clear All Filters
-                  </button>
-                </li>
+                  </li>
               </ul>
             )}
           </div>
