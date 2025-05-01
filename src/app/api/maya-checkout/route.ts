@@ -50,11 +50,12 @@ export async function POST(request: Request) {
     
     const donation = {
       donationName: "Maya Donation",
-      description: "maya",
+      description: "Maya",
       type: "Cash" as DonationType,
       monetaryValue: parseFloat(body.totalAmount.value),
       donorID: [session.user.id.toString()], // Current authenticated user as donor
-      receiveDate: new Date()
+      receiveDate: new Date(),
+
     };
 
     // Save donation to database

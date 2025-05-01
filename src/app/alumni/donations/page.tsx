@@ -7,66 +7,37 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import ConstellationBackground from "@/app/components/constellationBackground";
 import { Card } from "@/components/ui/card";
+import { DonationDto } from "@/models/donation";
+
 
 export default function DonationsPage() {
   const pathname = usePathname();
-  const [donations, setDonations] = useState<any[]>([]);
+  const [donations, setDonations] = useState<DonationDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
 
   useEffect(() => {
     const fetchDonations = async () => {
       setLoading(true);
-
-      // // Dummy donations for testing
-      // const dummyDonations = [
-      //   {
-      //     _id: "1",
-      //     donationName: "Lecture Hall Fund",
-      //     description: "A donation for the lecture hall renovation.",
-      //     type: "Cash",
-      //     monetaryValue: 1500,
-      //     receiveDate: "2025-04-15",
-      //     paymentMethod: "Stripe", 
-      //   },
-      //   {
-      //     _id: "2",
-      //     donationName: "Scholarship Fund",
-      //     description: "Donation to support student scholarships.",
-      //     type: "Cash",
-      //     monetaryValue: 2000,
-      //     receiveDate: "2025-05-01",
-      //     paymentMethod: "Maya", 
-      //   },
-      //   {
-      //     _id: "3",
-      //     donationName: "Ambagan sa PC",
-      //     description: "Donation for purchasing tech equipment.",
-      //     type: "Cash",
-      //     monetaryValue: 50,
-      //     receiveDate: "2025-03-10",
-      //     paymentMethod: "Maya", 
-      //   },
-      // ];
-
-      // setTimeout(() => {
-      //   setDonations(dummyDonations);
-      //   setLoading(false);
-      // }, 1000);
-
-      
-
-      const response = await fetch("/api/donations");
-      const data = await response.json();
-      if (Array.isArray(data)) {
-        setDonations(data);
-      } else {
-        console.error("Expected an array, but got:", data);
+      try {
+        const response = await fetch("/api/alumni/donations");
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        if (Array.isArray(data)) {
+          setDonations(data);
+        } else {
+          console.error("Expected an array, but got:", data);
+          setDonations([]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch donations:", error);
         setDonations([]);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
-
 
     fetchDonations();
   }, []);
@@ -182,20 +153,18 @@ export default function DonationsPage() {
                   <thead>
                     <tr className="border-b">
                       <th className="py-2 px-4 text-white font-bold text-center w-1/4">Donation Name</th>
-                      <th className="py-2 px-4 text-white font-bold text-center w-1/4">Type</th>
                       <th className="py-2 px-4 text-white font-bold text-center w-1/4">Value</th>
                       <th className="py-2 px-4 text-white font-bold text-center w-1/4">Mode of Payment</th>
                       <th className="py-2 px-4 text-white font-bold text-center w-1/4">Date</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {donations.map((donation, index) => (
-                      <tr key={index} className="border-b hover:bg-blue-900">
+                    {donations.map((donation: DonationDto, index) => (
+                      <tr key={donation._id || index} className="border-b hover:bg-blue-900">
                         <td className="py-2 px-4 text-white text-center">{donation.donationName}</td>
-                        <td className="py-2 px-4 text-white text-center">Cash</td> 
-                        <td className="py-2 px-4 text-white text-center">₱{donation.monetaryValue}</td>
-                        <td className="py-2 px-4 text-white text-center">{donation.paymentMethod}</td> 
-                        <td className="py-2 px-4 text-white text-center">{new Date(donation.receiveDate).toLocaleDateString()}</td>
+                        <td className="py-2 px-4 text-white text-center">₱{donation.monetaryValue.toLocaleString()}</td>
+                        <td className="py-2 px-4 text-white text-center capitalize">{donation.description?.toLowerCase().includes('maya') ? 'maya' : 'stripe'}</td>
+                        <td className="py-2 px-4 text-white text-center">{donation.receiveDate ? new Date(donation.receiveDate).toLocaleDateString() : 'N/A'}</td>
                       </tr>
                     ))}
                   </tbody>
