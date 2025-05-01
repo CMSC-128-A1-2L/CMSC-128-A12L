@@ -113,7 +113,8 @@ export default function NewslettersPage() {
   const handleScroll = (direction: 'left' | 'right') => {
     if (carouselRef.current) {
       const container = carouselRef.current;
-      const cardWidth = 520;
+      const isMobile = window.innerWidth < 768; // md breakpoint
+      const cardWidth = isMobile ? container.clientWidth - 64 : 520; // Account for padding
       const containerWidth = container.clientWidth;
       const scrollWidth = container.scrollWidth;
       
@@ -127,7 +128,8 @@ export default function NewslettersPage() {
         }
       } else {
         const cardsScrolled = Math.round(scrollPosition / cardWidth);
-        if (cardsScrolled >= Math.floor((scrollWidth - containerWidth) / cardWidth)) {
+        const maxCards = Math.floor((scrollWidth - containerWidth) / cardWidth);
+        if (cardsScrolled >= maxCards) {
           if (scrollPosition < scrollWidth - containerWidth) {
             newPosition = scrollWidth - containerWidth;
           } else {
@@ -335,16 +337,18 @@ export default function NewslettersPage() {
                 </button>
                 <div 
                   ref={carouselRef}
-                  className="flex space-x-6 overflow-x-hidden pb-4"
+                  className="flex overflow-x-hidden pb-4 md:px-0 px-8 snap-x snap-mandatory"
                 >
                   {newsletters.filter(newsletter => newsletter.isPinned).map((newsletter) => (
                     <motion.div
                       key={newsletter._id}
                       whileHover={{ y: -5 }}
                       transition={{ duration: 0.2 }}
-                      className="flex-none w-[calc(50%-12px)]"
+                      className="flex-none w-full md:w-[calc(50%-32px)] md:mx-0 mx-auto snap-center"
                     >
-                      <NewsletterCard newsletter={newsletter} />
+                      <div className="p-1 sm:p-2 md:p-4">
+                        <NewsletterCard newsletter={newsletter} />
+                      </div>
                     </motion.div>
                   ))}
                 </div>
