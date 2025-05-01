@@ -72,7 +72,7 @@ export default function MobileJobView({
   });
 
   return (
-    <div className="min-h-screen pb-20">
+    <div className="min-h-screen flex flex-col">
       {/* Fixed Header */}
       <div className="fixed top-[64px] left-0 right-0 bg-[#1a1f4d]/95 backdrop-blur-sm z-20">
         {/* Search and Filter Bar */}
@@ -98,7 +98,7 @@ export default function MobileJobView({
       </div>
 
       {/* Main Content */}
-      <div className="pt-[136px] px-4">
+      <div className="flex-1 pt-[136px] px-4 pb-24">
         {/* View Toggle */}
         <div className="mb-6">
           <div className="flex rounded-lg bg-white/5 p-1">
@@ -151,6 +151,48 @@ export default function MobileJobView({
           </div>
         )}
 
+        {/* Top Pagination */}
+        {totalPages > 1 && (
+          <div className="sm:hidden mb-6">
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                className={`btn ${currentPage > 1 ? 'bg-white/10 hover:bg-white/20' : 'bg-white/5 cursor-not-allowed'} backdrop-blur-sm text-white border-none flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-white/20`}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft className="text-xl" />
+                <span>Prev</span>
+              </button>
+
+              <div className="flex items-center space-x-2">
+                <input
+                  type="number"
+                  value={currentPage}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value);
+                    if (!isNaN(value) && value >= 1 && value <= totalPages) {
+                      setCurrentPage(value);
+                    }
+                  }}
+                  min={1}
+                  max={totalPages}
+                  className="w-12 input input-bordered input-sm text-center text-base bg-white/10 text-white border-white/20"
+                />
+                <span className="text-gray-300">/ {totalPages}</span>
+              </div>
+
+              <button
+                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                className={`btn ${currentPage < totalPages ? 'bg-white/10 hover:bg-white/20' : 'bg-white/5 cursor-not-allowed'} backdrop-blur-sm text-white border-none flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-white/20`}
+                disabled={currentPage === totalPages}
+              >
+                <span>Next</span>
+                <ChevronRight className="text-xl" />
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Jobs List */}
         {loading ? (
           <div className="flex justify-center py-8">
@@ -190,26 +232,45 @@ export default function MobileJobView({
               )}
             </div>
 
-            {/* Pagination */}
+            {/* Bottom Pagination */}
             {totalPages > 1 && (
-              <div className="flex justify-center items-center gap-4 mt-8 mb-6">
-                <button
-                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                  disabled={currentPage === 1}
-                  className="p-2 bg-white/5 hover:bg-white/10 text-white rounded-lg disabled:opacity-50"
-                >
-                  <ChevronLeft size={20} />
-                </button>
-                <span className="text-white/80">
-                  {currentPage} / {totalPages}
-                </span>
-                <button
-                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                  disabled={currentPage === totalPages}
-                  className="p-2 bg-white/5 hover:bg-white/10 text-white rounded-lg disabled:opacity-50"
-                >
-                  <ChevronRight size={20} />
-                </button>
+              <div className="sm:hidden mt-6 mb-8">
+                <div className="flex items-center justify-between">
+                  <button
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    className={`btn ${currentPage > 1 ? 'bg-white/10 hover:bg-white/20' : 'bg-white/5 cursor-not-allowed'} backdrop-blur-sm text-white border-none flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-white/20`}
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronLeft className="text-xl" />
+                    <span>Prev</span>
+                  </button>
+
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="number"
+                      value={currentPage}
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value);
+                        if (!isNaN(value) && value >= 1 && value <= totalPages) {
+                          setCurrentPage(value);
+                        }
+                      }}
+                      min={1}
+                      max={totalPages}
+                      className="w-12 input input-bordered input-sm text-center text-base bg-white/10 text-white border-white/20"
+                    />
+                    <span className="text-gray-300">/ {totalPages}</span>
+                  </div>
+
+                  <button
+                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                    className={`btn ${currentPage < totalPages ? 'bg-white/10 hover:bg-white/20' : 'bg-white/5 cursor-not-allowed'} backdrop-blur-sm text-white border-none flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-white/20`}
+                    disabled={currentPage === totalPages}
+                  >
+                    <span>Next</span>
+                    <ChevronRight className="text-xl" />
+                  </button>
+                </div>
               </div>
             )}
           </>
@@ -247,11 +308,13 @@ export default function MobileJobView({
       {/* Create Job FAB */}
       <button
         onClick={onCreateJob}
-        className="fixed right-4 bottom-4 p-4 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg transition-colors"
+        className="fixed right-4 bottom-20 p-4 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg transition-colors"
       >
         <Plus size={24} />
       </button>
-      <Footer />
+      <div className="mt-auto">
+        <Footer />
+      </div>
     </div>
   );
 }
