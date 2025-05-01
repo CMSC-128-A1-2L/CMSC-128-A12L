@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, Filter, ChevronLeft, ChevronRight, Plus, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import JobCard from './jobContentCard';
@@ -45,6 +45,10 @@ export default function MobileJobView({
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const itemsPerPage = 6;
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [currentPage]);
+
   const handleJobClick = (job: any) => {
     setSelectedJob(job);
     setShowDetailsModal(true);
@@ -68,10 +72,34 @@ export default function MobileJobView({
 
   return (
     <div className="min-h-screen pb-20">
-      {/* Job View Toggle Buttons - Fixed at top */}
-      <div className="fixed top-0 left-0 right-0 bg-[#1a1f4d]/95 backdrop-blur-sm z-20">
+      {/* Fixed Header */}
+      <div className="fixed top-[64px] left-0 right-0 bg-[#1a1f4d]/95 backdrop-blur-sm z-20">
+        {/* Search and Filter Bar */}
+        <div className="p-4">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setFilterDrawerOpen(true)}
+              className="p-2 bg-white/5 hover:bg-white/10 text-white rounded-lg border border-white/10"
+            >
+              <Filter size={20} />
+            </button>
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <input
+                type="search"
+                placeholder="Search jobs..."
+                className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                onChange={(e) => onSearch(e.target.value)}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="pt-[136px] px-4">
         {/* View Toggle */}
-        <div className="px-4 py-2">
+        <div className="mb-6">
           <div className="flex rounded-lg bg-white/5 p-1">
             <button
               onClick={() => onJobViewChange('all')}
@@ -96,30 +124,6 @@ export default function MobileJobView({
           </div>
         </div>
 
-        {/* Search and Filter Bar */}
-        <div className="p-4 border-t border-white/10">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setFilterDrawerOpen(true)}
-              className="p-2 bg-white/5 hover:bg-white/10 text-white rounded-lg border border-white/10"
-            >
-              <Filter size={20} />
-            </button>
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
-              <input
-                type="search"
-                placeholder="Search jobs..."
-                className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                onChange={(e) => onSearch(e.target.value)}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="pt-28 px-4">
         {/* Active Filters */}
         {Object.entries(activeFilters.workMode).some(([_, value]) => value) && (
           <div className="flex flex-wrap gap-2 mb-4">
@@ -189,7 +193,7 @@ export default function MobileJobView({
             {totalPages > 1 && (
               <div className="flex justify-center items-center gap-4 mt-8">
                 <button
-                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                   disabled={currentPage === 1}
                   className="p-2 bg-white/5 hover:bg-white/10 text-white rounded-lg disabled:opacity-50"
                 >
@@ -199,7 +203,7 @@ export default function MobileJobView({
                   {currentPage} / {totalPages}
                 </span>
                 <button
-                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
                   disabled={currentPage === totalPages}
                   className="p-2 bg-white/5 hover:bg-white/10 text-white rounded-lg disabled:opacity-50"
                 >
