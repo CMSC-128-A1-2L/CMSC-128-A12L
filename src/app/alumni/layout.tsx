@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import Navbar from "@/app/components/navBar";
 import AlumniSidebar from "@/app/components/alumniSideBar";
 import { motion } from "framer-motion";
+import Footer from "@/app/components/footer";
 
 export default function AlumniLayout({
   children,
@@ -74,6 +75,7 @@ export default function AlumniLayout({
         >
           {children}
         </main>
+        <Footer />
       </div>
     </div>
   );

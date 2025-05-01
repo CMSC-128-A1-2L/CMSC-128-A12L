@@ -316,7 +316,7 @@ export default function AlumniProfile() {
   };
 
   return (
-    <div className="h-screen overflow-hidden relative">
+    <div className="min-h-screen relative">
       {/* Background Elements */}
       <div className="fixed inset-0 bg-[#0f172a]" />
       <div className="fixed inset-0 bg-[url('/grid-pattern.svg')] opacity-5" />
@@ -324,15 +324,14 @@ export default function AlumniProfile() {
       <div className="fixed inset-0 bg-gradient-to-br from-[#1a1f4d]/80 via-[#1a237e]/60 to-[#0d47a1]/40" />
       
       {/* Content */}
-      <div className="relative z-10 h-full">
+      <div className="relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
-          className="h-full"
         >
           {/* Mobile View */}
-          <div className="lg:hidden h-full overflow-y-auto">
+          <div className="lg:hidden">
             <div className="p-4">
               {/* Profile Picture and Basic Info */}
               <div className="flex flex-col items-center mb-6">
@@ -753,12 +752,12 @@ export default function AlumniProfile() {
 
           {/* Desktop View */}
           <div className="hidden lg:block">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-full">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                 {/* Left Card - Main Profile */}
-                <div className="lg:col-span-5 bg-white/10 backdrop-blur-sm rounded-xl shadow-lg overflow-hidden h-[calc(100vh-6rem)]">
-                  <div className="p-6 h-full flex flex-col">
-                    <div className="flex-grow overflow-y-auto">
+                <div className="lg:col-span-5 bg-white/10 backdrop-blur-sm rounded-xl shadow-lg overflow-hidden">
+                  <div className="p-6 flex flex-col">
+                    <div className="flex-grow">
                       {/* Profile Picture Square */}
                       <div className="flex flex-col items-center mb-6">
                         <div className="relative mb-3">
@@ -859,8 +858,8 @@ export default function AlumniProfile() {
                   </div>
                 </div>
                 {/* Right Column - Single Card */}
-                <div className="lg:col-span-7 h-[calc(100vh-6rem)]">
-                  <div className="bg-white/10 backdrop-blur-sm rounded-xl shadow-lg p-6 h-full">
+                <div className="lg:col-span-7">
+                  <div className="bg-white/10 backdrop-blur-sm rounded-xl shadow-lg p-6">
                     {/* Edit/Save Buttons - moved above tab content */}
                     <div className="flex justify-end mb-6">
                       {isEditMode ? (

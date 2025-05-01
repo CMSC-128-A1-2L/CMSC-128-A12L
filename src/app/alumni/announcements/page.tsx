@@ -6,7 +6,6 @@ import { ArrowRight, MessageSquare } from "lucide-react";
 import { motion } from "framer-motion";
 import ConstellationBackground from "@/app/components/constellationBackground";
 import AnnouncementModal from "@/app/components/announcementModal";
-import Footer from "@/app/components/footer";
 
 interface RawAnnouncement {
   _id: string;
@@ -138,8 +137,6 @@ export default function AnnouncementsPage() {
         announcement={selectedAnnouncement}
       />
 
-      {/* Footer */}
-      <Footer />
     </div>
   );
 }

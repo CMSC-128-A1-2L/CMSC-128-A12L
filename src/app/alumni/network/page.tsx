@@ -7,7 +7,6 @@ import userData from "@/dummy_data/user.json";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import ConstellationBackground from "@/app/components/constellationBackground";
-import Footer from "@/app/components/footer";
 
 type Alumni = {
   id: string;
@@ -430,7 +429,6 @@ export default function AlumniPage() {
           </main>
         </div>
       </div>
-      <Footer />
     </div>
   );
 }

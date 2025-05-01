@@ -9,7 +9,6 @@ import EventRow from "@/app/components/alumniEventRow";
 import EventDetails from "@/app/components/eventDetails";
 import SponsorshipsModal from "@/app/components/sponsorshipsModal";
 import { Event } from "@/entities/event";
-import Footer from "@/app/components/footer";
 import CreateEvent from "@/pages/createEvent";
 import EditEventModal from "@/app/components/editEvent";
 
@@ -680,7 +679,6 @@ export default function EventListings() {
           <RSVPOptions event={rsvpEvent} />
         </div>
       )}
-      <Footer />
     </div>
   );
 }
