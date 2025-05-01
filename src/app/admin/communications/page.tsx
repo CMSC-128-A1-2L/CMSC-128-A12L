@@ -5,13 +5,30 @@ import { Calendar, MessageSquare, Mail, Bell } from "lucide-react";
 import RecipientSelector from "@/app/components/RecipientSelector";
 import AdminAnnouncements from "@/app/components/AdminAnnouncements";
 
+const MAX_SUBJECT_LENGTH = 100; // Maximum characters for subject
+const MAX_MESSAGE_LENGTH = 1000; // Maximum characters for message
+
 export default function CommunicationsPage() {
   const [activeTab, setActiveTab] = useState<'email' | 'announcements'>('email');
   const [subject, setSubject] = useState<string>("");
   const [message, setMessage] = useState<string>("");
-  const [scheduledTime, setTime] = useState<string>("");
+  const [scheduledTime, setScheduledTime] = useState<string>(new Date().toISOString().slice(0, 16));
   const [status, setStatus] = useState<string>("");
   const [recipients, setRecipients] = useState<string[]>([]);
+
+  const handleSubjectChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (value.length <= MAX_SUBJECT_LENGTH) {
+      setSubject(value);
+    }
+  };
+
+  const handleMessageChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    if (value.length <= MAX_MESSAGE_LENGTH) {
+      setMessage(value);
+    }
+  };
 
   const handleSendEmail = async (e: React.FormEvent, sendNow: boolean = false) => {
     e.preventDefault();
@@ -44,7 +61,7 @@ export default function CommunicationsPage() {
       // Clear form
       setSubject('');
       setMessage('');
-      setTime(new Date().toISOString().slice(0, 16));
+      setScheduledTime(new Date().toISOString().slice(0, 16));
     } catch (error) {
       console.error("Error:", error);
       setStatus("Failed to send emails. Please try again.");
@@ -122,12 +139,16 @@ export default function CommunicationsPage() {
                     id="subject"
                     type="text"
                     value={subject}
-                    onChange={(e) => setSubject(e.target.value)}
+                    onChange={handleSubjectChange}
+                    maxLength={MAX_SUBJECT_LENGTH}
                     className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent pl-12 transition-all duration-200 group-hover:border-blue-300"
                     placeholder="Enter email subject"
                     required
                   />
                   <MessageSquare className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-hover:text-blue-500 transition-colors duration-200" />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-gray-400">
+                    {subject.length}/{MAX_SUBJECT_LENGTH}
+                  </span>
                 </div>
               </div>
 
@@ -136,14 +157,20 @@ export default function CommunicationsPage() {
                 <label htmlFor="message" className="block text-sm font-medium text-gray-700">
                   Message
                 </label>
-                <textarea
-                  id="message"
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent h-40 resize-none transition-all duration-200 hover:border-blue-300"
-                  placeholder="Enter your message"
-                  required
-                />
+                <div className="relative">
+                  <textarea
+                    id="message"
+                    value={message}
+                    onChange={handleMessageChange}
+                    maxLength={MAX_MESSAGE_LENGTH}
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent h-40 resize-none transition-all duration-200 hover:border-blue-300"
+                    placeholder="Enter your message"
+                    required
+                  />
+                  <div className="absolute right-4 bottom-4 text-sm text-gray-400">
+                    {message.length}/{MAX_MESSAGE_LENGTH}
+                  </div>
+                </div>
               </div>
 
               {/* Schedule Section */}
@@ -156,9 +183,11 @@ export default function CommunicationsPage() {
                     id="schedule"
                     type="datetime-local"
                     value={scheduledTime}
-                    onChange={(e) => setTime(e.target.value)}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent pl-12 transition-all duration-200 group-hover:border-blue-300"
+                    onChange={(e) => setScheduledTime(e.target.value)}
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent pl-12 transition-all duration-200 group-hover:border-blue-300 appearance-none [&::-webkit-calendar-picker-indicator]:bg-gray-100 [&::-webkit-datetime-edit-fields-wrapper]:text-gray-900"
+                    onKeyDown={(e) => e.preventDefault()}
                     required
+                    style={{ colorScheme: 'light' }}
                   />
                   <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-hover:text-blue-500 transition-colors duration-200" />
                 </div>
