@@ -4,21 +4,21 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Plus } from 'lucide-react';
 import { useState } from 'react';
 
-interface MobileFilterDrawerProps {
+interface MobileEventFilterDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   onFilter: (filters: any) => void;
-  onCreateJob: () => void;
+  onCreateEvent: () => void;
   activeFilters: any;
 }
 
-export default function MobileFilterDrawer({
+export default function MobileEventFilterDrawer({
   isOpen,
   onClose,
   onFilter,
-  onCreateJob,
+  onCreateEvent,
   activeFilters
-}: MobileFilterDrawerProps) {
+}: MobileEventFilterDrawerProps) {
   const [filters, setFilters] = useState(activeFilters);
 
   const handleFilterChange = (category: string, option: string) => {
@@ -61,37 +61,37 @@ export default function MobileFilterDrawer({
 
             {/* Filter Content */}
             <div className="flex-1 overflow-y-auto p-4">
-              {/* Create Job Button */}
+              {/* Create Event Button */}
               <button
                 onClick={() => {
                   onClose();
-                  onCreateJob();
+                  onCreateEvent();
                 }}
                 className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center justify-center gap-2 mb-6"
               >
                 <Plus size={18} />
-                Post a New Job
+                Create New Event
               </button>
 
-              {/* Work Mode Filters */}
+              {/* Event Type Filters */}
               <div className="space-y-4">
-                <h3 className="font-medium text-white">Work Mode</h3>
+                <h3 className="font-medium text-white">Event Type</h3>
                 <div className="space-y-2">
-                  {['onSite', 'remote', 'hybrid'].map((mode) => (
+                  {['social', 'academic', 'career', 'other'].map((type) => (
                     <label
-                      key={mode}
+                      key={type}
                       className="flex items-center gap-3 text-white/70 hover:text-white cursor-pointer p-2 hover:bg-white/5 rounded-lg"
                     >
                       <input
                         type="checkbox"
-                        checked={filters.workMode[mode]}
-                        onChange={() => handleFilterChange('workMode', mode)}
+                        checked={filters.eventType[type]}
+                        onChange={() => handleFilterChange('eventType', type)}
                         className="checkbox checkbox-sm border-white/20 bg-white/5"
                       />
-                      {mode === 'onSite' ? 'On-site' : mode.charAt(0).toUpperCase() + mode.slice(1)}
+                      {type.charAt(0).toUpperCase() + type.slice(1)}
                     </label>
                   ))}
-                </div>
+                </div> 
               </div>
             </div>
 
@@ -109,4 +109,4 @@ export default function MobileFilterDrawer({
       )}
     </AnimatePresence>
   );
-}
+} 

@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { getNewsletterRepository } from '@/repositories/newsletters_repository';
 import { Newsletter } from '@/entities/newsletters';
 import { useSession } from 'next-auth/react';
 import { toast } from 'react-hot-toast';
@@ -18,8 +17,11 @@ export default function NewsletterList() {
 
     const loadNewsletters = async () => {
         try {
-            const repository = getNewsletterRepository();
-            const allNewsletters = await repository.getAllNewsletters();
+            const response = await fetch('/api/admin/newsletters');
+            if (!response.ok) {
+                throw new Error('Failed to fetch newsletters');
+            }
+            const allNewsletters = await response.json();
             setNewsletters(allNewsletters);
         } catch (error) {
             console.error('Error loading newsletters:', error);
@@ -35,8 +37,14 @@ export default function NewsletterList() {
         }
 
         try {
-            const repository = getNewsletterRepository();
-            await repository.deleteNewsletter(id);
+            const response = await fetch(`/api/admin/newsletters/${id}`, {
+                method: 'DELETE',
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to delete newsletter');
+            }
+
             toast.success('Newsletter deleted successfully');
             loadNewsletters();
         } catch (error) {
@@ -74,16 +82,36 @@ export default function NewsletterList() {
                                     <h3 className="text-lg font-medium text-gray-900 truncate">
                                         {newsletter.title}
                                     </h3>
-                                    <p className="mt-1 text-sm text-gray-500">
-                                        Published: {new Date(newsletter.publishDate).toLocaleDateString()}
-                                        {newsletter.isPinned && (
-                                            <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                                Pinned
-                                            </span>
+                                    <div className="mt-1 space-y-2">
+                                        <p className="text-sm text-gray-500">
+                                            Published: {new Date(newsletter.publishDate).toLocaleDateString()}
+                                            {newsletter.isPinned && (
+                                                <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                    Pinned
+                                                </span>
+                                            )}
+                                        </p>
+                                        {newsletter.tags && (
+                                            <div className="flex flex-wrap gap-2">
+                                                {newsletter.tags.split(',').map((tag, index) => (
+                                                    <span 
+                                                        key={index}
+                                                        className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                                                    >
+                                                        {tag.trim()}
+                                                    </span>
+                                                ))}
+                                            </div>
                                         )}
-                                    </p>
+                                    </div>
                                 </div>
                                 <div className="flex items-center space-x-4">
+                                    <Link
+                                        href={`/admin/newsletters/${newsletter._id}`}
+                                        className="text-blue-600 hover:text-blue-800"
+                                    >
+                                        View
+                                    </Link>
                                     <Link
                                         href={`/admin/newsletters/edit/${newsletter._id}`}
                                         className="text-blue-600 hover:text-blue-800"
@@ -104,4 +132,4 @@ export default function NewsletterList() {
             </div>
         </div>
     );
-} 
+}

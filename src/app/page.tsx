@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from 'framer-motion';
 import ConstellationBackground from './components/constellation_background';
 import ScrollIndicator from './components/ScrollIndicator';
+import Footer from './components/footer';
 
 export default function LandingPage() {
   const [showScrollIndicator, setShowScrollIndicator] = useState(true);
@@ -329,42 +330,7 @@ export default function LandingPage() {
       </motion.section>
 
       {/* Footer */}
-      <motion.footer 
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        transition={{ duration: 1 }}
-        viewport={{ once: true }}
-        className="bg-[#1a237e] border-t border-white/10 p-8 text-center text-sm text-white"
-      >
-        <div className="max-w-4xl mx-auto">
-          {/* CAS & UPLB Logos */}
-          <motion.div 
-            initial={{ y: 20, opacity: 0 }}
-            whileInView={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="flex justify-center space-x-8 mb-6"
-          >
-            <Image src="/assets/cas.png" alt="CAS Logo" width={60} height={60} className="opacity-90" />
-            <Image src="/assets/uplb.png" alt="UPLB Logo" width={60} height={60} className="opacity-90" />
-          </motion.div>
-        
-          {/* Contact Info */}
-          <motion.div 
-            initial={{ y: 20, opacity: 0 }}
-            whileInView={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            viewport={{ once: true }}
-            className="space-y-2 text-gray-300"
-          >
-            <p className="font-medium">College of Arts and Sciences</p>
-            <p>University of the Philippines Los Baños</p>
-            <p>Laguna, Philippines 4031</p>
-            <p className="mt-4">(049) 536-2021 | +63-49-536-2322</p>
-            <p>ics.uplb@up.edu.ph</p>
-          </motion.div>
-        </div>
-      </motion.footer>
+      <Footer />
     </div>
   );
 }

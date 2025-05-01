@@ -155,10 +155,10 @@ export default function NotificationsPage() {
       {/* Main content */}
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 z-10">
         {/* Tabs and Mark all */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
-          <div className="flex gap-4">
+        <div className="flex items-center justify-between mb-6 gap-2">
+          <div className="flex gap-2">
             <button
-              className={`px-4 py-2 rounded-md transition-colors cursor-pointer ${
+              className={`px-3 py-2 rounded-md transition-colors cursor-pointer text-sm ${
                 tab === 'all'
                   ? 'bg-white/10 text-white'
                   : 'bg-white/5 text-gray-300 hover:bg-white/10'
@@ -168,7 +168,7 @@ export default function NotificationsPage() {
               All
             </button>
             <button
-              className={`px-4 py-2 rounded-md transition-colors cursor-pointer ${
+              className={`px-3 py-2 rounded-md transition-colors cursor-pointer text-sm ${
                 tab === 'unread'
                   ? 'bg-white/10 text-white'
                   : 'bg-white/5 text-gray-300 hover:bg-white/10'
@@ -179,7 +179,7 @@ export default function NotificationsPage() {
             </button>
           </div>
           <button
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors cursor-pointer"
+            className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors cursor-pointer text-sm whitespace-nowrap"
             onClick={handleMarkAllAsRead}
           >
             Mark all as read
@@ -196,14 +196,14 @@ export default function NotificationsPage() {
             filtered.map(notif => (
               <div
                 key={notif._id}
-                className={`group p-6 rounded-xl border border-white/10 backdrop-blur-md bg-white/5 hover:bg-white/10 transition-all duration-200 ${
+                className={`group p-4 sm:p-6 rounded-xl border border-white/10 backdrop-blur-md bg-white/5 hover:bg-white/10 transition-all duration-200 ${
                   notif.isRead ? "border-l-4 border-blue-500" : ""
                 }`}
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-lg text-white font-semibold">{notif.message}</p>
-                    <div className="flex flex-wrap items-center gap-2 text-gray-400 text-sm mt-1">
+                <div className="flex items-start sm:items-center justify-between">
+                  <div className="flex-1 min-w-0 pr-4">
+                    <p className="text-base sm:text-lg text-white font-semibold line-clamp-2">{notif.message}</p>
+                    <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-gray-400 text-xs sm:text-sm mt-1">
                       <span>{formatTimeAgo(notif.createdAt)} ago</span>
                       <span>•</span>
                       <span className="capitalize">{notif.type}</span>
@@ -217,13 +217,13 @@ export default function NotificationsPage() {
                   </div>
 
                   {/* Actions  */}
-                  <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex flex-col sm:flex-row gap-1 sm:gap-2 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
                         notif.isRead ? handleMarkAsUnread(notif._id!) : handleMarkAsRead(notif._id!);
                       }}
-                      className="px-3 py-1 rounded-md bg-white/10 hover:bg-white/20 text-gray-200 text-xs cursor-pointer"
+                      className="px-2 sm:px-3 py-1 rounded-md bg-white/10 hover:bg-white/20 text-gray-200 text-xs cursor-pointer whitespace-nowrap"
                     >
                       {notif.isRead ? "Mark as Unread" : "Mark as Read"}
                     </button>
@@ -233,7 +233,7 @@ export default function NotificationsPage() {
                           e.stopPropagation();
                           handleDelete(notif._id!);
                         }}
-                        className="px-3 py-1 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-xs flex items-center cursor-pointer"
+                        className="px-2 sm:px-3 py-1 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-xs flex items-center justify-center cursor-pointer"
                       >
                         <Trash size={12} className="mr-1" />
                         Delete
@@ -243,7 +243,7 @@ export default function NotificationsPage() {
 
                   {/* Unread dot */}
                   {!notif.isRead && (
-                    <div className="w-2.5 h-2.5 bg-blue-500 rounded-full ml-2"></div>
+                    <div className="w-2 sm:w-2.5 h-2 sm:h-2.5 bg-blue-500 rounded-full ml-2 flex-shrink-0"></div>
                   )}
                 </div>
               </div>

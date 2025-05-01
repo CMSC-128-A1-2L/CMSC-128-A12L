@@ -103,7 +103,7 @@ const JobCard: React.FC<JobCardProps> = ({
         <div className="flex flex-col gap-2 mt-auto">
           <button
             onClick={onDetailsClick}
-            className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors border border-white/10"
+            className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors border border-white/10 cursor-pointer"
           >
             Details
           </button>
@@ -112,7 +112,7 @@ const JobCard: React.FC<JobCardProps> = ({
               e.stopPropagation();
               onApplyClick();
             }}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors cursor-pointer"
           >
             Apply
           </button>

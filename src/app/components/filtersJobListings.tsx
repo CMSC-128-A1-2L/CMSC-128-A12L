@@ -89,7 +89,7 @@ export default function FilterSidebar({
           {/* Post Job Button */}
           <button
             onClick={showModal}
-            className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center justify-center gap-2"
+            className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center justify-center gap-2 cursor-pointer"
           >
             <Plus size={18} />
             Post a New Job

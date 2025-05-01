@@ -11,10 +11,17 @@ export default function MayaDonationPage() {
   const [data, setData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [donationAmount, setDonationAmount] = useState<string>('1000');
   const pathname = usePathname();
   const parentPath = pathname ? pathname.split('/').slice(0, -1).join('/') : '/alumni/donations';
 
   const testMayaAPI = async () => {
+    const amount = parseFloat(donationAmount);
+    if (isNaN(amount) || amount <= 0) {
+      setError('Please enter a valid donation amount');
+      return;
+    }
+
     setLoading(true);
     setError(null);
     setData(null);
@@ -24,15 +31,15 @@ export default function MayaDonationPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           "description": "Donation for Alumni Community",
-          "totalAmount": { "value": 1000, "currency": "PHP" },
+          "totalAmount": { "value": amount, "currency": "PHP" },
           "invoiceNumber": `DON-${Date.now()}`,
           "type": "SINGLE",
           "items": [
             { 
               "name": "Alumni Community Donation", 
               "quantity": "1", 
-              "amount": { "value": 1000, "currency": "PHP" },
-              "totalAmount": { "value": 1000, "currency": "PHP" }
+              "amount": { "value": amount, "currency": "PHP" },
+              "totalAmount": { "value": amount, "currency": "PHP" }
             }
           ],
           "requestReferenceNumber": `DON-${Date.now()}`,
@@ -100,6 +107,22 @@ export default function MayaDonationPage() {
           <div className="mb-8">
             <h2 className="text-2xl font-bold mb-6 text-white">Make a Donation</h2>
             
+            <div className="mb-6">
+              <label htmlFor="donationAmount" className="block text-white mb-2">
+                Amount (PHP)
+              </label>
+              <input
+                type="number"
+                id="donationAmount"
+                value={donationAmount}
+                onChange={(e) => setDonationAmount(e.target.value)}
+                min="50"
+                step="50"
+                className="w-full px-4 py-2 rounded bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-green-500"
+                placeholder="Enter amount (in multiples of 50)"
+              />
+            </div>
+
             <div className="mb-8">
               <button 
                 onClick={testMayaAPI} 
