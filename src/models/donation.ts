@@ -6,6 +6,7 @@ export type DonationType = 'Goods' | 'Cash' | 'Services';
 
 export interface DonationDto {
     _id?: string;
+    eventId?: string;
     donationName: string;
     description: string;
     type: DonationType;
@@ -16,6 +17,7 @@ export interface DonationDto {
 
 
 export const DonationSchema = new Schema<DonationDto>({
+    eventId: { type: String },
     donationName: { type: String, required: true },
     description: { type: String, required: true },
     type: { type: String, enum: ['Goods', 'Cash', 'Services'], required: true },

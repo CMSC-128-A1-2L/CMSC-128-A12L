@@ -5,6 +5,7 @@ import { DonationDto } from "@/models/donation";
 
 export function mapDonationToDonationDto(donation: Donation): DonationDto {
     return {
+        eventId: donation.eventId,
         _id: donation._id,
         donationName: donation.donationName,
         description: donation.description,
@@ -17,6 +18,7 @@ export function mapDonationToDonationDto(donation: Donation): DonationDto {
 
 export function mapDonationDtoToDonation(donationDto: DonationDto): Donation {
     return {
+        eventId: donationDto.eventId,
         _id: donationDto._id,
         donationName: donationDto.donationName,
         description: donationDto.description,

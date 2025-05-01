@@ -3,6 +3,7 @@
 export type type = 'Goods' | 'Cash' | 'Services';
 
 export interface Donation {
+    eventId?: string;
     _id?: string;
     donationName: string;
     description: string;
