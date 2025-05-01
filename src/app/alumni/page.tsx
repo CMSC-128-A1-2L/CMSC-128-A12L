@@ -22,6 +22,7 @@ import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import ConstellationBackground from "@/app/components/constellationBackground";
+import { UserRole } from "@/entities/user";
 
 interface DashboardStats {
   connections: number;
@@ -257,6 +258,7 @@ export default function AlumniDashboard() {
     }
   ];
 
+  
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
