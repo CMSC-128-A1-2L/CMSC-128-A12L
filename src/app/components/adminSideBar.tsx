@@ -87,67 +87,73 @@ export default function AdminSidebar({
           <X size={24} />
         </button>
       </div>
-      <nav className="mt-4 flex flex-col h-[calc(100vh-80px)]">
-        <div className="mb-6">
-          <h3 className="text-gray-500 text-sm font-medium mb-2 px-4">
-            General
-          </h3>
-          <ul className="space-y-1 px-2">
-            {sidebarItems.general.map((item, index) => (
-              <li key={index}>
-                <Link
-                  href={item.path}
-                  className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer group"
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  <span className="mr-3 text-[#1a1f4d] group-hover:text-[#0d47a1] transition-colors">
-                    {item.icon}
-                  </span>
-                  <span className="font-medium">{item.name}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
+
+      <div className="flex flex-col h-[calc(100vh-64px)]">
+        {/* Main scrollable content */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-4">
+            <div className="mb-6">
+              <h3 className="text-gray-500 text-sm font-medium mb-2">
+                General
+              </h3>
+              <ul className="space-y-1">
+                {sidebarItems.general.map((item, index) => (
+                  <li key={index}>
+                    <Link
+                      href={item.path}
+                      className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer group"
+                      onClick={() => setSidebarOpen(false)}
+                    >
+                      <span className="mr-3 text-[#1a1f4d] group-hover:text-[#0d47a1] transition-colors">
+                        {item.icon}
+                      </span>
+                      <span className="font-medium">{item.name}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="h-px bg-gray-200 my-4" />
+
+            <div className="mb-6">
+              <h3 className="text-gray-500 text-sm font-medium mb-2">
+                Management
+              </h3>
+              <ul className="space-y-1">
+                {sidebarItems.management.map((item, index) => (
+                  <li key={index}>
+                    <Link
+                      href={item.path}
+                      className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer group"
+                      onClick={() => setSidebarOpen(false)}
+                    >
+                      <span className="mr-3 text-[#1a1f4d] group-hover:text-[#0d47a1] transition-colors">
+                        {item.icon}
+                      </span>
+                      <span className="font-medium">{item.name}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
         </div>
-        <div className="h-px bg-gray-200 mx-4 my-4" />
-        <div className="mb-6">
-          <h3 className="text-gray-500 text-sm font-medium mb-2 px-4">
-            Management
-          </h3>
-          <ul className="space-y-1 px-2">
-            {sidebarItems.management.map((item, index) => (
-              <li key={index}>
-                <Link
-                  href={item.path}
-                  className="flex items-center px-4 py-3 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer group"
-                  onClick={() => setSidebarOpen(false)}
-                >
-                  <span className="mr-3 text-[#1a1f4d] group-hover:text-[#0d47a1] transition-colors">
-                    {item.icon}
-                  </span>
-                  <span className="font-medium">{item.name}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="h-px bg-gray-200 mx-4 my-4" />
+
+        {/* Fixed bottom section */}
         {role?.includes("alumni") && (
-          <div className="mt-auto border-t pt-2 px-2 pb-4">
-            <h3 className="text-gray-500 text-sm font-medium mb-2 px-4">
-              Others
-            </h3>
+          <div className="bg-white">
             <Link
               href="/alumni"
               onClick={() => setSidebarOpen(false)}
-              className="flex items-center px-4 py-3 text-gray-700 rounded-lg transition-all duration-200 cursor-pointer group hover:bg-gray-50"
+              className="flex items-center px-3 py-3 text-sm text-gray-700 transition-all duration-200 cursor-pointer group hover:bg-gray-50"
             >
               <motion.span
-                className="mr-3 text-[#1a1f4d] group-hover:text-[#0d47a1]"
+                className="mr-2 text-[#1a1f4d] group-hover:text-[#0d47a1]"
                 whileHover={{ scale: 1.1 }}
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
               >
-                <SwitchCamera size={20} />
+                <SwitchCamera size={16} />
               </motion.span>
               <motion.span
                 className="font-medium"
@@ -159,7 +165,7 @@ export default function AdminSidebar({
             </Link>
           </div>
         )}
-      </nav>
+      </div>
     </div>
   );
 }
