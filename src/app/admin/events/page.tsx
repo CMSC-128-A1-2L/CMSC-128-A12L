@@ -16,6 +16,7 @@ import EventRow from "@/app/components/eventContentRow";
 import AdminEventDetails from "@/app/components/AdminEventDetails";
 import EditEventModal from "@/app/components/AdminEditEvent";
 import CreateEventModal from "@/app/components/createEvent";
+import AdminMobileEventView from "@/app/components/AdminMobileEventView";
 import { Event } from "@/entities/event";
 import { createNotification } from '@/services/notification.service';
 
@@ -34,6 +35,7 @@ export default function EventsPage() {
   const [events, setEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -46,11 +48,6 @@ export default function EventsPage() {
     monetaryValue: 0,
     image: null as File | null,
   });
-
-  // Fetch events on component mount
-  useEffect(() => {
-    fetchEvents();
-  }, []);
 
   const fetchEvents = async () => {
     try {
@@ -71,6 +68,27 @@ export default function EventsPage() {
       setIsLoading(false);
     }
   };
+
+  // Fetch events on component mount
+  useEffect(() => {
+    fetchEvents();
+  }, []);
+
+  // Add resize handler
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    // Initial check
+    checkMobile();
+    
+    // Add event listener
+    window.addEventListener('resize', checkMobile);
+    
+    // Cleanup
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Filter events based on search
   const filteredEvents = events.filter((event) =>
@@ -240,7 +258,6 @@ export default function EventsPage() {
       setSelectedEvent(null);
     } catch (error) {
       console.error('Error deleting event:', error);
-      
     }
   };
 
@@ -261,123 +278,137 @@ export default function EventsPage() {
   }
 
   return (
-    <div className="container mx-auto p-4 sm:p-6 max-w-7xl">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">Events Management</h1>
-        <button
-          onClick={() => setShowEventModal(true)}
-          className="btn btn-primary gap-2"
-        >
-          <Plus size={20} />
-          Create Event
-        </button>
-      </div>
-
-      {/* Search and View Toggle */}
-      <div className="flex flex-col md:flex-row gap-4 mb-6">
-        <div className="flex-1">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-800 z-10" size={20} />
-            <input
-              type="search"
-              placeholder="Search events..."
-              className="input input-bordered w-full pl-10 bg-white border-gray-200 text-gray-500"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-        </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setIsGridView(true)}
-            className={`btn ${isGridView ? 'btn-primary' : 'btn-ghost'}`}
-          >
-            <LayoutGrid size={20} className="text-gray-800"/>
-          </button>
-          <button
-            onClick={() => setIsGridView(false)}
-            className={`btn ${!isGridView ? 'btn-primary' : 'btn-ghost'}`}
-          >
-            <LayoutList size={20} className="text-gray-800"/>
-          </button>
-        </div>
-      </div>
-
-      {/* Events Grid/List */}
-      <div className={`grid ${isGridView ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'} gap-4`}>
-        <AnimatePresence>
-          {displayedEvents.map((event) => {
-            const eventForDisplay = formatEventForDisplay(event);
-
-            return (
-              <motion.div
-                key={eventForDisplay._id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-              >
-                {isGridView ? (
-                  <EventCard
-                    _id={eventForDisplay._id!}
-                    title={eventForDisplay.name}
-                    organizer={eventForDisplay.organizer}
-                    location={eventForDisplay.location}
-                    date={eventForDisplay.displayDate}
-                    imageUrl={eventForDisplay.imageUrl || ''}
-                    onDetailsClick={() => handleEventDetails(event)}
-                    onEditClick={() => handleEdit(event)}
-                    onDeleteClick={() => console.log("Delete event", event._id)}
-                    onClose={() => {}}
-                    index={0}
-                    rsvp={eventForDisplay.rsvp || { enabled: false, options: [] }}
-                  />
-                ) : (
-                  <EventRow
-                    title={eventForDisplay.name}
-                    organizer={eventForDisplay.organizer}
-                    location={eventForDisplay.location}
-                    date={eventForDisplay.displayDate}
-                    onDetailsClick={() => handleEventDetails(event)}
-                  />
-                )}
-              </motion.div>
-            );
-          })}
-        </AnimatePresence>
-      </div>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex justify-center gap-2 mt-6">
-          <button
-            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-            disabled={currentPage === 1}
-            className="btn btn-sm btn-outline text-gray-700 hover:text-white"
-          >
-            <ChevronLeft size={16} />
-          </button>
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+    <>
+      {isMobile ? (
+        <AdminMobileEventView
+          events={filteredEvents}
+          loading={isLoading}
+          onEventClick={handleEventDetails}
+          onSearch={setSearch}
+          onCreateEvent={() => setShowEventModal(true)}
+          onEdit={handleEdit}
+          onDelete={handleDeleteEvent}
+        />
+      ) : (
+        <div className="container mx-auto p-4 sm:p-6 max-w-7xl">
+          {/* Header */}
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
+            <h1 className="text-2xl font-bold text-gray-800">Events Management</h1>
             <button
-              key={page}
-              onClick={() => setCurrentPage(page)}
-              className={`btn btn-sm min-w-[2.5rem] ${
-                currentPage === page 
-                  ? 'btn-primary text-white'
-                  : 'btn-outline text-gray-700 hover:text-white'
-              }`}
+              onClick={() => setShowEventModal(true)}
+              className="btn btn-primary gap-2"
             >
-              {page}
+              <Plus size={20} />
+              Create Event
             </button>
-          ))}
-          <button
-            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-            disabled={currentPage === totalPages}
-            className="btn btn-sm btn-outline text-gray-700 hover:text-white"
-          >
-            <ChevronRight size={16} />
-          </button>
+          </div>
+
+          {/* Search and View Toggle */}
+          <div className="flex flex-col md:flex-row gap-4 mb-6">
+            <div className="flex-1">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-800 z-10" size={20} />
+                <input
+                  type="search"
+                  placeholder="Search events..."
+                  className="input input-bordered w-full pl-10 bg-white border-gray-200 text-gray-500"
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setIsGridView(true)}
+                className={`btn ${isGridView ? 'btn-primary' : 'btn-ghost'}`}
+              >
+                <LayoutGrid size={20} className="text-gray-800"/>
+              </button>
+              <button
+                onClick={() => setIsGridView(false)}
+                className={`btn ${!isGridView ? 'btn-primary' : 'btn-ghost'}`}
+              >
+                <LayoutList size={20} className="text-gray-800"/>
+              </button>
+            </div>
+          </div>
+
+          {/* Events Grid/List */}
+          <div className={`grid ${isGridView ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'} gap-4`}>
+            <AnimatePresence>
+              {displayedEvents.map((event) => {
+                const eventForDisplay = formatEventForDisplay(event);
+
+                return (
+                  <motion.div
+                    key={eventForDisplay._id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    {isGridView ? (
+                      <EventCard
+                        _id={eventForDisplay._id!}
+                        title={eventForDisplay.name}
+                        organizer={eventForDisplay.organizer}
+                        location={eventForDisplay.location}
+                        date={eventForDisplay.displayDate}
+                        imageUrl={eventForDisplay.imageUrl || ''}
+                        onDetailsClick={() => handleEventDetails(event)}
+                        onEditClick={() => handleEdit(event)}
+                        onDeleteClick={() => handleDeleteEvent(event._id!)}
+                        onClose={() => {}}
+                        index={0}
+                        rsvp={eventForDisplay.rsvp || { enabled: false, options: [] }}
+                      />
+                    ) : (
+                      <EventRow
+                        title={eventForDisplay.name}
+                        organizer={eventForDisplay.organizer}
+                        location={eventForDisplay.location}
+                        date={eventForDisplay.displayDate}
+                        onDetailsClick={() => handleEventDetails(event)}
+                        onEditClick={() => handleEdit(event)}
+                        onDeleteClick={() => handleDeleteEvent(event._id!)}
+                      />
+                    )}
+                  </motion.div>
+                );
+              })}
+            </AnimatePresence>
+          </div>
+
+          {/* Pagination */}
+          <div className="flex justify-center gap-2 mt-6">
+            <button
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="btn btn-sm btn-outline text-gray-700 hover:text-white"
+            >
+              <ChevronLeft size={16} />
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                className={`btn btn-sm min-w-[2.5rem] ${
+                  currentPage === page 
+                    ? 'btn-primary text-white'
+                    : 'btn-outline text-gray-700 hover:text-white'
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+            <button
+              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="btn btn-sm btn-outline text-gray-700 hover:text-white"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
         </div>
       )}
 
@@ -423,6 +454,6 @@ export default function EventsPage() {
           event={eventToEdit}
         />
       )}
-    </div>
+    </>
   );
 }

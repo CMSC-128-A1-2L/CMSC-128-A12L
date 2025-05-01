@@ -73,34 +73,34 @@ export default function CommunicationsPage() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="max-w-5xl mx-auto p-8"
+      className="max-w-5xl mx-auto p-4 sm:p-8"
     >
-      <div className="bg-white rounded-2xl p-10 shadow-xl border border-gray-200 hover:shadow-2xl transition-all duration-300">
+      <div className="bg-white rounded-2xl p-4 sm:p-10 shadow-xl border border-gray-200 hover:shadow-2xl transition-all duration-300">
         {/* Tab Navigation */}
-        <div className="flex gap-4 mb-8 border-b">
+        <div className="flex gap-2 sm:gap-4 mb-6 sm:mb-8 border-b overflow-x-auto no-scrollbar">
           <button
             onClick={() => setActiveTab('email')}
-            className={`pb-4 px-4 relative ${
+            className={`pb-4 px-3 sm:px-4 relative cursor-pointer whitespace-nowrap ${
               activeTab === 'email' 
                 ? 'text-blue-600 border-b-2 border-blue-600' 
                 : 'text-gray-500 hover:text-gray-700'
             }`}
           >
-            <span className="flex items-center gap-2">
-              <Mail size={20} />
+            <span className="flex items-center gap-2 text-sm sm:text-base">
+              <Mail size={18} className="flex-shrink-0" />
               Email Blast
             </span>
           </button>
           <button
             onClick={() => setActiveTab('announcements')}
-            className={`pb-4 px-4 relative ${
+            className={`pb-4 px-3 sm:px-4 relative cursor-pointer whitespace-nowrap ${
               activeTab === 'announcements' 
                 ? 'text-blue-600 border-b-2 border-blue-600' 
                 : 'text-gray-500 hover:text-gray-700'
             }`}
           >
-            <span className="flex items-center gap-2">
-              <Bell size={20} />
+            <span className="flex items-center gap-2 text-sm sm:text-base">
+              <Bell size={18} className="flex-shrink-0" />
               Announcements
             </span>
           </button>
@@ -110,19 +110,19 @@ export default function CommunicationsPage() {
           // Email Form
           <div>
             {/* Header Section */}
-            <div className="flex items-center gap-4 mb-10 pb-6 border-b border-gray-100">
-              <div className="p-3 bg-blue-50 rounded-xl">
-                <Mail className="h-8 w-8 text-blue-600" />
+            <div className="flex items-center gap-3 sm:gap-4 mb-6 sm:mb-10 pb-4 sm:pb-6 border-b border-gray-100">
+              <div className="p-2 sm:p-3 bg-blue-50 rounded-xl">
+                <Mail className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
               </div>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">Send Email Blast</h1>
-                <p className="text-gray-500 mt-1">Send emails to multiple alumni</p>
+                <h1 className="text-xl sm:text-3xl font-bold text-gray-900">Send Email Blast</h1>
+                <p className="text-sm sm:text-base text-gray-500 mt-0.5 sm:mt-1">Send emails to multiple alumni</p>
               </div>
             </div>
             
-            <form onSubmit={(e) => handleSendEmail(e, false)} className="space-y-6">
+            <form onSubmit={(e) => handleSendEmail(e, false)} className="space-y-4 sm:space-y-6">
               {/* Recipient Selection */}
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 <label className="block text-sm font-medium text-gray-700">
                   Select Recipients
                 </label>
@@ -130,7 +130,7 @@ export default function CommunicationsPage() {
               </div>
 
               {/* Subject Section */}
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 <label htmlFor="subject" className="block text-sm font-medium text-gray-700">
                   Subject
                 </label>
@@ -141,19 +141,19 @@ export default function CommunicationsPage() {
                     value={subject}
                     onChange={handleSubjectChange}
                     maxLength={MAX_SUBJECT_LENGTH}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent pl-12 transition-all duration-200 group-hover:border-blue-300"
+                    className="w-full px-4 py-2.5 sm:py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent pl-12 transition-all duration-200 group-hover:border-blue-300 text-sm sm:text-base"
                     placeholder="Enter email subject"
                     required
                   />
-                  <MessageSquare className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-hover:text-blue-500 transition-colors duration-200" />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-gray-400">
+                  <MessageSquare className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400 group-hover:text-blue-500 transition-colors duration-200" />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs sm:text-sm text-gray-400">
                     {subject.length}/{MAX_SUBJECT_LENGTH}
                   </span>
                 </div>
               </div>
 
               {/* Message Section */}
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 <label htmlFor="message" className="block text-sm font-medium text-gray-700">
                   Message
                 </label>
@@ -163,18 +163,18 @@ export default function CommunicationsPage() {
                     value={message}
                     onChange={handleMessageChange}
                     maxLength={MAX_MESSAGE_LENGTH}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent h-40 resize-none transition-all duration-200 hover:border-blue-300"
+                    className="w-full px-4 py-2.5 sm:py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent h-32 sm:h-40 resize-none transition-all duration-200 hover:border-blue-300 text-sm sm:text-base"
                     placeholder="Enter your message"
                     required
                   />
-                  <div className="absolute right-4 bottom-4 text-sm text-gray-400">
+                  <div className="absolute right-4 bottom-4 text-xs sm:text-sm text-gray-400">
                     {message.length}/{MAX_MESSAGE_LENGTH}
                   </div>
                 </div>
               </div>
 
               {/* Schedule Section */}
-              <div className="space-y-3">
+              <div className="space-y-2 sm:space-y-3">
                 <label htmlFor="schedule" className="block text-sm font-medium text-gray-700">
                   Schedule Time
                 </label>
@@ -184,24 +184,24 @@ export default function CommunicationsPage() {
                     type="datetime-local"
                     value={scheduledTime}
                     onChange={(e) => setScheduledTime(e.target.value)}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent pl-12 transition-all duration-200 group-hover:border-blue-300 appearance-none [&::-webkit-calendar-picker-indicator]:bg-gray-100 [&::-webkit-datetime-edit-fields-wrapper]:text-gray-900"
+                    className="w-full px-4 py-2.5 sm:py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent pl-12 transition-all duration-200 group-hover:border-blue-300 appearance-none [&::-webkit-calendar-picker-indicator]:bg-gray-100 [&::-webkit-datetime-edit-fields-wrapper]:text-gray-900 cursor-pointer text-sm sm:text-base"
                     onKeyDown={(e) => e.preventDefault()}
                     required
                     style={{ colorScheme: 'light' }}
                   />
-                  <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-hover:text-blue-500 transition-colors duration-200" />
+                  <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-gray-400 group-hover:text-blue-500 transition-colors duration-200" />
                 </div>
               </div>
 
               {/* Buttons Section */}
-              <div className="flex gap-4">
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                 <motion.button
                   type="submit"
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="flex-1 py-4 px-6 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-all duration-200 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl cursor-pointer"
+                  className="w-full sm:flex-1 py-3 sm:py-4 px-4 sm:px-6 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-xl transition-all duration-200 flex items-center justify-center gap-2 sm:gap-3 shadow-lg hover:shadow-xl cursor-pointer text-sm sm:text-base"
                 >
-                  <Calendar className="h-5 w-5" />
+                  <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
                   Schedule Emails
                 </motion.button>
                 
@@ -210,9 +210,9 @@ export default function CommunicationsPage() {
                   onClick={(e) => handleSendEmail(e, true)}
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
-                  className="flex-1 py-4 px-6 bg-green-600 hover:bg-green-700 text-white font-medium rounded-xl transition-all duration-200 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl cursor-pointer"
+                  className="w-full sm:flex-1 py-3 sm:py-4 px-4 sm:px-6 bg-green-600 hover:bg-green-700 text-white font-medium rounded-xl transition-all duration-200 flex items-center justify-center gap-2 sm:gap-3 shadow-lg hover:shadow-xl cursor-pointer text-sm sm:text-base"
                 >
-                  <Mail className="h-5 w-5" />
+                  <Mail className="h-4 w-4 sm:h-5 sm:w-5" />
                   Send Now
                 </motion.button>
               </div>
@@ -223,9 +223,9 @@ export default function CommunicationsPage() {
               <motion.div 
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mt-6 p-4 rounded-xl text-center border border-gray-100"
+                className="mt-4 sm:mt-6 p-3 sm:p-4 rounded-xl text-center border border-gray-100"
               >
-                <p className={`text-sm ${status.includes("successfully") ? "text-green-600" : "text-red-600"}`}>
+                <p className={`text-xs sm:text-sm ${status.includes("successfully") ? "text-green-600" : "text-red-600"}`}>
                   {status}
                 </p>
               </motion.div>
