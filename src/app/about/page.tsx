@@ -5,6 +5,7 @@ import Image from "next/image";
 import { motion, AnimatePresence } from 'framer-motion';
 import ConstellationBackground from '../components/constellation_background';
 import ScrollIndicator from '../components/ScrollIndicator';
+import Footer from "../components/footer";
 
 export default function AboutPage() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -279,19 +280,7 @@ export default function AboutPage() {
       </motion.section>
 
       {/* Footer */}
-      <footer className="bg-[#0C0151] p-4 text-center text-sm text-white flex flex-col items-center space-y-4">
-        {/* CAS & UPLB Logos */}
-        <div className="flex space-x-4">
-          <Image src="/assets/cas.png" alt="CAS Logo" width={40} height={40} className="w-10 h-10 md:w-12 md:h-12" />
-          <Image src="/assets/uplb.png" alt="UPLB Logo" width={40} height={40} className="w-10 h-10 md:w-12 md:h-12" />
-        </div>
-        {/* Contact Info */}
-        <div className="text-center text-xs md:text-sm">
-          <p className="font-bold">College of Arts and Sciences, UPLB, Laguna, Philippines 4031</p>
-          <p>(049) 536-2021 | +63-49-536-2322</p>
-          <p>ics.uplb@up.edu.ph</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
