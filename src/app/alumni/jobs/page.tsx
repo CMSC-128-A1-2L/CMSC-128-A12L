@@ -7,6 +7,7 @@ import JobRow from "@/app/components/jobContentRow";
 import JobDetails from "@/app/components/jobDetails";
 import EditJobListComponent from "@/app/components/editJobList";
 import CreateJL from "@/app/components/createJL";
+import JobApplicationForm from "@/app/components/JobApplicationForm";
 import { useSession } from "next-auth/react";
 import { toast } from "react-hot-toast";
 import ConstellationBackground from "@/app/components/constellationBackground";
@@ -71,6 +72,7 @@ export default function JobListings() {
   const [selectedJob, setSelectedJob] = useState<any>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showApplicationModal, setShowApplicationModal] = useState(false);
 
   // View toggle state
   const [isGridView, setIsGridView] = useState(true);
@@ -156,9 +158,15 @@ export default function JobListings() {
     setTimeout(() => setSelectedJob(null), 100); // Clear selected job after modal closes
   };
 
-  // Handle Apply to Job button click
-  const handleApply = (jobTitle: string) => {
-    console.log(`Applying for ${jobTitle}`);
+  // Update handleApply function to show the application form
+  const handleApply = () => {
+    setShowApplicationModal(true);
+  };
+
+  const handleApplicationSuccess = async () => {
+    setShowApplicationModal(false);
+    setShowDetailsModal(false);
+    fetchJobs(jobView); // Refresh jobs list after successful application
   };
 
   // Add delete handler
@@ -473,7 +481,7 @@ export default function JobListings() {
                             description={job.description}
                             imageUrl={job.imageUrl}
                             onDetailsClick={() => handleJobDetails(job)}
-                            onApplyClick={() => handleApply(job.title)}
+                            onApplyClick={() => handleApply()}
                             isOwnJob={job.userId === session?.user?.id}
                           />
                         ) : (
@@ -487,7 +495,7 @@ export default function JobListings() {
                             description={job.description}
                             imageUrl={job.imageUrl}
                             onDetailsClick={() => handleJobDetails(job)}
-                            onApplyClick={() => handleApply(job.title)}
+                            onApplyClick={() => handleApply()}
                             isOwnJob={job.userId === session?.user?.id}
                           />
                         )}
@@ -529,11 +537,12 @@ export default function JobListings() {
                     tags={selectedJob.tags}
                     isOpen={showDetailsModal}
                     onClose={handleCloseDetailsModal}
-                    onApplyClick={() => handleApply(selectedJob.title)}
+                    onApplyClick={() => handleApply()}
                     onEditClick={() => handleEditClick(selectedJob)}
                     onDeleteClick={() => handleDelete(selectedJob)}
                     canEdit={selectedJob.userId === session?.user?.id}
                     isOwnJob={selectedJob.userId === session?.user?.id}
+                    jobId={selectedJob._id}
                   />
                 )}
 
@@ -551,6 +560,17 @@ export default function JobListings() {
                       description: selectedJob.description,
                       tags: selectedJob.tags || [],
                     }}
+                  />
+                )}
+
+                {/* Replace the simple application modal with the new form */}
+                {showApplicationModal && (
+                  <JobApplicationForm
+                    jobId={selectedJob._id}
+                    jobTitle={selectedJob.title}
+                    company={selectedJob.company}
+                    onClose={() => setShowApplicationModal(false)}
+                    onSuccess={handleApplicationSuccess}
                   />
                 )}
 
