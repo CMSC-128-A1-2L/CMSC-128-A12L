@@ -110,25 +110,6 @@ const JobRow: React.FC<JobCardProps> = ({
             >
               Details
             </button>
-            {!isOwnJob ? (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onApplyClick();
-                }}
-                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-              >
-                Apply
-              </button>
-            ) : (
-              <button
-                disabled
-                className="px-4 py-2 bg-gray-500/20 text-gray-400 rounded-lg border border-gray-500/20 cursor-not-allowed"
-                title="You cannot apply to your own job posting"
-              >
-                Apply
-              </button>
-            )}
           </div>
         </div>
       </div>

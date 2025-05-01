@@ -28,6 +28,7 @@ interface JobDetailsProps {
   onDeleteClick: () => void;
   canEdit?: boolean;
   isOwnJob?: boolean;
+  jobId: string;
 }
 
 export default function JobDetails({
@@ -45,6 +46,7 @@ export default function JobDetails({
   onDeleteClick,
   canEdit = false,
   isOwnJob = false,
+  jobId,
 }: JobDetailsProps) {
   useEffect(() => {
     const modal = document.getElementById("job_details_modal") as HTMLDialogElement;

@@ -1,3 +1,4 @@
+import { getNotificationRepository } from "@/repositories/notifications_repository";
 
 interface NotificationParams {
     type: string;
@@ -32,39 +33,62 @@ export async function createNotification({ type, entity, entityName, action, cus
         }
     }
 
-    if (sendAll) {
-    const response = await fetch('/api/notifications/send-all', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            type,
-            message,
-        }),
-    });
-    if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to create notification');
-    }
+    // Check if we're in a browser context
+    if (typeof window !== 'undefined') {
+        // Client-side: Use fetch
+        if (sendAll) {
+            const response = await fetch('/api/notifications/send-all', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    type,
+                    message,
+                }),
+            });
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Failed to create notification');
+            }
+        } else {
+            const response = await fetch('/api/notifications', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    userId,
+                    type,
+                    message,
+                }),
+            });
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Failed to create notification');
+            }
+        }
     } else {
-
-        const response = await fetch('/api/notifications', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
+        // Server-side: Use repository directly
+        const notificationRepository = getNotificationRepository();
+        
+        if (sendAll) {
+            await notificationRepository.createGlobalNotification({
+                type,
+                message: message || '',
+                isRead: false,
+                createdAt: new Date(),
+                updatedAt: new Date()
+            });
+        } else if (userId) {
+            await notificationRepository.createNotification({
                 userId,
                 type,
-                message,
-            }),
-        });
-        if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.error || 'Failed to create notification');
+                message: message || '',
+                isRead: false,
+                createdAt: new Date(),
+                updatedAt: new Date()
+            });
         }
     }
-
-
-} 
+}
