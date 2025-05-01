@@ -64,6 +64,13 @@ export default function ReportsPage() {
           >
             Donations Reports
           </Button>
+          <Button
+            className="text-black ml-auto"
+            variant="outline"
+            onClick={() => {}}
+          >
+            Export to PDF
+          </Button>
         </div>
       </div>
 
