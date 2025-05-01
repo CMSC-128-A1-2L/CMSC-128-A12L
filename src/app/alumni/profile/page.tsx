@@ -361,7 +361,7 @@ export default function AlumniProfile() {
         )}
       </AnimatePresence>
       
-      <div className="fixed inset-0 overflow-hidden bg-[#0f172a]">
+      <div className="min-h-screen inset-0 overflow-hidden bg-[#0f172a]">
         <style jsx global>{constellationStyles}</style>
         {/* Background Elements */}
         <div className="absolute inset-0">

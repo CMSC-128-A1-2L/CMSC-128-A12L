@@ -261,7 +261,7 @@ export default function EventsPage() {
   }
 
   return (
-    <div className="w-full">
+    <div className="container mx-auto p-4 sm:p-6 max-w-7xl">
       {/* Header */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
         <h1 className="text-2xl font-bold text-gray-800">Events Management</h1>

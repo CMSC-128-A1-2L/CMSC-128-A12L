@@ -12,6 +12,7 @@ import { toast } from "react-hot-toast";
 import ConstellationBackground from "@/app/components/constellationBackground";
 import useIsMobile from '@/hooks/useIsMobile';
 import MobileJobView from '@/app/components/MobileJobView';
+
 import {
   Search,
   LayoutGrid,
