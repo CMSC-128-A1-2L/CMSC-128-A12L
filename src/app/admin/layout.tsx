@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import Navbar from "@/app/components/navBar";
 import AdminSidebar from "@/app/components/adminSideBar";
 import { motion } from "framer-motion";
+import Footer from "@/app/components/footer";
 
 export default function AdminLayout({
   children,
@@ -83,6 +84,7 @@ export default function AdminLayout({
             </motion.div>
           </div>
         </motion.main>
+        <Footer />
       </div>
     </div>
   );

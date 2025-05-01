@@ -10,7 +10,8 @@ import CreateJL from "@/app/components/createJL";
 import { useSession } from "next-auth/react";
 import { toast } from "react-hot-toast";
 import ConstellationBackground from "@/app/components/constellationBackground";
-// Refactor add job list to use modal than page
+import useIsMobile from '@/hooks/useIsMobile';
+import MobileJobView from '@/app/components/MobileJobView';
 
 import {
   Search,
@@ -239,6 +240,27 @@ export default function JobListings() {
       toast.error('Failed to update job');
     }
   };
+
+  const isMobile = useIsMobile();
+
+  if (isMobile) {
+    return (
+      <MobileJobView
+        jobs={filteredJobs}
+        loading={loading}
+        onJobClick={handleJobDetails}
+        onFilter={handleFilterChange}
+        onSearch={(query) => setSearch(query)}
+        onCreateJob={() => setShowModal(true)}
+        onApply={handleApply}
+        onEdit={handleEditClick}
+        onDelete={handleDelete}
+        activeFilters={activeFilters}
+        jobView={jobView}
+        onJobViewChange={setJobView}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen">

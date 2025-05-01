@@ -9,7 +9,6 @@ import EventRow from "@/app/components/alumniEventRow";
 import EventDetails from "@/app/components/eventDetails";
 import SponsorshipsModal from "@/app/components/sponsorshipsModal";
 import { Event } from "@/entities/event";
-
 import CreateEvent from "@/pages/createEvent";
 import EditEventModal from "@/app/components/editEvent";
 
@@ -533,6 +532,7 @@ export default function EventListings() {
                         date={event.startDate}
                         description={event.description}
                         imageUrl={event.imageUrl || ''}
+                        eventStatus={timelineFilter}
                         onDetailsClick={() => handleEventDetails(event)}
                         onSponsorClick={() => handleSponsor(event)}
                         onApplyClick={() => setRsvpEvent(event)}
@@ -545,6 +545,7 @@ export default function EventListings() {
                         date={event.startDate}
                         description={event.description}
                         imageUrl={event.imageUrl || ''}
+                        eventStatus={timelineFilter}
                         onDetailsClick={() => handleEventDetails(event)}
                         onSponsorClick={() => handleSponsor(event)}
                         onApplyClick={() => setRsvpEvent(event)}
@@ -580,6 +581,7 @@ export default function EventListings() {
             {selectedEvent && (
               <EventDetails
                 title={selectedEvent.name}
+                eventStatus={timelineFilter}
                 organizer={selectedEvent.organizer}
                 location={selectedEvent.location}
                 date={selectedEvent.startDate}

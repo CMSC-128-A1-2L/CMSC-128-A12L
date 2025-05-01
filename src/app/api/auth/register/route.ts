@@ -1,4 +1,4 @@
-import { User, UserRole } from "@/entities/user";
+import { User } from "@/entities/user";
 import { UserCredentials } from "@/entities/user_credentials";
 import { getPasswordEncryptionProvider } from "@/providers/password_encryption";
 import { getUserIdProvider } from "@/providers/user_id";
@@ -51,6 +51,15 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         
         const userRepository = getUserRepository();
         const userCredentialsRepository = getUserCredentialRepository();
+
+        const userCheck: User | null = await userRepository.getUserByEmail(email);
+
+        if (userCheck) {
+            return NextResponse.json({
+                success: false,
+                error: "User already exists"
+            }, { status: 400 });
+        }
 
         const user: User = {
             id,

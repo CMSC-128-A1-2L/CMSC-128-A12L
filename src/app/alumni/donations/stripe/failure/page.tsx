@@ -2,10 +2,10 @@
 
 import { motion } from "framer-motion";
 import Link from 'next/link';
-import { CheckCircle } from 'lucide-react';
+import { XCircle } from 'lucide-react';
 import ConstellationBackground from "@/app/components/constellationBackground";
 
-export default function StripeDonationSuccess() {
+export default function StripeDonationFailure() {
     return (
         <div className="min-h-screen">
             {/* Hero Section */}
@@ -20,10 +20,10 @@ export default function StripeDonationSuccess() {
                         className="text-center"
                     >
                         <h1 className="text-4xl md:text-5xl font-bold mb-4">
-                            Payment Successful!
+                            Payment Failed
                         </h1>
                         <p className="text-xl text-gray-200">
-                            Thank you for your generous contribution
+                            We couldn't process your donation
                         </p>
                     </motion.div>
                 </div>
@@ -35,29 +35,29 @@ export default function StripeDonationSuccess() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.2 }}
-                    className="bg-gradient-to-br from-green-500/20 to-green-600/20 p-8 rounded-xl border border-white/10 max-w-2xl mx-auto text-center"
+                    className="bg-gradient-to-br from-red-500/20 to-red-600/20 p-8 rounded-xl border border-white/10 max-w-2xl mx-auto text-center"
                 >
                     <div className="flex justify-center mb-6">
-                        <CheckCircle className="text-green-500" size={64} />
+                        <XCircle className="text-red-500" size={64} />
                     </div>
                     
-                    <h2 className="text-2xl font-bold mb-4 text-white">Thank You for Your Donation</h2>
+                    <h2 className="text-2xl font-bold mb-4 text-white">Payment Unsuccessful</h2>
                     <p className="text-gray-200 mb-8">
-                        Your contribution will help us continue our mission and support our alumni community initiatives. A receipt has been sent to your email.
+                        We encountered an issue processing your payment. Please try again or contact support if the problem persists.
                     </p>
                     
                     <div className="flex justify-center gap-4">
                         <Link 
-                            href="/alumni/donations" 
+                            href="/alumni/donations/stripe" 
                             className="inline-block bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-6 rounded transition-colors"
                         >
-                            Return to Donations
+                            Try Again
                         </Link>
                         <Link 
-                            href="/" 
+                            href="/alumni/donations" 
                             className="inline-block bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-6 rounded transition-colors"
                         >
-                            Back to Home
+                            Return to Donations
                         </Link>
                     </div>
                 </motion.div>
