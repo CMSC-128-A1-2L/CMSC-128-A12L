@@ -78,6 +78,7 @@ class MongoDBNewsletterRepository implements NewsletterRepository {
     async createNewsletter(newsletter: Newsletter): Promise<string> {
         const newsletterDto = mapNewsletterToNewsletterDto(newsletter);
         const created = await this.model.create(newsletterDto);
+        console.log("Created newsletter:", created);
         return created._id.toString();
     }
 

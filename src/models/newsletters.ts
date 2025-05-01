@@ -3,7 +3,7 @@ import { Schema, Types } from "mongoose";
 
 export interface NewslettersDto {
     _id?: string;
-    tags: string;
+    tags?: string;
     title: string;
     content: string;
     authorId: string;  // user who created the announcement
@@ -20,6 +20,7 @@ export const NewslettersSchema = new Schema<NewslettersDto>({
   content: { type: String, required: true },
   authorId: { type: String, required: true },
   thumbnail: {type: String },
+  tags: { type: String, default: '' },
   publishDate: { type: Date, required: true, default: Date.now },
   isPinned: { type: Boolean, required: true, default: false },
   attachments: [{ type: String, required: false }]

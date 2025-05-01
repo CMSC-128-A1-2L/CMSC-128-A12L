@@ -2,8 +2,6 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { getNewsletterRepository } from '@/repositories/newsletters_repository';
-import { Newsletter } from '@/entities/newsletters';
 import { useSession } from 'next-auth/react';
 import { toast } from 'react-hot-toast';
 
@@ -29,20 +27,25 @@ export default function NewsletterManagement() {
 
         setIsSubmitting(true);
         try {
-            const newsletter: Newsletter = {
-                title: formData.title,
-                content: formData.content,
-                authorId: session.user.id,
-                isPinned: formData.isPinned,
-                thumbnail: formData.thumbnail || undefined,
-                attachments: formData.attachments.length > 0 ? formData.attachments : undefined,
-                publishDate: new Date(),
-                tags: formData.tags
-            };
+            const response = await fetch('/api/admin/newsletters', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    title: formData.title,
+                    content: formData.content,
+                    isPinned: formData.isPinned,
+                    thumbnail: formData.thumbnail || undefined,
+                    attachments: formData.attachments.length > 0 ? formData.attachments : undefined,
+                    tags: formData.tags
+                }),
+            });
 
-            const repository = getNewsletterRepository();
-            await repository.createNewsletter(newsletter);
-            
+            if (!response.ok) {
+                throw new Error('Failed to create newsletter');
+            }
+
             toast.success('Newsletter created successfully!');
             router.push('/admin/newsletters');
         } catch (error) {

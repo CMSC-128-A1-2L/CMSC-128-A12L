@@ -7,7 +7,7 @@ export interface Newsletter {
     publishDate: Date;
     isPinned: boolean;
     attachments?: string[];
-    tags: string;
+    tags?: string;
     createdAt?: Date;
     updatedAt?: Date;
 } 

@@ -11,6 +11,7 @@ export function mapNewsletterDtoToNewsletter(dto: NewslettersDto): Newsletter {
         publishDate: dto.publishDate,
         isPinned: dto.isPinned,
         attachments: dto.attachments,
+        tags: dto.tags,
         createdAt: dto.createdAt,
         updatedAt: dto.updatedAt
     };
@@ -26,7 +27,8 @@ export function mapNewsletterToNewsletterDto(newsletter: Newsletter): Newsletter
         publishDate: newsletter.publishDate,
         isPinned: newsletter.isPinned,
         attachments: newsletter.attachments,
+        tags: newsletter.tags,
         createdAt: newsletter.createdAt,
         updatedAt: newsletter.updatedAt
     };
-} 
+}
