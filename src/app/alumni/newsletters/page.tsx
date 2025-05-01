@@ -1,26 +1,181 @@
 "use client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Bell, ArrowRight, Calendar, MessageSquare, ChevronLeft, ChevronRight, Search, LayoutList, LayoutGrid } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, Search, LayoutList, LayoutGrid, ImageIcon, Filter } from "lucide-react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import ConstellationBackground from "@/app/components/constellationBackground";
-import AnnouncementModal from "@/app/components/announcementModal";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { Newsletter } from "@/entities/newsletters";
+import { useRouter } from "next/navigation";
+import FilterSidebar from "@/app/components/filtersNewsletterListings";
 
 export default function NewslettersPage() {
+  const router = useRouter();
+  const [newsletters, setNewsletters] = useState<Newsletter[]>([]);
   const [search, setSearch] = useState("");
   const [isGridView, setIsGridView] = useState(true);
+  const [filterSidebarOpen, setFilterSidebarOpen] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12;
+
+  const [activeFilters, setActiveFilters] = useState({
+    newsletterType: {
+      event: false,
+      program: false,
+      survey: false,
+      other: false
+    },
+    sort: 'newest'
+  });
+
+  useEffect(() => {
+    const fetchNewsletters = async () => {
+      try {
+        const response = await fetch("/api/alumni/newsletters", {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch newsletters");
+        }
+
+        const data = await response.json();
+        const newslettersArray: Newsletter[] = Array.isArray(data) ? data : [];
+        
+        const sortedNewsletters = newslettersArray.sort(
+          (a, b) => new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime()
+        );
+
+        setNewsletters(sortedNewsletters);
+      } catch (error) {
+        console.error("Error fetching newsletters:", error);
+        setNewsletters([]);
+      }
+    };
+
+    fetchNewsletters();
+  }, []);
+
+  // Temporary data
+  const newslettersList = [
+    {
+      _id: 1,
+      tags: "Event",
+      title: "Annual Alumni Homecoming",
+      content: "Join us for our annual homecoming event on December 15th, 2024. Reconnect with old friends and make new connections!",
+      authorId: "",
+      publishDate: "2024-12-15",
+      isPinned: true,
+      attachments: [],
+      thumbnail: "",
+    },
+    {
+      _id: 2,
+      tags: "Program",
+      title: "New Career Development Program",
+      content: "We're launching a new career development program for recent graduates. Applications open next month.",
+      authorId: "",
+      publishDate: "2024-12-15",
+      isPinned: true,
+      attachments: [],
+      thumbnail: "",
+    },
+    {
+      _id: 3,
+      tags: "Survey",
+      title: "Alumni Survey",
+      content: "Help us improve our alumni services by participating in our annual survey.",
+      authorId: "",
+      publishDate: "2024-12-15",
+      isPinned: true,
+      attachments: [],
+      thumbnail: "",
+    },
+    {
+      _id: 4,
+      tags: "Event",
+      title: "Alumni Fun Run Event",
+      content: "Join us for a fun run event on the 20th of May. All alumni are welcome to participate!",
+      authorId: "",
+      publishDate: "2024-12-15",
+      isPinned: true,
+      attachments: [],
+      thumbnail: "",
+    },
+    {
+      _id: 5,
+      tags: "Event",
+      title: "Campus Tour",
+      content: "Tag along as we tour the campus and see the latest developments.",
+      authorId: "",
+      publishDate: "2024-12-15",
+      isPinned: false,
+      attachments: [],
+      thumbnail: "",
+    },
+    {
+      _id: 6,
+      tags: "Event",
+      title: "Alumni Game Night",
+      content: "Need some time to unwind? Join us for a game night on the 12th of June.",
+      authorId: "",
+      publishDate: "2024-12-15",
+      isPinned: false,
+      attachments: [],
+      thumbnail: "",
+    },
+  ];
+
   const toggleView = () => setIsGridView(!isGridView);
-  const [selectedNews, setSelectedNews] = useState<{
-    id: number;
-    title: string;
-    description: string;
-    date: string;
-    category: string;
-    icon: any;
-    color: string;
-  } | null>(null);
+
+  const handleFilterChange = (filters: any) => {
+    const newFilters = JSON.parse(JSON.stringify(filters));
+    setActiveFilters(newFilters);
+    setCurrentPage(1);
+  };
+
+  const filteredNewsletters = newsletters.filter((newsletter) => {
+    const searchMatch =
+      newsletter.title.toLowerCase().includes(search.toLowerCase()) ||
+      newsletter.content.toLowerCase().includes(search.toLowerCase());
+
+    const typeFiltersActive =
+      activeFilters.newsletterType.event ||
+      activeFilters.newsletterType.program ||
+      activeFilters.newsletterType.survey ||
+      activeFilters.newsletterType.other;
+
+    const typeMatch =
+      !typeFiltersActive ||
+      (activeFilters.newsletterType.event && newsletter.tags?.toLowerCase().includes('event')) ||
+      (activeFilters.newsletterType.program && newsletter.tags?.toLowerCase().includes('program')) ||
+      (activeFilters.newsletterType.survey && newsletter.tags?.toLowerCase().includes('survey')) ||
+      (activeFilters.newsletterType.other && newsletter.tags?.toLowerCase().includes('other'));
+
+    return searchMatch && typeMatch;
+  }).sort((a, b) => {
+    switch (activeFilters.sort) {
+      case 'newest':
+        return new Date(b.publishDate).getTime() - new Date(a.publishDate).getTime();
+      case 'oldest':
+        return new Date(a.publishDate).getTime() - new Date(b.publishDate).getTime();
+      case 'a-z':
+        return a.title.localeCompare(b.title);
+      case 'z-a':
+        return b.title.localeCompare(a.title);
+      default:
+        return 0;
+    }
+  });
+
+  const displayedNewsletters = filteredNewsletters.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   const [scrollPosition, setScrollPosition] = useState(0);
   const carouselRef = useRef<HTMLDivElement>(null);
@@ -61,65 +216,104 @@ export default function NewslettersPage() {
     }
   };
 
-  const announcements = [
-    {
-      id: 1,
-      title: "Annual Alumni Homecoming",
-      description: "Join us for our annual homecoming event on December 15th, 2024. Reconnect with old friends and make new connections!",
-      date: "2024-12-15",
-      category: "Event",
-      icon: Calendar,
-      color: "bg-green-500"
-    },
-    {
-      id: 2,
-      title: "New Career Development Program",
-      description: "We're launching a new career development program for recent graduates. Applications open next month.",
-      date: "2024-11-01",
-      category: "Program",
-      icon: Bell,
-      color: "bg-blue-500"
-    },
-    {
-      id: 3,
-      title: "Alumni Survey",
-      description: "Help us improve our alumni services by participating in our annual survey.",
-      date: "2024-10-20",
-      category: "Survey",
-      icon: MessageSquare,
-      color: "bg-purple-500"
-    },
-    {
-      id: 4,
-      title: "Alumni Fun Run Event",
-      description: "Join us for a fun run event on the 20th of May. All alumni are welcome to participate!",
-      date: "2025-05-20",
-      category: "Event",
-      icon: Calendar,
-      color: "bg-green-500"
-    },
-    {
-      id: 5,
-      title: "Campus Tour",
-      description: "Tag along as we tour the campus and see the latest developments.",
-      date: "2025-10-20",
-      category: "Event",
-      icon: Calendar,
-      color: "bg-green-500"
-    },
-    {
-      id: 6,
-      title: "Alumni Game Night",
-      description: "Need some time to unwind? Join us for a game night on the 12th of June.",
-      date: "2025-06-12",
-      category: "Event",
-      icon: Calendar,
-      color: "bg-green-500"
-    },
-  ];
+  const handleNewsletterDetails = (newsletter: any) => {
+    router.push(`/alumni/newsletters/${newsletter._id.toString()}`);
+  };
+
+  const NewsletterCard = ({ newsletter }: { newsletter: any }) => (
+    <Card 
+      className="hover:shadow-lg transition-all duration-300 cursor-pointer bg-white/10 backdrop-blur-sm border-0 flex flex-col"
+      onClick={() => handleNewsletterDetails(newsletter)}
+    >
+      <div className="relative h-48 overflow-hidden">
+        {newsletter.thumbnail ? (
+          <>
+            <img
+              src={newsletter.thumbnail}
+              alt={newsletter.title}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+          </>
+        ) : (
+          <div className="relative h-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
+            <div className="text-center">
+              <ImageIcon className="w-12 h-12 mx-auto mb-2 text-white/40" />
+              <h3 className="text-xl font-bold text-white/80 line-clamp-2">{newsletter.title}</h3>
+            </div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+          </div>
+        )}
+      </div>
+      <div className="p-6">
+        <div className="flex items-center justify-between mb-4">
+          <span className="text-sm text-gray-300">{newsletter.tags || 'News'}</span>
+        </div>
+        <h3 className="text-xl font-semibold text-white mb-2">
+          {newsletter.title}
+        </h3>
+        <p className="text-gray-200 text-sm mb-4">
+          {newsletter.content}
+        </p>
+        <div className="flex items-center justify-between">
+          <span className="text-sm text-gray-400">
+            {new Date(newsletter.publishDate).toLocaleDateString()}
+          </span>
+          <ArrowRight className="w-5 h-5 text-gray-400" />
+        </div>
+      </div>
+    </Card>
+  );
+
+  const NewsletterRow = ({ newsletter }: { newsletter: any }) => (
+    <Card 
+      className="hover:shadow-lg transition-all duration-300 cursor-pointer bg-white/10 backdrop-blur-sm border-0"
+      onClick={() => handleNewsletterDetails(newsletter)}
+    >
+      <div className="flex gap-6 p-6">
+        <div className="relative w-48 h-32 flex-shrink-0 overflow-hidden rounded-lg">
+          {newsletter.thumbnail ? (
+            <>
+              <img
+                src={newsletter.thumbnail}
+                alt={newsletter.title}
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+            </>
+          ) : (
+            <div className="relative h-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
+              <div className="text-center">
+                <ImageIcon className="w-8 h-8 mx-auto mb-2 text-white/40" />
+                <h3 className="text-sm font-bold text-white/80 line-clamp-2">{newsletter.title}</h3>
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+            </div>
+          )}
+        </div>
+        <div className="flex-1">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-sm text-gray-300">{newsletter.tags || 'News'}</span>
+            <span className="text-sm text-gray-400">
+              {new Date(newsletter.publishDate).toLocaleDateString()}
+            </span>
+          </div>
+          <h3 className="text-xl font-semibold text-white mb-2">
+            {newsletter.title}
+          </h3>
+          <p className="text-gray-200 text-sm mb-4">
+            {newsletter.content}
+          </p>
+          <div className="flex justify-end">
+            <ArrowRight className="w-5 h-5 text-gray-400" />
+          </div>
+        </div>
+      </div>
+    </Card>
+  );
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-[#0a0f2e] text-white">
       {/* Hero Section */}
       <div className="relative text-white -mt-16 pt-16 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-[#1a1f4d]/90 to-[#2a3f8f]/90"></div>
@@ -135,7 +329,7 @@ export default function NewslettersPage() {
               Newsletters
             </h1>
             <p className="text-xl text-gray-200">
-              Stay updated with the latest news and events
+              See the latest news from the alumni association
             </p>
           </motion.div>
         </div>
@@ -149,28 +343,57 @@ export default function NewslettersPage() {
           transition={{ duration: 0.5, delay: 0.1 }}
           className="relative"
         >
-          <Card className="p-8 bg-gradient-to-r from-[#1a1f4d] to-[#2a3f8f] text-white border-0">
-            <div className="flex items-center justify-between mb-6">
-              <div className="p-4 rounded-xl bg-white/20 text-white shadow-lg">
-                <Calendar className="w-8 h-8" />
+          {newsletters.length > 0 && (
+            <Card className="overflow-hidden border-0">
+              <div className="relative h-96">
+                {newsletters[0].thumbnail ? (
+                  <>
+                    <img
+                      src={newsletters[0].thumbnail}
+                      alt={newsletters[0].title}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#1a1f4d] via-[#1a1f4d]/80 to-transparent" />
+                  </>
+                ) : (
+                  <div className="relative h-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
+                    <div className="text-center">
+                      <ImageIcon className="w-16 h-16 mx-auto mb-4 text-white/40" />
+                      <h3 className="text-3xl font-bold text-white/80">{newsletters[0].title}</h3>
+                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#1a1f4d] via-[#1a1f4d]/80 to-transparent" />
+                  </div>
+                )}
+                <div className="absolute inset-0 p-8 flex flex-col justify-end">
+                  <div className="flex items-center justify-between mb-6">
+                    <span className="text-sm text-gray-300">
+                      {new Date(newsletters[0].publishDate).toLocaleDateString()}
+                    </span>
+                    <span className="text-sm bg-white/20 px-4 py-2 rounded-full">Latest News</span>
+                  </div>
+                  <h2 className="text-3xl font-bold mb-4 text-white">
+                    {newsletters[0].title}
+                  </h2>
+                  <p className="text-lg text-gray-200 mb-6">
+                    {newsletters[0].content}
+                  </p>
+                  <div className="flex justify-end">
+                    <Button 
+                      variant="secondary" 
+                      className="bg-white text-[#1a1f4d] hover:bg-gray-100 cursor-pointer"
+                      onClick={() => handleNewsletterDetails(newsletters[0])}
+                    >
+                      Learn More
+                    </Button>
+                  </div>
+                </div>
               </div>
-              <span className="text-sm bg-white/20 px-4 py-2 rounded-full">Featured News</span>
-            </div>
-            <h2 className="text-3xl font-bold mb-4">Annual Alumni Homecoming 2024</h2>
-            <p className="text-lg text-gray-200 mb-6">
-              Join us for our biggest event of the year! Reconnect with old friends, network with fellow alumni, and celebrate our shared journey.
-            </p>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-300">December 15, 2024</span>
-              <Button variant="secondary" className="bg-white text-[#1a1f4d] hover:bg-gray-100">
-                Learn More
-              </Button>
-            </div>
-          </Card>
+            </Card>
+          )}
         </motion.div>
       </div>
 
-      {/* Carousel Section */}
+      {/* Carousel Section/Pinned News */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -178,65 +401,53 @@ export default function NewslettersPage() {
           transition={{ duration: 0.5, delay: 0.2 }}
           className="relative"
         >
-          <h2 className="text-2xl font-bold text-white mb-6">Recent News</h2>
+          <h2 className="text-2xl font-bold text-white mb-6">Pinned News</h2>
           <div className="relative px-12">
-            <button
-              onClick={() => handleScroll('left')}
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/10 hover:bg-white/20 text-white p-2 rounded-full backdrop-blur-sm transition-all duration-300"
-              aria-label="Scroll left"
-            >
-              <ChevronLeft className="w-6 h-6" />
-            </button>
-            <div 
-              ref={carouselRef}
-              className="flex space-x-6 overflow-x-hidden pb-4"
-            >
-              {announcements.map((announcement) => (
-                <motion.div
-                  key={announcement.id}
-                  whileHover={{ y: -5 }}
-                  transition={{ duration: 0.2 }}
-                  className="flex-none w-[calc(50%-12px)]"
+            {newsletters.filter(newsletter => newsletter.isPinned).length > 0 ? (
+              <>
+                <button
+                  onClick={() => handleScroll('left')}
+                  className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/10 hover:bg-white/20 text-white p-2 rounded-full backdrop-blur-sm transition-all duration-300"
+                  aria-label="Scroll left"
                 >
-                  <Card 
-                    className="p-6 hover:shadow-lg transition-all duration-300 cursor-pointer bg-white/10 backdrop-blur-sm border-0 h-full"
-                    onClick={() => setSelectedNews(announcement)}
-                  >
-                    <div className="flex items-center justify-between mb-4">
-                      <div className={`p-3 rounded-xl ${announcement.color} text-white shadow-lg`}>
-                        <announcement.icon className="w-6 h-6" />
-                      </div>
-                      <span className="text-sm text-gray-300">{announcement.category}</span>
-                    </div>
-                    <h3 className="text-xl font-semibold text-white mb-2">
-                      {announcement.title}
-                    </h3>
-                    <p className="text-gray-200 text-sm mb-4">
-                      {announcement.description}
-                    </p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-400">
-                        {new Date(announcement.date).toLocaleDateString()}
-                      </span>
-                      <ArrowRight className="w-5 h-5 text-gray-400" />
-                    </div>
-                  </Card>
-                </motion.div>
-              ))}
-            </div>
-            <button
-              onClick={() => handleScroll('right')}
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/10 hover:bg-white/20 text-white p-2 rounded-full backdrop-blur-sm transition-all duration-300"
-              aria-label="Scroll right"
-            >
-              <ChevronRight className="w-6 h-6" />
-            </button>
+                  <ChevronLeft className="w-6 h-6" />
+                </button>
+                <div 
+                  ref={carouselRef}
+                  className="flex space-x-6 overflow-x-hidden pb-4"
+                >
+                  {newsletters.filter(newsletter => newsletter.isPinned).map((newsletter) => (
+                    <motion.div
+                      key={newsletter._id}
+                      whileHover={{ y: -5 }}
+                      transition={{ duration: 0.2 }}
+                      className="flex-none w-[calc(50%-12px)]"
+                    >
+                      <NewsletterCard newsletter={newsletter} />
+                    </motion.div>
+                  ))}
+                </div>
+                <button
+                  onClick={() => handleScroll('right')}
+                  className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/10 hover:bg-white/20 text-white p-2 rounded-full backdrop-blur-sm transition-all duration-300"
+                  aria-label="Scroll right"
+                >
+                  <ChevronRight className="w-6 h-6" />
+                </button>
+              </>
+            ) : (
+              <div className="text-center py-12 bg-white/5 rounded-lg">
+                <p className="text-gray-400 text-lg">No pinned news at the moment</p>
+              </div>
+            )}
           </div>
         </motion.div>
       </div>
-      
-      {/* Search and View Toggle */}
-      <motion.div 
+        
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Search and View Toggle */}
+        <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
@@ -248,7 +459,7 @@ export default function NewslettersPage() {
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
               <input
                 type="search"
-                placeholder="Search events"
+                placeholder="Search newsletters"
                 className="w-full pl-10 pr-16 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
@@ -277,57 +488,122 @@ export default function NewslettersPage() {
           </button>
         </motion.div>
         
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-
-        
-        {/* Announcements List */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="space-y-6"
-        >
-          {announcements.map((announcement) => (
-            <motion.div
-              key={announcement.id}
-              whileHover={{ y: -5 }}
-              transition={{ duration: 0.2 }}
-            >
-              <Card 
-                className="p-6 hover:shadow-lg transition-all duration-300 cursor-pointer bg-white/10 backdrop-blur-sm border-0"
-                onClick={() => setSelectedNews(announcement)}
+        {/* Content area */}
+        <div className="flex flex-col sm:flex-row gap-8">
+          {/* Sidebar */}
+          <motion.aside 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1 }}
+            className="w-64 flex-shrink-0"
+          >
+            <div className="flex items-center gap-3 mb-4">
+              <button
+                className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors border border-white/10"
+                onClick={() => setFilterSidebarOpen(!filterSidebarOpen)}
               >
-                <div className="flex items-center justify-between mb-4">
-                  <div className={`p-3 rounded-xl ${announcement.color} text-white shadow-lg`}>
-                    <announcement.icon className="w-6 h-6" />
-                  </div>
-                  <span className="text-sm text-gray-300">{announcement.category}</span>
-                </div>
-                <h3 className="text-xl font-semibold text-white mb-2">
-                  {announcement.title}
-                </h3>
-                <p className="text-gray-200 text-sm mb-4">
-                  {announcement.description}
-                </p>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-400">
-                    {new Date(announcement.date).toLocaleDateString()}
-                  </span>
-                  <ArrowRight className="w-5 h-5 text-gray-400" />
-                </div>
-              </Card>
-            </motion.div>
-          ))}
-        </motion.div>
-      </div>
+                <Filter size={18} />
+              </button>
+            </div>
+            <div className={`${filterSidebarOpen ? 'block' : 'hidden'} lg:block`}>
+              <FilterSidebar
+                isOpen={filterSidebarOpen}
+                setIsOpen={setFilterSidebarOpen}
+                onFilterChange={handleFilterChange}
+                showModal={() => {}}
+                activeFilters={activeFilters}
+              />
+            </div>
+          </motion.aside>
 
-      {/* Modal */}
-      <AnnouncementModal
-        isOpen={!!selectedNews}
-        onClose={() => setSelectedNews(null)}
-        announcement={selectedNews}
-      />
+          {/* Main content */}
+          <div className="flex-1">
+            {/* Active filters */}
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="flex flex-wrap items-center gap-2 mb-4"
+            >
+              {Object.entries(activeFilters.newsletterType).map(([key, value]) =>
+                value ? (
+                  <div
+                    key={key}
+                    className="px-3 py-2 bg-white/5 rounded-lg text-white border border-white/10 flex items-center gap-2"
+                  >
+                    {key.charAt(0).toUpperCase() + key.slice(1)}
+                    <button
+                      className="opacity-60 hover:opacity-100 cursor-pointer"
+                      onClick={() => {
+                        const newFilters = { ...activeFilters };
+                        newFilters.newsletterType[key as keyof typeof newFilters.newsletterType] = false;
+                        handleFilterChange(newFilters);
+                      }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ) : null
+              )}
+
+              {/* Results count */}
+              {filteredNewsletters.length > 0 && (
+                <div className="ml-auto text-sm text-gray-400">
+                  Showing {filteredNewsletters.length} results
+                </div>
+              )}
+            </motion.div>
+
+            {/* Grid/List View */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+              className={`grid ${isGridView ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'} gap-4`}
+            >
+              {displayedNewsletters.length > 0 ? (
+                displayedNewsletters.map((newsletter, index) => (
+                  <motion.div
+                    key={newsletter._id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3, delay: index * 0.05 }}
+                    className="transition-colors"
+                  >
+                    {isGridView ? (
+                      <NewsletterCard newsletter={newsletter} />
+                    ) : (
+                      <NewsletterRow newsletter={newsletter} />
+                    )}
+                  </motion.div>
+                ))
+              ) : (
+                <div className="col-span-full text-center py-8">
+                  <p className="text-gray-400">
+                    No newsletters found matching your filters.
+                  </p>
+                  <button
+                    className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors mt-4 border border-white/10"
+                    onClick={() =>
+                      handleFilterChange({
+                        newsletterType: {
+                          event: false,
+                          program: false,
+                          survey: false,
+                          other: false
+                        },
+                        sort: 'newest'
+                      })
+                    }
+                  >
+                    Clear all filters
+                  </button>
+                </div>
+              )}
+            </motion.div>
+          </div>
+        </div>
+      </div>
 
       {/* Footer */}
       <motion.footer 
@@ -367,7 +643,5 @@ export default function NewslettersPage() {
         </div>
       </motion.footer>
     </div>
-
-    
   );
 } 
