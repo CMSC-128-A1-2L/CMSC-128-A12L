@@ -45,11 +45,11 @@ export default function MobileFilterDrawer({
             onClick={onClose}
           />
           <motion.div
-            initial={{ x: '100%' }}
+            initial={{ x: '-100%' }}
             animate={{ x: 0 }}
-            exit={{ x: '100%' }}
-            transition={{ type: 'tween' }}
-            className="fixed right-0 top-0 bottom-0 w-80 bg-[#1a1f4d] z-30 flex flex-col"
+            exit={{ x: '-100%' }}
+            transition={{ type: 'tween', duration: 0.3 }}
+            className="fixed left-0 top-0 bottom-0 w-80 bg-[#1a1f4d] z-30 flex flex-col"
           >
             {/* Header */}
             <div className="p-4 border-b border-white/10 flex items-center justify-between">

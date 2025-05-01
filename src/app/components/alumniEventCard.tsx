@@ -42,77 +42,71 @@ const EventCard: React.FC<EventCardProps> = ({
     <motion.div
       whileHover={{ y: -5 }}
       transition={{ type: "spring", stiffness: 400, damping: 10 }}
-      className="bg-white/5 backdrop-blur-sm rounded-xl overflow-hidden border border-white/10 hover:border-white/20 transition-all duration-300 h-full flex flex-col"
+      className="h-full flex flex-col bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg overflow-hidden transition-colors cursor-pointer"
     >
-      {/* Image Section */}
-      <div className="relative h-48">
+      {/* Image container */}
+      <div className="relative h-48 overflow-hidden">
         {imageUrl ? (
-          <>
-            <img 
-              src={imageUrl} 
-              alt={`${title} event banner`} 
-              className="w-full h-full object-cover" 
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-          </>
+          <img
+            src={imageUrl}
+            alt={title}
+            className="w-full h-full object-cover"
+          />
         ) : (
-          <DefaultEventBanner title={title} />
+          <div className="w-full h-full bg-white/5 flex items-center justify-center">
+            <Calendar className="h-12 w-12 text-white/20" />
+          </div>
         )}
       </div>
 
-      {/* Content Section */}
-      <div className="p-4 flex flex-col flex-grow">
-        <h2 className="text-lg font-semibold text-white mb-2 line-clamp-2">{title}</h2>
-        
+      {/* Content */}
+      <div className="flex flex-col flex-grow p-4">
+        {/* Title and Status */}
+        <div className="flex items-start justify-between gap-4 mb-2">
+          <h3 className="text-lg font-semibold text-white line-clamp-2">{title}</h3>
+          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+            eventStatus === 'upcoming' ? 'bg-green-500/20 text-green-400' :
+            eventStatus === 'ongoing' ? 'bg-blue-500/20 text-blue-400' :
+            'bg-gray-500/20 text-gray-400'
+          }`}>
+            {eventStatus.charAt(0).toUpperCase() + eventStatus.slice(1)}
+          </span>
+        </div>
+
+        {/* Organizer */}
+        <p className="text-sm text-gray-300 mb-2">{organizer}</p>
+
+        {/* Location and Date */}
         <div className="space-y-2 mb-4">
-          <div className="flex items-center gap-2 text-sm text-gray-300">
-            <Users size={16} className="text-gray-400" />
-            <span>{organizer}</span>
-          </div>
-          <div className="flex items-center gap-2 text-sm text-gray-300">
-            <MapPin size={16} className="text-gray-400" />
+          <div className="flex items-center gap-2 text-sm text-gray-400">
+            <MapPin size={14} />
             <span>{location}</span>
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-300">
-            <Calendar size={16} className="text-gray-400" />
+          <div className="flex items-center gap-2 text-sm text-gray-400">
+            <Calendar size={14} />
             <span>{new Date(date).toLocaleDateString()}</span>
           </div>
         </div>
 
-        <p className="text-sm text-gray-400 mb-4 line-clamp-2 flex-grow">{description}</p>
+        {/* Description */}
+        <p className="text-sm text-gray-300 line-clamp-3 mb-4 flex-grow">{description}</p>
 
         {/* Action Buttons */}
         <div className="flex flex-col gap-2 mt-auto">
           <button
             onClick={onDetailsClick}
-            className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors border border-white/10"
+            className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors border border-white/10 cursor-pointer"
           >
             Details
           </button>
           <button
-            disabled={eventStatus === "finished"}
-            onClick={onSponsorClick}
-            className={`px-4 py-2 rounded-lg transition-colors border-none text-white 
-              ${eventStatus === "finished" 
-                ? "bg-gray-400 cursor-not-allowed opacity-60 hover:bg-gray-400" 
-                : "bg-blue-600 hover:bg-blue-700"}
-            `}
-          >
-            Sponsor
-          </button>
-          <button
-            disabled={eventStatus === "finished"}
-            onClick={(e) => {``
+            onClick={(e) => {
               e.stopPropagation();
               onApplyClick();
             }}
-            className={`px-4 py-2 rounded-lg transition-colors border-none text-white 
-              ${eventStatus === "finished" 
-                ? "bg-gray-400 cursor-not-allowed opacity-60 hover:bg-gray-400" 
-                : "bg-green-600 hover:bg-green-700"}
-            `}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors cursor-pointer"
           >
-            Respond
+            RSVP
           </button>
         </div>
       </div>

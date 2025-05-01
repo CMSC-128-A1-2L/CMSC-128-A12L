@@ -1,6 +1,6 @@
 "use client";
 import { signOut, useSession } from "next-auth/react";
-import { Menu, LogOut, User, X, Bell } from "lucide-react";
+import { Menu, LogOut, User, X, Bell, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { RefObject, useState, useEffect } from "react";
 import { UserRole } from "@/entities/user";
@@ -137,7 +137,7 @@ export default function Navbar({
             className="focus:outline-none cursor-pointer hover:text-gray-300 transition-colors"
             aria-label="Toggle mobile menu"
           >
-            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            {mobileMenuOpen ? <X size={24} /> : <ChevronDown size={24} />}
           </button>
         </div>
       </div>
