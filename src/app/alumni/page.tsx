@@ -273,7 +273,7 @@ export default function AlumniDashboard() {
             className="text-center"
           >
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              Welcome back, {session?.user?.name?.split(" ")[0] || "Alumni"}!
+              Welcome back, {session?.user?.email?.split("@")[0] || "Alumni"}!
             </h1>
             <p className="text-xl text-gray-200">
               Your alumni network is growing stronger every day
@@ -333,32 +333,36 @@ export default function AlumniDashboard() {
           className="mb-12"
         >
           <h2 className="text-2xl font-bold text-white mb-6">Quick Actions</h2>
-          <div className="grid grid-cols-5 gap-4">
-            {quickActions.map((action, index) => (
-              <motion.div
-                key={action.title}
-                whileHover={{ y: -5 }}
-                transition={{ duration: 0.2 }}
-                className="w-full h-[200px]"
-              >
-                <Link href={action.href}>
-                  <Card className="p-6 hover:shadow-lg transition-all duration-300 cursor-pointer bg-white/10 backdrop-blur-sm border-0 h-full">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className={`p-3 rounded-xl ${action.color} text-white shadow-lg`}>
-                        <action.icon className="w-6 h-6" />
-                      </div>
-                      <ArrowRight className="w-5 h-5 text-gray-400" />
-                    </div>
-                    <h3 className="text-xl font-semibold text-white mb-2">
-                      {action.title}
-                    </h3>
-                    <p className="text-gray-200 text-sm">
-                      {action.description}
-                    </p>
-                  </Card>
-                </Link>
-              </motion.div>
-            ))}
+          <div className="relative">
+            <div className="overflow-x-auto pb-4 -mx-4 px-4 sm:mx-0 sm:px-0">
+              <div className="flex space-x-4 sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 sm:gap-4">
+                {quickActions.map((action, index) => (
+                  <motion.div
+                    key={action.title}
+                    whileHover={{ y: -5 }}
+                    transition={{ duration: 0.2 }}
+                    className="w-[280px] sm:w-full h-[200px] flex-shrink-0"
+                  >
+                    <Link href={action.href}>
+                      <Card className="p-6 hover:shadow-lg transition-all duration-300 cursor-pointer bg-white/10 backdrop-blur-sm border-0 h-full">
+                        <div className="flex items-center justify-between mb-4">
+                          <div className={`p-3 rounded-xl ${action.color} text-white shadow-lg`}>
+                            <action.icon className="w-6 h-6" />
+                          </div>
+                          <ArrowRight className="w-5 h-5 text-gray-400" />
+                        </div>
+                        <h3 className="text-xl font-semibold text-white mb-2">
+                          {action.title}
+                        </h3>
+                        <p className="text-gray-200 text-sm">
+                          {action.description}
+                        </p>
+                      </Card>
+                    </Link>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
           </div>
         </motion.div>
 
