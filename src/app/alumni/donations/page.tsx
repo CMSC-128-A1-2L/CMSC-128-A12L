@@ -1,14 +1,47 @@
 "use client";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { CreditCard, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
 import ConstellationBackground from "@/app/components/constellationBackground";
+import { Card } from "@/components/ui/card";
+import { DonationDto } from "@/models/donation";
+
 
 export default function DonationsPage() {
   const pathname = usePathname();
-  
+  const [donations, setDonations] = useState<DonationDto[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showHistory, setShowHistory] = useState(false);
+
+  useEffect(() => {
+    const fetchDonations = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch("/api/alumni/donations");
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        if (Array.isArray(data)) {
+          setDonations(data);
+        } else {
+          console.error("Expected an array, but got:", data);
+          setDonations([]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch donations:", error);
+        setDonations([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDonations();
+  }, []);
+
   const paymentOptions = [
     {
       description: "Make donations using Maya, a popular digital payment solution in the Philippines.",
@@ -37,12 +70,8 @@ export default function DonationsPage() {
             transition={{ duration: 0.5 }}
             className="text-center"
           >
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              Donations
-            </h1>
-            <p className="text-xl text-gray-200">
-              Support our alumni community initiatives
-            </p>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">Donations</h1>
+            <p className="text-xl text-gray-200">Support our alumni community initiatives</p>
           </motion.div>
         </div>
       </div>
@@ -58,16 +87,14 @@ export default function DonationsPage() {
               transition={{ duration: 0.5, delay: index * 0.1 }}
             >
               <Link href={option.path}>
-                <motion.div 
+                <motion.div
                   className={`bg-gradient-to-br ${option.color} p-6 rounded-xl border border-white/10 hover:border-white/20 transition-all duration-300 h-full`}
                   whileHover={{ y: -5 }}
                   transition={{ type: "spring", stiffness: 400, damping: 10 }}
                 >
                   <div className="h-full flex flex-col">
                     <div className="flex items-center mb-4">
-                      <div className="p-3">
-                        {option.icon}
-                      </div>
+                      <div className="p-3">{option.icon}</div>
                     </div>
                     <p className="text-gray-200 mb-6 flex-grow">{option.description}</p>
                     <div className="flex items-center text-white font-medium">
@@ -84,17 +111,83 @@ export default function DonationsPage() {
           ))}
         </div>
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-          className="mt-12 text-center"
-        >
-          <p className="text-sm text-gray-300">
-            All transactions are secure and encrypted. Your payment information is never stored on our servers.
-          </p>
-        </motion.div>
+        {/* View Donation History Card */}
+        <div className="grid md:grid-cols-1 gap-6 mt-12">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            onClick={() => setShowHistory(!showHistory)}
+          >
+            <Card className="p-4 bg-white/10 backdrop-blur-sm border-0 hover:bg-white/20 transition-all duration-300 cursor-pointer">
+              <h2 className="text-2xl text-white font-semibold">{showHistory ? "Hide Donation History" : "View Donation History"}</h2>
+              <p className="text-gray-200 text-sm">{showHistory ? "Click to hide your donation history" : "Click here to see your donation history"}</p>
+            </Card>
+          </motion.div>
+        </div>
+
+        {/* Donation History*/}
+        {showHistory && (
+          <div className="mt-12">
+            {loading ? (
+              <div className="text-center text-gray-400 py-12 text-lg">Loading donations...</div>
+            ) : donations.length === 0 ? (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <Card className="p-4 bg-white/10 backdrop-blur-sm border-0 hover:bg-white/20 transition-all duration-300 cursor-pointer">
+                  <h2 className="text-lg text-white font-semibold">No Donation History</h2>
+                  <p className="text-sm text-gray-200">You have not made any donations yet.</p>
+                </Card>
+              </motion.div>
+            ) : (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <Card className="p-4 bg-white/10 backdrop-blur-sm border-0 hover:bg-white/20 transition-all duration-300">
+                <table className="w-full text-left table-fixed">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="py-2 px-4 text-white font-bold text-center w-1/4">Donation Name</th>
+                      <th className="py-2 px-4 text-white font-bold text-center w-1/4">Value</th>
+                      <th className="py-2 px-4 text-white font-bold text-center w-1/4">Mode of Payment</th>
+                      <th className="py-2 px-4 text-white font-bold text-center w-1/4">Date</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {donations.map((donation: DonationDto, index) => (
+                      <tr key={donation._id || index} className="border-b hover:bg-blue-900">
+                        <td className="py-2 px-4 text-white text-center">{donation.donationName}</td>
+                        <td className="py-2 px-4 text-white text-center">₱{donation.monetaryValue.toLocaleString()}</td>
+                        <td className="py-2 px-4 text-white text-center capitalize">{donation.description?.toLowerCase().includes('maya') ? 'maya' : 'stripe'}</td>
+                        <td className="py-2 px-4 text-white text-center">{donation.receiveDate ? new Date(donation.receiveDate).toLocaleDateString() : 'N/A'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </Card>
+
+
+              </motion.div>
+            )}
+          </div>
+        )}
       </div>
+
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5, delay: 0.4 }}
+        className="mt-12 text-center"
+      >
+        <p className="text-sm text-gray-300">
+          All transactions are secure and encrypted. Your payment information is never stored on our servers.
+        </p>
+      </motion.div>
     </div>
   );
-} 
+}

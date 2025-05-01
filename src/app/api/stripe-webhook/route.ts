@@ -49,12 +49,12 @@ export async function POST(req: Request) {
     const donationRepo = getEducationRepository();
     await donationRepo.createDonation({
       donationName: 'Stripe Donation',
-      description: 'stripe',
+      description: 'Stripe',
       type: 'Cash',
       monetaryValue: amount,
       donorID: [user.id], 
       receiveDate: new Date(),
-    });
+          });
   }
 
   return NextResponse.json({ received: true });

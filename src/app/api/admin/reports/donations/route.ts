@@ -16,6 +16,8 @@ export async function GET() {
 
         // Donations Per Month
         const donationsAmtByMonth: {[key:string]: number} = {};
+        // Donations Per Year
+        const donationsAmtByYear: {[key:number]: number} = {};
 
         for (const donation of donations) {
             const receivedBy = new Date(donation.receiveDate!);
@@ -30,6 +32,10 @@ export async function GET() {
             if(donation.type === 'Cash'){
                 // totals cash donations older than 6 months
                 totalDonations = totalDonations + donation.monetaryValue;
+                
+                // Add to yearly totals
+                const year = receivedBy.getFullYear();
+                donationsAmtByYear[year] = (donationsAmtByYear[year] || 0) + donation.monetaryValue;
             }
         }
 
@@ -41,6 +47,16 @@ export async function GET() {
                 amtOfDonations: amount,
             };
         });
+
+        // Get yearly stats for past 6 years
+        const currentYear = new Date().getFullYear();
+        const yearlyStats = [];
+        for (let year = currentYear - 5; year <= currentYear; year++) {
+            yearlyStats.push({
+                year: year,
+                amtOfDonations: donationsAmtByYear[year] || 0
+            });
+        }
 
         // Add both for computation of cumulatitve later
         let superTotalDonations = totalDonations + lastSixMonthsTotalDonations;
@@ -68,6 +84,7 @@ export async function GET() {
         return NextResponse.json(
             {
                 monthlyStats,
+                yearlyStats,
                 cumulativeStats,
             },
             {status: 200}

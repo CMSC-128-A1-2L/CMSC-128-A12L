@@ -14,6 +14,7 @@ interface JobCardProps {
   imageUrl?: string;
   onDetailsClick: () => void;
   onApplyClick: () => void;
+  isOwnJob?: boolean;
 }
 
 const DefaultJobBanner = ({ title }: { title: string }) => (
@@ -37,6 +38,7 @@ const JobRow: React.FC<JobCardProps> = ({
   imageUrl = "/default-job-banner.jpg",
   onDetailsClick,
   onApplyClick,
+  isOwnJob = false,
 }) => {
   return (
     <motion.div
@@ -107,15 +109,6 @@ const JobRow: React.FC<JobCardProps> = ({
               className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors border border-white/10"
             >
               Details
-            </button>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onApplyClick();
-              }}
-              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
-            >
-              Apply
             </button>
           </div>
         </div>

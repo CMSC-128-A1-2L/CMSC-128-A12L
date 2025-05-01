@@ -5,7 +5,11 @@ import { redirect } from "next/navigation";
 import Navbar from "@/app/components/navBar";
 import AdminSidebar from "@/app/components/adminSideBar";
 import { motion } from "framer-motion";
-
+import Footer from "@/app/components/footer";
+import { UserRole } from "@/entities/user";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 export default function AdminLayout({
   children,
 }: {
@@ -46,6 +50,20 @@ export default function AdminLayout({
     );
   }
 
+   if (!session?.user.role.includes(UserRole.ADMIN)) {
+      return (
+        <div className="flex items-center justify-center min-h-screen">
+          <Card className="p-6 bg-white/10 backdrop-blur-sm border-0">
+            <h2 className="text-2xl font-bold text-white mb-4">Access Denied</h2>
+            <p className="text-gray-200">You do not have permission to view this page.</p>
+            <Link href="/">
+              <Button variant="outline" className="mt-4">Go to Home</Button>
+            </Link>
+          </Card>
+        </div>
+      );
+    }
+
   return (
     <div className="min-h-screen flex flex-col overflow-hidden bg-gray-50">
       {/* Subtle gradient background */}
@@ -83,6 +101,7 @@ export default function AdminLayout({
             </motion.div>
           </div>
         </motion.main>
+        <Footer />
       </div>
     </div>
   );

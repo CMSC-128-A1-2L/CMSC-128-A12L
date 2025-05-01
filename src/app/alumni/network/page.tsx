@@ -3,18 +3,16 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { FiFilter, FiUsers, FiMapPin, FiBriefcase, FiCalendar } from "react-icons/fi";
 import { IoIosArrowForward, IoIosArrowBack } from "react-icons/io";
-import userData from "@/dummy_data/user.json";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
+import { Search } from "lucide-react";
 import ConstellationBackground from "@/app/components/constellationBackground";
 
 type Alumni = {
   id: string;
-  role: string[];
   name: string;
   lastName: string;
   suffix?: string | null;
-  gender?: string;
   bio?: string;
   imageUrl?: string;
   linkedIn?: string;
@@ -30,8 +28,10 @@ export default function AlumniPage() {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [selectedFilter, setSelectedFilter] = useState({
-    role: "",
-    gender: "",
+    department: "",
+    graduationYear: "",
+    currentLocation: "",
+    currentCompany: "",
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [pageInput, setPageInput] = useState("1");
@@ -75,21 +75,39 @@ export default function AlumniPage() {
     setPageInput(currentPage.toString());
   }, [currentPage]);
 
-  // filters based on role and gender
+  // filters 
   const filteredAlumni = alumni.filter((alumni) => {
     const fullName = `${alumni.name}`.toLowerCase();
     const searchMatch = fullName.includes(search.toLowerCase());
-    const roleMatch =
-      selectedFilter.role === "" || alumni.role.includes(selectedFilter.role);
-    const genderMatch =
-      selectedFilter.gender === "" || alumni.gender === selectedFilter.gender;
-
-    return searchMatch && roleMatch && genderMatch;
+    const departmentMatch =
+    selectedFilter.department === "" ||
+    alumni.department?.toLowerCase() === selectedFilter.department?.toLowerCase()
+    const yearMatch =
+      selectedFilter.graduationYear === "" ||
+      alumni.graduationYear?.toString() === selectedFilter.graduationYear;
+    const locationMatch =
+      selectedFilter.currentLocation === "" ||
+      alumni.currentLocation?.toLowerCase() === selectedFilter.currentLocation.toLowerCase();
+    const companyMatch =
+      selectedFilter.currentCompany === "" ||
+      alumni.currentCompany?.toLowerCase() === selectedFilter.currentCompany.toLowerCase();
+    return (
+      searchMatch &&
+      departmentMatch &&
+      yearMatch &&
+      locationMatch &&
+      companyMatch
+    );
   });
 
   // clear filter
   const clearFilters = () => {
-    setSelectedFilter({ role: "", gender: "" });
+    setSelectedFilter({ 
+      department: "",
+      graduationYear: "",
+      currentLocation: "",
+      currentCompany: "",
+    });
     setSearch("");
   };
 
@@ -134,19 +152,21 @@ export default function AlumniPage() {
       {/* Main container */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Search and Filter */}
-        <div className="flex items-center gap-4 py-4">
+        <div className="flex items-center justify-center gap-2 sm:gap-4 py-4 max-w-3xl mx-auto w-full">
           {/* Search bar - center */}
           <div className="flex-1 max-w-2xl mx-auto">
             <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
               <input
-                type="text"
-                placeholder="Search"
+                type="search"
+                placeholder="Search jobs"
+                className="w-full pl-10 pr-16 py-2 bg-white/5 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm sm:text-base"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="input input-bordered w-full pl-10 pr-16 bg-white/10 backdrop-blur-sm border-white/20 text-white placeholder-gray-300"
               />
-              <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-300">
-                <FiFilter size={18} />
+              <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
+                <kbd className="hidden sm:inline-block px-2 py-1 text-xs rounded bg-white/5 text-gray-400">ctrl</kbd>
+                <kbd className="hidden sm:inline-block px-2 py-1 text-xs rounded bg-white/5 text-gray-400">K</kbd>
               </div>
             </div>
           </div>
@@ -162,89 +182,110 @@ export default function AlumniPage() {
 
             {showFilter && (
               <ul className="absolute z-50 mt-2 bg-white/10 backdrop-blur-sm shadow-lg rounded-md w-[280px] sm:w-[320px] right-0 sm:right-auto sm:left-0 border border-white/20 max-h-[80vh] overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
-                {/* Role Filter */}
-                <li className="p-2 font-bold text-white sticky top-0 bg-white/10 backdrop-blur-sm z-10 border-b border-white/20">
-                  <div className="flex items-center justify-between">
-                    <span>Role</span>
+              {/* Department Filter */}
+              <li className="p-2 font-bold text-white sticky top-0 bg-white/10 backdrop-blur-sm z-10 border-b border-white/20">
+                <div className="flex items-center justify-between">
+                  <span>Department</span>
+                  <button
+                    onClick={() => setSelectedFilter({ ...selectedFilter, department: "" })}
+                    className="text-sm text-gray-300 hover:text-white"
+                  >
+                    Clear
+                  </button>
+                </div>
+              </li>
+              {[...new Set(alumni.map((a) => a.department).filter(Boolean))].map((dept) => (
+                <li key={dept}>
+                  <button
+                    onClick={() => setSelectedFilter({ ...selectedFilter, department: dept! })}
+                    className="block w-full text-left px-4 py-2 hover:bg-white/20 cursor-pointer text-gray-200"
+                  >
+                    {dept} {selectedFilter.department === dept && "✓"}
+                  </button>
+                </li>
+              ))}
+          
+              {/* Graduation Year Filter */}
+              <li className="p-2 font-bold text-white sticky top-0 bg-white/10 backdrop-blur-sm z-10 border-b border-white/20">
+                <div className="flex items-center justify-between">
+                  <span>Graduation Year</span>
+                  <button
+                    onClick={() => setSelectedFilter({ ...selectedFilter, graduationYear: "" })}
+                    className="text-sm text-gray-300 hover:text-white"
+                  >
+                    Clear
+                  </button>
+                </div>
+              </li>
+              {[...new Set(alumni.map((a) => a.graduationYear).filter(Boolean))]
+                .sort((a, b) => (b ?? 0) - (a ?? 0))
+                .map((year) => (
+                  <li key={year}>
                     <button
-                      onClick={() => setSelectedFilter({ ...selectedFilter, role: "" })}
-                      className="text-sm text-gray-300 hover:text-white"
+                      onClick={() => setSelectedFilter({ ...selectedFilter, graduationYear: year!.toString() })}
+                      className="block w-full text-left px-4 py-2 hover:bg-white/20 cursor-pointer text-gray-200"
                     >
-                      Clear
+                      {year} {selectedFilter.graduationYear === year?.toString() && "✓"}
                     </button>
-                  </div>
-                </li>
-                <li>
+                  </li>
+                ))}
+          
+              {/* Current Location Filter */}
+              <li className="p-2 font-bold text-white sticky top-0 bg-white/10 backdrop-blur-sm z-10 border-b border-white/20">
+                <div className="flex items-center justify-between">
+                  <span>Current Location</span>
                   <button
-                    onClick={() => setSelectedFilter({ ...selectedFilter, role: "" })}
+                    onClick={() => setSelectedFilter({ ...selectedFilter, currentLocation: "" })}
+                    className="text-sm text-gray-300 hover:text-white"
+                  >
+                    Clear
+                  </button>
+                </div>
+              </li>
+              {[...new Set(alumni.map((a) => a.currentLocation).filter(Boolean))].map((location) => (
+                <li key={location}>
+                  <button
+                    onClick={() => setSelectedFilter({ ...selectedFilter, currentLocation: location! })}
                     className="block w-full text-left px-4 py-2 hover:bg-white/20 cursor-pointer text-gray-200"
                   >
-                    All {selectedFilter.role === "" && "✓"}
+                    {location} {selectedFilter.currentLocation === location && "✓"}
                   </button>
                 </li>
-                <li>
+              ))}
+          
+              {/* Current Company Filter */}
+              <li className="p-2 font-bold text-white sticky top-0 bg-white/10 backdrop-blur-sm z-10 border-b border-white/20">
+                <div className="flex items-center justify-between">
+                  <span>Current Company</span>
                   <button
-                    onClick={() =>
-                      setSelectedFilter({ ...selectedFilter, role: "alumni" })
-                    }
+                    onClick={() => setSelectedFilter({ ...selectedFilter, currentCompany: "" })}
+                    className="text-sm text-gray-300 hover:text-white"
+                  >
+                    Clear
+                  </button>
+                </div>
+              </li>
+              {[...new Set(alumni.map((a) => a.currentCompany).filter(Boolean))].map((company) => (
+                <li key={company}>
+                  <button
+                    onClick={() => setSelectedFilter({ ...selectedFilter, currentCompany: company! })}
                     className="block w-full text-left px-4 py-2 hover:bg-white/20 cursor-pointer text-gray-200"
                   >
-                    Alumni {selectedFilter.role === "alumni" && "✓"}
+                    {company} {selectedFilter.currentCompany === company && "✓"}
                   </button>
                 </li>
+              ))}
+              
 
-                {/* Gender Filter */}
-                <li className="p-2 font-bold text-white sticky top-0 bg-white/10 backdrop-blur-sm z-10 border-b border-white/20">
-                  <div className="flex items-center justify-between">
-                    <span>Gender</span>
+                {/* Clear All Filters */}
+                  <li className="p-2 sticky bottom-0 bg-white/10 backdrop-blur-sm z-10 border-t border-white/20">
                     <button
-                      onClick={() => setSelectedFilter({ ...selectedFilter, gender: "" })}
-                      className="text-sm text-gray-300 hover:text-white"
+                      onClick={clearFilters}
+                      className="w-full text-center px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-md cursor-pointer transition-colors duration-200"
                     >
-                      Clear
+                      Clear All Filters
                     </button>
-                  </div>
-                </li>
-                <li>
-                  <button
-                    onClick={() =>
-                      setSelectedFilter({ ...selectedFilter, gender: "" })
-                    }
-                    className="block w-full text-left px-4 py-2 hover:bg-white/20 cursor-pointer text-gray-200"
-                  >
-                    All {selectedFilter.gender === "" && "✓"}
-                  </button>
-                </li>
-                <li>
-                  <button
-                    onClick={() =>
-                      setSelectedFilter({ ...selectedFilter, gender: "Male" })
-                    }
-                    className="block w-full text-left px-4 py-2 hover:bg-white/20 cursor-pointer text-gray-200"
-                  >
-                    Male {selectedFilter.gender === "Male" && "✓"}
-                  </button>
-                </li>
-                <li>
-                  <button
-                    onClick={() =>
-                      setSelectedFilter({ ...selectedFilter, gender: "Female" })
-                    }
-                    className="block w-full text-left px-4 py-2 hover:bg-white/20 cursor-pointer text-gray-200"
-                  >
-                    Female {selectedFilter.gender === "Female" && "✓"}
-                  </button>
-                </li>
-
-                {/* Clear Filter */}
-                <li className="p-2 sticky bottom-0 bg-white/10 backdrop-blur-sm z-10 border-t border-white/20">
-                  <button
-                    onClick={clearFilters}
-                    className="w-full text-center px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-md cursor-pointer transition-colors duration-200"
-                  >
-                    Clear All Filters
-                  </button>
-                </li>
+                  </li>
               </ul>
             )}
           </div>
@@ -287,14 +328,42 @@ export default function AlumniPage() {
 
             {/* Alumni Grid with Pagination */}
             <div className="relative">
-              {currentPage > 1 && (
-                <button
-                  onClick={() => setCurrentPage(currentPage - 1)}
-                  className="btn bg-white/10 backdrop-blur-sm text-white border-none flex-shrink-0 w-16 h-16 text-2xl absolute -left-20 top-1/2 -mt-8 z-10 rounded-full hover:bg-white/20 transition-all duration-300 shadow-lg hover:shadow-xl border border-white/20 hover:border-white/40"
-                >
-                  <IoIosArrowBack />
-                </button>
-              )}
+              {/* Mobile Top Pagination */}
+              <div className="sm:hidden mb-6">
+                <div className="flex items-center justify-between">
+                  <button
+                    onClick={() => currentPage > 1 && setCurrentPage(currentPage - 1)}
+                    className={`btn ${currentPage > 1 ? 'bg-white/10 hover:bg-white/20' : 'bg-white/5 cursor-not-allowed'} backdrop-blur-sm text-white border-none flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-white/20`}
+                    disabled={currentPage <= 1}
+                  >
+                    <IoIosArrowBack className="text-xl" />
+                    <span>Prev</span>
+                  </button>
+
+                  {totalPages > 1 && (
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="number"
+                        value={pageInput}
+                        onChange={handlePageInput}
+                        min={1}
+                        max={totalPages}
+                        className="w-12 input input-bordered input-sm text-center text-base bg-white/10 text-white border-white/20"
+                      />
+                      <span className="text-gray-300">/ {totalPages}</span>
+                    </div>
+                  )}
+
+                  <button
+                    onClick={() => currentPage < totalPages && setCurrentPage(currentPage + 1)}
+                    className={`btn ${currentPage < totalPages ? 'bg-white/10 hover:bg-white/20' : 'bg-white/5 cursor-not-allowed'} backdrop-blur-sm text-white border-none flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-white/20`}
+                    disabled={currentPage >= totalPages}
+                  >
+                    <span>Next</span>
+                    <IoIosArrowForward className="text-xl" />
+                  </button>
+                </div>
+              </div>
 
               {/* Alumni Grid */}
               <motion.div 
@@ -303,7 +372,7 @@ export default function AlumniPage() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: currentPage > 1 ? 20 : -20 }}
                 transition={{ duration: 0.3 }}
-                className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"
+                className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-4"
               >
                 {loading ? (
                   <div className="col-span-full text-center py-8">
@@ -316,10 +385,10 @@ export default function AlumniPage() {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.3, delay: index * 0.05 }}
-                      className="w-full h-88 bg-white/10 backdrop-blur-sm rounded-lg overflow-hidden shadow-md flex flex-col relative group transition-all duration-300 border border-white/20"
+                      className="w-full h-[248px] sm:h-88 bg-white/10 backdrop-blur-sm rounded-lg overflow-hidden shadow-md flex flex-col relative group transition-all duration-300 border border-white/20"
                     >
                       {/* Front View - Default */}
-                      <div className="absolute inset-0 flex flex-col items-center justify-between opacity-100 group-hover:opacity-0 transition-all duration-300">
+                      <div className="relative w-full h-full flex flex-col bg-white/10">
                         <div className="w-full h-[85%] bg-white/20 overflow-hidden">
                           {alumni.imageUrl ? (
                             <img
@@ -329,45 +398,45 @@ export default function AlumniPage() {
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center bg-white/5">
-                              <FiUsers className="text-gray-400" size={64} />
+                              <FiUsers className="text-gray-400 w-12 h-12 sm:w-16 sm:h-16" />
                             </div>
                           )}
                         </div>
-                        <div className="w-full py-3 px-2 text-center bg-black/20 backdrop-blur-sm">
-                          <p className="text-white font-medium">{alumni.name}</p>
-                          <p className="text-gray-300 text-sm">Batch {alumni.graduationYear || "N/A"}</p>
+                        <div className="w-full flex-1 py-2 sm:py-3 px-2 text-center bg-black/20 backdrop-blur-sm">
+                          <p className="text-white font-medium text-sm sm:text-base truncate">{alumni.name}</p>
+                          <p className="text-gray-300 text-xs sm:text-sm">Batch {alumni.graduationYear || "N/A"}</p>
                         </div>
                       </div>
 
                       {/* Hover View - Detailed Info */}
-                      <div className="absolute inset-0 flex flex-col justify-center items-center bg-[#1a1f4d]/90 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all duration-300 p-6">
-                        <div className="w-full space-y-4">
-                          <div className="text-center mb-2">
-                            <h3 className="text-xl font-semibold text-white">{alumni.name}</h3>
-                            <p className="text-gray-300">Class of {alumni.graduationYear || "N/A"}</p>
+                      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm p-3 sm:p-4 flex flex-col items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <div className="w-full space-y-2 sm:space-y-4">
+                          <div className="text-center mb-1 sm:mb-2">
+                            <h3 className="text-base sm:text-xl font-semibold text-white truncate">{alumni.name}</h3>
+                            <p className="text-gray-300 text-xs sm:text-sm">Class of {alumni.graduationYear || "N/A"}</p>
                           </div>
                           
                           {/* Academic Info */}
-                          <div className="text-gray-200 text-sm">
-                            <p className="mb-1 text-center">{alumni.department || "Department not specified"}</p>
+                          <div className="text-gray-200 text-xs sm:text-sm">
+                            <p className="mb-1 text-center line-clamp-1">{alumni.department || "Department not specified"}</p>
                           </div>
 
                           {/* Professional Info */}
                           {(alumni.currentPosition || alumni.currentCompany) && (
-                            <div className="text-gray-200 text-center border-t border-white/10 pt-4">
-                              <p>{alumni.currentPosition}</p>
-                              <p className="text-gray-300">{alumni.currentCompany}</p>
+                            <div className="text-gray-200 text-center border-t border-white/10 pt-2 sm:pt-4">
+                              <p className="text-xs sm:text-sm line-clamp-1">{alumni.currentPosition}</p>
+                              <p className="text-gray-300 text-xs sm:text-sm line-clamp-1">{alumni.currentCompany}</p>
                             </div>
                           )}
 
                           {/* Contact Links */}
-                          <div className="flex justify-center gap-2 pt-4">
+                          <div className="flex justify-center space-x-2">
                             {alumni.linkedIn && (
                               <a
                                 href={alumni.linkedIn}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-blue-400 hover:text-blue-300 underline text-sm"
+                                className="text-blue-400 hover:text-blue-300 underline text-xs sm:text-sm"
                                 onClick={(e) => e.stopPropagation()}
                               >
                                 LinkedIn Profile
@@ -378,7 +447,7 @@ export default function AlumniPage() {
                         
                         <button 
                           onClick={() => router.push(`/alumni/network/${alumni.id}`)}
-                          className="mt-6 px-6 py-2 bg-white/10 hover:bg-white/20 border border-white/40 rounded-lg text-white transition-colors cursor-pointer"
+                          className="mt-2 sm:mt-6 px-4 sm:px-6 py-1.5 sm:py-2 bg-white/10 hover:bg-white/20 border border-white/40 rounded-lg text-white transition-colors cursor-pointer text-xs sm:text-sm"
                         >
                           View Full Profile
                         </button>
@@ -400,19 +469,68 @@ export default function AlumniPage() {
                 )}
               </motion.div>
 
-              {currentPage < totalPages && (
-                <button
-                  onClick={() => setCurrentPage(currentPage + 1)}
-                  className="btn bg-white/10 backdrop-blur-sm text-white border-none flex-shrink-0 w-16 h-16 text-2xl absolute -right-20 top-1/2 -mt-8 z-10 rounded-full hover:bg-white/20 transition-all duration-300 shadow-lg hover:shadow-xl border border-white/20 hover:border-white/40"
-                >
-                  <IoIosArrowForward />
-                </button>
-              )}
+              {/* Mobile Bottom Pagination */}
+              <div className="sm:hidden mt-6">
+                <div className="flex items-center justify-between">
+                  <button
+                    onClick={() => currentPage > 1 && setCurrentPage(currentPage - 1)}
+                    className={`btn ${currentPage > 1 ? 'bg-white/10 hover:bg-white/20' : 'bg-white/5 cursor-not-allowed'} backdrop-blur-sm text-white border-none flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-white/20`}
+                    disabled={currentPage <= 1}
+                  >
+                    <IoIosArrowBack className="text-xl" />
+                    <span>Prev</span>
+                  </button>
+
+                  {totalPages > 1 && (
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="number"
+                        value={pageInput}
+                        onChange={handlePageInput}
+                        min={1}
+                        max={totalPages}
+                        className="w-12 input input-bordered input-sm text-center text-base bg-white/10 text-white border-white/20"
+                      />
+                      <span className="text-gray-300">/ {totalPages}</span>
+                    </div>
+                  )}
+
+                  <button
+                    onClick={() => currentPage < totalPages && setCurrentPage(currentPage + 1)}
+                    className={`btn ${currentPage < totalPages ? 'bg-white/10 hover:bg-white/20' : 'bg-white/5 cursor-not-allowed'} backdrop-blur-sm text-white border-none flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-white/20`}
+                    disabled={currentPage >= totalPages}
+                  >
+                    <span>Next</span>
+                    <IoIosArrowForward className="text-xl" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Desktop Pagination Buttons */}
+              <div className="hidden sm:block">
+                {currentPage > 1 && (
+                  <button
+                    onClick={() => setCurrentPage(currentPage - 1)}
+                    className="btn bg-white/10 backdrop-blur-sm text-white border-none flex-shrink-0 w-16 h-16 text-2xl absolute -left-20 top-1/2 -mt-8 z-10 rounded-full hover:bg-white/20 transition-all duration-300 shadow-lg hover:shadow-xl border border-white/20 hover:border-white/40"
+                  >
+                    <IoIosArrowBack />
+                  </button>
+                )}
+
+                {currentPage < totalPages && (
+                  <button
+                    onClick={() => setCurrentPage(currentPage + 1)}
+                    className="btn bg-white/10 backdrop-blur-sm text-white border-none flex-shrink-0 w-16 h-16 text-2xl absolute -right-20 top-1/2 -mt-8 z-10 rounded-full hover:bg-white/20 transition-all duration-300 shadow-lg hover:shadow-xl border border-white/20 hover:border-white/40"
+                  >
+                    <IoIosArrowForward />
+                  </button>
+                )}
+              </div>
             </div>
 
-            {/* Page Number Display */}
+            {/* Desktop Page Number Display */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-center mt-4">
+              <div className="hidden sm:flex items-center justify-center mt-4">
                 <div className="flex items-center space-x-2">
                   <input
                     type="number"

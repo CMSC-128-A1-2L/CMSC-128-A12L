@@ -27,6 +27,8 @@ interface JobDetailsProps {
   onEditClick: () => void;
   onDeleteClick: () => void;
   canEdit?: boolean;
+  isOwnJob?: boolean;
+  jobId: string;
 }
 
 export default function JobDetails({
@@ -43,6 +45,8 @@ export default function JobDetails({
   onEditClick,
   onDeleteClick,
   canEdit = false,
+  isOwnJob = false,
+  jobId,
 }: JobDetailsProps) {
   useEffect(() => {
     const modal = document.getElementById("job_details_modal") as HTMLDialogElement;
@@ -182,12 +186,22 @@ export default function JobDetails({
               </button>
             </>
           )}
-          <button
-            onClick={onApplyClick}
-            className="px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-200 rounded-lg transition-colors border border-blue-500/20"
-          >
-            Apply Now
-          </button>
+          {!isOwnJob ? (
+            <button
+              onClick={onApplyClick}
+              className="px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-200 rounded-lg transition-colors border border-blue-500/20"
+            >
+              Apply Now
+            </button>
+          ) : (
+            <button
+              disabled
+              className="px-4 py-2 bg-gray-500/20 text-gray-400 rounded-lg border border-gray-500/20 cursor-not-allowed"
+              title="You cannot apply to your own job posting"
+            >
+              Apply Now
+            </button>
+          )}
         </div>
       </motion.div>
 

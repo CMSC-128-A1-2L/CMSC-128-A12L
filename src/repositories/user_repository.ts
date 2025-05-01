@@ -4,6 +4,7 @@ import { mapUserDtoToUser, mapUserToUserDto } from "@/mappers/user";
 import { UserDto, UserRoleDto, UserSchema } from "@/models/user";
 import { Connection, Model } from "mongoose";
 import { getUserCredentialRepository } from "./user_credentials_repository";
+import { ObjectId } from "mongodb";
 
 /**
  * A repository for managing data of registered users.
@@ -65,6 +66,14 @@ export interface UserRepository {
      * @returns A promise that resolves to an array of alumni users.
      */
     getAllAlumni(): Promise<User[]>;
+
+    /**
+     * Gets a user by job ID from the repository.
+     * 
+     * @param jobId The job ID associated with the user.
+     * @returns A promise that resolves to either the fetched user or `null` if the user does not exist.
+     */
+    getUserByJobId(jobId: string): Promise<User | null>;
 }
 
 class MongoDBUserRepository implements UserRepository {
@@ -134,6 +143,17 @@ class MongoDBUserRepository implements UserRepository {
             role: { $bitsAllSet: UserRoleDto.ALUMNI }
         });
         return userDtos.map(mapUserDtoToUser);
+    }
+
+    async getUserByJobId(jobId: string): Promise<User | null> {
+        const result = await this.connection.collection("opportunities").findOne(
+            { _id: new ObjectId(jobId) },
+            { projection: { userId: 1 } }
+        );
+
+        if (!result) return null;
+
+        return this.getUserById(result.userId);
     }
 
     constructor(connection: Connection) {

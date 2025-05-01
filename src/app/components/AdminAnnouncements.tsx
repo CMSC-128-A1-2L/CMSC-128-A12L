@@ -110,7 +110,7 @@ export default function AdminAnnouncements() {
       </div>
 
       {/* Form Section */}
-      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:shadow-md transition-shadow duration-200">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Announcement Title</label>
@@ -137,37 +137,41 @@ export default function AdminAnnouncements() {
             />
           </div>
 
-          <div className="flex gap-6">
+          {/* Controls Section - Modified for mobile responsiveness */}
+          <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <label className="block text-sm font-medium text-gray-700 mb-2">Visibility</label>
               <select
                 value={newAnnouncement.visibility}
                 onChange={(e) => setNewAnnouncement({ ...newAnnouncement, visibility: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50"
+                className="w-full px-4 py-3 rounded-xl border border-gray-200 text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 cursor-pointer"
               >
                 <option value="all">All Users</option>
                 <option value="alumni">Alumni Only</option>
                 <option value="admin">Admin Only</option>
               </select>
             </div>
-            <div className="flex-1 flex items-center">
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={newAnnouncement.isPinned}
-                  onChange={(e) => setNewAnnouncement({ ...newAnnouncement, isPinned: e.target.checked })}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                <span className="ms-3 text-sm font-medium text-gray-700">Pin Announcement</span>
-              </label>
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-700 mb-2 sm:opacity-0">Options</label>
+              <div className="flex items-center h-[46px]">
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={newAnnouncement.isPinned}
+                    onChange={(e) => setNewAnnouncement({ ...newAnnouncement, isPinned: e.target.checked })}
+                    className="sr-only peer"
+                  />
+                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                  <span className="ms-3 text-sm font-medium text-gray-700">Pin Announcement</span>
+                </label>
+              </div>
             </div>
           </div>
 
-          <div className="flex gap-4 pt-4">
+          <div className="flex flex-col sm:flex-row gap-4">
             <button
               type="submit"
-              className="flex-1 py-3 px-6 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl"
+              className="flex-1 py-3 px-6 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl cursor-pointer"
             >
               <Bell className="h-5 w-5" />
               {isEditing ? "Update" : "Post"} Announcement
@@ -176,7 +180,7 @@ export default function AdminAnnouncements() {
               <button
                 type="button"
                 onClick={resetForm}
-                className="flex-1 py-3 px-6 bg-gray-100 text-gray-700 font-medium rounded-xl hover:bg-gray-200 transition-colors duration-200 flex items-center justify-center gap-2"
+                className="flex-1 py-3 px-6 bg-gray-100 text-gray-700 font-medium rounded-xl hover:bg-gray-200 transition-colors duration-200 flex items-center justify-center gap-2 cursor-pointer"
               >
                 Cancel
               </button>
@@ -227,15 +231,15 @@ export default function AdminAnnouncements() {
                     setIsEditing(true);
                     setEditingId(announcement._id || null);
                   }}
-                  className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                  className="p-2 text-gray-500 hover:text-blue-600 transition-colors duration-200 cursor-pointer"
                 >
-                  <Edit2 size={16} />
+                  <Edit2 size={18} />
                 </button>
                 <button
                   onClick={() => announcement._id && handleDelete(announcement._id)}
-                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                  className="p-2 text-gray-500 hover:text-red-600 transition-colors duration-200 cursor-pointer"
                 >
-                  <Trash2 size={16} />
+                  <Trash2 size={18} />
                 </button>
               </div>
             </div>
