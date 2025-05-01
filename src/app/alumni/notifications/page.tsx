@@ -8,9 +8,8 @@ import { useState, useEffect } from "react";
 import { Trash } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import ConstellationBackground from "@/app/components/constellationBackground";
 import { Notification } from "@/entities/notifications";
-import { motion } from "framer-motion";
+import ConstellationBackground from "@/app/components/constellationBackground";
 
 export default function NotificationsPage() {
   const { data: session, status } = useSession();
@@ -236,7 +235,7 @@ export default function NotificationsPage() {
                         }}
                         className="px-3 py-1 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-xs flex items-center cursor-pointer"
                       >
-                        <Trash size={14} className="mr-1" />
+                        <Trash size={12} className="mr-1" />
                         Delete
                       </button>
                     )}
