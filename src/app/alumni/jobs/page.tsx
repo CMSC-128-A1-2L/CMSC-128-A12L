@@ -12,6 +12,7 @@ import { toast } from "react-hot-toast";
 import ConstellationBackground from "@/app/components/constellationBackground";
 import useIsMobile from '@/hooks/useIsMobile';
 import MobileJobView from '@/app/components/MobileJobView';
+import Footer from "@/app/components/footer";
 import {
   Search,
   LayoutGrid,
@@ -581,6 +582,7 @@ export default function JobListings() {
           }}
         />
       )}
+      <Footer />
     </div>
   );
 }

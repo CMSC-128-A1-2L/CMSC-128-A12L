@@ -6,6 +6,7 @@ import { ArrowRight, MessageSquare } from "lucide-react";
 import { motion } from "framer-motion";
 import ConstellationBackground from "@/app/components/constellationBackground";
 import AnnouncementModal from "@/app/components/announcementModal";
+import Footer from "@/app/components/footer";
 
 interface RawAnnouncement {
   _id: string;
@@ -66,7 +67,7 @@ export default function AnnouncementsPage() {
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen flex flex-col">
       {/* Hero Section */}
       <div className="relative text-white -mt-16 pt-16 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-[#1a1f4d]/90 to-[#2a3f8f]/90"></div>
@@ -89,12 +90,12 @@ export default function AnnouncementsPage() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="flex-grow">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12"
         >
           {announcements.map((announcement) => (
             <motion.div
@@ -136,6 +137,9 @@ export default function AnnouncementsPage() {
         onClose={() => setSelectedAnnouncement(null)}
         announcement={selectedAnnouncement}
       />
+
+      {/* Footer */}
+      <Footer />
     </div>
   );
 }

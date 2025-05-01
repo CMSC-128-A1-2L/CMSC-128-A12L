@@ -8,6 +8,7 @@ import JobDetails from './jobDetails';
 import MobileFilterDrawer from './MobileFilterDrawer';
 
 import { useSession } from "next-auth/react";
+import Footer from './footer';
 
 interface MobileJobViewProps {
   jobs: any[];
@@ -187,7 +188,7 @@ export default function MobileJobView({
 
             {/* Pagination */}
             {totalPages > 1 && (
-              <div className="flex justify-center items-center gap-4 mt-8">
+              <div className="flex justify-center items-center gap-4 mt-8 mb-6">
                 <button
                   onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
@@ -246,6 +247,7 @@ export default function MobileJobView({
       >
         <Plus size={24} />
       </button>
+      <Footer />
     </div>
   );
 }
