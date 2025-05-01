@@ -127,26 +127,26 @@ export default function AdminLogs() {
   };
 
   return (
-    <div className="w-full px-4 md:px-6">
+    <div className="w-full px-2 sm:px-4 md:px-6">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="bg-white/10 backdrop-blur-md shadow-xl rounded-3xl p-4 md:p-6 w-full"
+        className="bg-white/10 backdrop-blur-md shadow-xl rounded-xl sm:rounded-3xl p-3 sm:p-4 md:p-6 w-full"
       >
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 sm:mb-6">
           <h2
-            className="text-2xl md:text-3xl font-bold text-gray-800 mb-4 md:mb-0 flex items-center"
+            className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800 mb-3 sm:mb-4 md:mb-0 flex items-center"
             style={{ fontFamily: "Montserrat, sans-serif" }}
           >
-            <Activity className="w-8 h-8 mr-3 text-blue-600" />
+            <Activity className="w-6 h-6 sm:w-8 sm:h-8 mr-2 sm:mr-3 text-blue-600" />
             System Logs
           </h2>
-          <div className="flex space-x-2">
+          <div className="flex space-x-2 w-full md:w-auto">
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center cursor-pointer"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center w-full md:w-auto"
             >
               <Download className="w-4 h-4 mr-2" />
               Export
@@ -155,14 +155,14 @@ export default function AdminLogs() {
         </div>
 
         {/* Tabs - Scrollable on mobile */}
-        <div className="flex overflow-x-auto mb-6 pb-2 -mx-4 px-4 md:mx-0 md:px-0">
+        <div className="flex overflow-x-auto mb-4 sm:mb-6 pb-2 -mx-3 sm:-mx-4 px-3 sm:px-4 md:mx-0 md:px-0 scrollbar-hide">
           {['ALL', 'GET', 'POST', 'PUT', 'DELETE'].map((tab) => (
             <motion.button
               key={tab}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 mr-2 rounded-lg whitespace-nowrap flex-shrink-0 cursor-pointer ${
+              className={`px-3 sm:px-4 py-2 mr-2 rounded-lg whitespace-nowrap flex-shrink-0 cursor-pointer text-sm sm:text-base ${
                 activeTab === tab 
                   ? 'bg-blue-600 text-white font-semibold' 
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -174,7 +174,7 @@ export default function AdminLogs() {
         </div>
 
         {/* Search and Filter - Stack on mobile */}
-        <div className="flex flex-col md:flex-row gap-4 mb-6">
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-4 sm:mb-6">
           <div className="relative flex-grow">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <input
@@ -182,16 +182,16 @@ export default function AdminLogs() {
               placeholder="Search logs..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-100 text-gray-800 placeholder-gray-500 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-100 text-gray-800 placeholder-gray-500 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
             />
           </div>
-          <div className="flex space-x-2">
-            <div className="relative">
+          <div className="flex w-full sm:w-auto">
+            <div className="relative flex-grow sm:flex-grow-0">
               <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <select
                 value={dateRange}
                 onChange={(e) => setDateRange(e.target.value)}
-                className="pl-10 pr-4 py-2 rounded-lg bg-gray-100 text-gray-800 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none"
+                className="w-full sm:w-auto pl-10 pr-4 py-2 rounded-lg bg-gray-100 text-gray-800 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none text-sm sm:text-base"
               >
                 <option value="today" className="bg-white text-gray-800">Today</option>
                 <option value="yesterday" className="bg-white text-gray-800">Yesterday</option>
@@ -204,30 +204,30 @@ export default function AdminLogs() {
         </div>
 
         {/* Mobile Card View */}
-        <div className="md:hidden space-y-4">
+        <div className="md:hidden space-y-3">
           {currentItems.map((log) => (
             <motion.div
               key={log._id}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.3 }}
-              className="bg-white rounded-lg shadow p-4 space-y-3"
+              className="bg-white rounded-lg shadow-sm p-3 space-y-2 border border-gray-100"
             >
               <div className="flex items-center space-x-3">
-                <div className="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
-                  <User className="w-5 h-5 text-gray-600" />
+                <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 bg-gray-100 rounded-full flex items-center justify-center">
+                  <User className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
                 </div>
                 <div>
-                  <div className="font-medium text-gray-900">{log.name}</div>
-                  <div className="text-sm text-gray-500">{log.ipAddress}</div>
+                  <div className="font-medium text-gray-900 text-sm sm:text-base">{log.name}</div>
+                  <div className="text-xs sm:text-sm text-gray-500">{log.ipAddress}</div>
                 </div>
               </div>
-              <div className="flex items-center text-sm text-gray-600">
-                <Activity className="w-4 h-4 mr-2" />
-                <span>{log.action}</span>
+              <div className="flex items-center text-xs sm:text-sm text-gray-600">
+                <Activity className="w-4 h-4 mr-2 flex-shrink-0" />
+                <span className="truncate">{log.action}</span>
               </div>
-              <div className="flex items-center text-sm text-gray-600">
-                <Clock className="w-4 h-4 mr-2" />
+              <div className="flex items-center text-xs sm:text-sm text-gray-600">
+                <Clock className="w-4 h-4 mr-2 flex-shrink-0" />
                 <span>{new Date(log.timestamp).toLocaleString()}</span>
               </div>
             </motion.div>
@@ -247,36 +247,29 @@ export default function AdminLogs() {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {currentItems.map((log) => (
-                <motion.tr 
+                <motion.tr
                   key={log._id}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.3 }}
-                  className="hover:bg-gray-50 transition-colors"
                 >
-                  <td className="px-6 py-4 whitespace-nowrap text-gray-800">
+                  <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
-                      <div className="flex-shrink-0 h-8 w-8 bg-gray-200 rounded-full flex items-center justify-center">
-                        <User className="w-4 h-4 text-gray-600" />
+                      <div className="flex-shrink-0 h-10 w-10 bg-gray-100 rounded-full flex items-center justify-center">
+                        <User className="w-5 h-5 text-gray-600" />
                       </div>
-                      <div className="ml-3">
-                        <div className="text-sm font-medium">{log.name}</div>
+                      <div className="ml-4">
+                        <div className="text-sm font-medium text-gray-900">{log.name}</div>
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-gray-800">
-                    <div className="flex items-center">
-                      <Activity className="w-4 h-4 mr-2 text-gray-600" />
-                      <span>{log.action}</span>
-                    </div>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span className="text-sm text-gray-900">{log.action}</span>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-gray-800">
-                    <div className="flex items-center">
-                      <Clock className="w-4 h-4 mr-2 text-gray-600" />
-                      <span>{new Date(log.timestamp).toLocaleString()}</span>
-                    </div>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                    {new Date(log.timestamp).toLocaleString()}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-gray-800">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {log.ipAddress}
                   </td>
                 </motion.tr>
@@ -285,55 +278,42 @@ export default function AdminLogs() {
           </table>
         </div>
 
-        {/* Pagination - Responsive */}
-        <div className="flex flex-col md:flex-row justify-between items-center mt-6 space-y-4 md:space-y-0">
-          <div className="text-gray-600 text-sm text-center md:text-left">
-            Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredLogs.length)} of {filteredLogs.length} entries
-          </div>
-          <div className="flex space-x-2">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+        {/* Pagination */}
+        <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row items-center justify-between space-y-3 sm:space-y-0">
+          <div className="flex justify-center sm:justify-start space-x-2 w-full sm:w-auto order-2 sm:order-1">
+            <button
               onClick={handlePreviousPage}
               disabled={currentPage === 1}
-              className={`px-3 py-1 md:px-4 md:py-2 rounded-lg cursor-pointer ${
-                currentPage === 1 
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+              className="px-3 py-1 text-sm rounded-md bg-gray-100 text-gray-700 disabled:opacity-50"
             >
-              Previous
-            </motion.button>
+              Prev
+            </button>
             {getPageNumbers().map((number) => (
-              <motion.button
+              <button
                 key={number}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
                 onClick={() => handlePageChange(number)}
-                className={`px-3 py-1 md:px-4 md:py-2 rounded-lg cursor-pointer ${
+                className={`px-3 py-1 text-sm rounded-md ${
                   currentPage === number
-                    ? 'bg-blue-600 text-white font-semibold'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700'
                 }`}
               >
                 {number}
-              </motion.button>
+              </button>
             ))}
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+            <button
               onClick={handleNextPage}
               disabled={currentPage === totalPages}
-              className={`px-3 py-1 md:px-4 md:py-2 rounded-lg cursor-pointer ${
-                currentPage === totalPages
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+              className="px-3 py-1 text-sm rounded-md bg-gray-100 text-gray-700 disabled:opacity-50"
             >
               Next
-            </motion.button>
+            </button>
+          </div>
+          <div className="text-sm text-gray-500 order-1 sm:order-2">
+            Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredLogs.length)} of {filteredLogs.length} entries
           </div>
         </div>
+
       </motion.div>
     </div>
   );

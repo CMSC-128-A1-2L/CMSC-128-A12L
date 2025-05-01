@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
                     ? 'maya' as PaymentMethod 
                     : 'stripe' as PaymentMethod
             }));
-        
+
         return NextResponse.json(userDonations, { status: 200 });
     } catch (error) {
         console.error("Failed to fetch user donations:", error);
