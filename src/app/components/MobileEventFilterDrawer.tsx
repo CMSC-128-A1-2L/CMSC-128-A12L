@@ -91,7 +91,7 @@ export default function MobileEventFilterDrawer({
                       {type.charAt(0).toUpperCase() + type.slice(1)}
                     </label>
                   ))}
-                </div>
+                </div> 
               </div>
             </div>
 
