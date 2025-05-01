@@ -1,7 +1,7 @@
 "use client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, ChevronLeft, ChevronRight, Search, LayoutList, LayoutGrid, ImageIcon, Filter } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, Search, LayoutList, LayoutGrid, Filter } from "lucide-react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import ConstellationBackground from "@/app/components/constellationBackground";
@@ -59,76 +59,6 @@ export default function NewslettersPage() {
 
     fetchNewsletters();
   }, []);
-
-  // Temporary data
-  const newslettersList = [
-    {
-      _id: 1,
-      tags: "Event",
-      title: "Annual Alumni Homecoming",
-      content: "Join us for our annual homecoming event on December 15th, 2024. Reconnect with old friends and make new connections!",
-      authorId: "",
-      publishDate: "2024-12-15",
-      isPinned: true,
-      attachments: [],
-      thumbnail: "",
-    },
-    {
-      _id: 2,
-      tags: "Program",
-      title: "New Career Development Program",
-      content: "We're launching a new career development program for recent graduates. Applications open next month.",
-      authorId: "",
-      publishDate: "2024-12-15",
-      isPinned: true,
-      attachments: [],
-      thumbnail: "",
-    },
-    {
-      _id: 3,
-      tags: "Survey",
-      title: "Alumni Survey",
-      content: "Help us improve our alumni services by participating in our annual survey.",
-      authorId: "",
-      publishDate: "2024-12-15",
-      isPinned: true,
-      attachments: [],
-      thumbnail: "",
-    },
-    {
-      _id: 4,
-      tags: "Event",
-      title: "Alumni Fun Run Event",
-      content: "Join us for a fun run event on the 20th of May. All alumni are welcome to participate!",
-      authorId: "",
-      publishDate: "2024-12-15",
-      isPinned: true,
-      attachments: [],
-      thumbnail: "",
-    },
-    {
-      _id: 5,
-      tags: "Event",
-      title: "Campus Tour",
-      content: "Tag along as we tour the campus and see the latest developments.",
-      authorId: "",
-      publishDate: "2024-12-15",
-      isPinned: false,
-      attachments: [],
-      thumbnail: "",
-    },
-    {
-      _id: 6,
-      tags: "Event",
-      title: "Alumni Game Night",
-      content: "Need some time to unwind? Join us for a game night on the 12th of June.",
-      authorId: "",
-      publishDate: "2024-12-15",
-      isPinned: false,
-      attachments: [],
-      thumbnail: "",
-    },
-  ];
 
   const toggleView = () => setIsGridView(!isGridView);
 
@@ -238,7 +168,6 @@ export default function NewslettersPage() {
         ) : (
           <div className="relative h-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
             <div className="text-center">
-              <ImageIcon className="w-12 h-12 mx-auto mb-2 text-white/40" />
               <h3 className="text-xl font-bold text-white/80 line-clamp-2">{newsletter.title}</h3>
             </div>
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -252,9 +181,6 @@ export default function NewslettersPage() {
         <h3 className="text-xl font-semibold text-white mb-2">
           {newsletter.title}
         </h3>
-        <p className="text-gray-200 text-sm mb-4">
-          {newsletter.content}
-        </p>
         <div className="flex items-center justify-between">
           <span className="text-sm text-gray-400">
             {new Date(newsletter.publishDate).toLocaleDateString()}
@@ -284,7 +210,6 @@ export default function NewslettersPage() {
           ) : (
             <div className="relative h-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
               <div className="text-center">
-                <ImageIcon className="w-8 h-8 mx-auto mb-2 text-white/40" />
                 <h3 className="text-sm font-bold text-white/80 line-clamp-2">{newsletter.title}</h3>
               </div>
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -301,9 +226,6 @@ export default function NewslettersPage() {
           <h3 className="text-xl font-semibold text-white mb-2">
             {newsletter.title}
           </h3>
-          <p className="text-gray-200 text-sm mb-4">
-            {newsletter.content}
-          </p>
           <div className="flex justify-end">
             <ArrowRight className="w-5 h-5 text-gray-400" />
           </div>
@@ -358,7 +280,6 @@ export default function NewslettersPage() {
                 ) : (
                   <div className="relative h-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
                     <div className="text-center">
-                      <ImageIcon className="w-16 h-16 mx-auto mb-4 text-white/40" />
                       <h3 className="text-3xl font-bold text-white/80">{newsletters[0].title}</h3>
                     </div>
                     <div className="absolute inset-0 bg-gradient-to-t from-[#1a1f4d] via-[#1a1f4d]/80 to-transparent" />
@@ -374,13 +295,13 @@ export default function NewslettersPage() {
                   <h2 className="text-3xl font-bold mb-4 text-white">
                     {newsletters[0].title}
                   </h2>
-                  <p className="text-lg text-gray-200 mb-6">
-                    {newsletters[0].content}
-                  </p>
-                  <div className="flex justify-end">
+                  <div className="flex items-start gap-6">
+                    <p className="text-lg text-gray-200 flex-1 line-clamp-3">
+                      {newsletters[0].content.split(' ').slice(0, 20).join(' ')}...
+                    </p>
                     <Button 
                       variant="secondary" 
-                      className="bg-white text-[#1a1f4d] hover:bg-gray-100 cursor-pointer"
+                      className="bg-white text-[#1a1f4d] hover:bg-gray-100 cursor-pointer flex-shrink-0"
                       onClick={() => handleNewsletterDetails(newsletters[0])}
                     >
                       Learn More
