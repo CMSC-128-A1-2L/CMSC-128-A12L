@@ -18,6 +18,7 @@ interface EventDetailsProps {
   date: Date;
   description: string;
   isOpen: boolean;
+  eventStatus: string;
   onClose: () => void;
   onRSVPClick: () => void;
   imageUrl?: string;
@@ -34,6 +35,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({
   location,
   date,
   endDate,
+  eventStatus,
   description,
   isOpen,
   onClose,
@@ -146,8 +148,13 @@ const EventDetails: React.FC<EventDetailsProps> = ({
 
           {/* Single Action Button */}
           <button
+            disabled={eventStatus === "finished"}
             onClick={onRSVPClick}
-            className="btn w-full bg-blue-500/20 hover:bg-blue-500/30 text-blue-200 border border-blue-500/20"
+            className={`btn w-full rounded-lg border 
+              ${eventStatus === "finished" 
+                ? "bg-gray-400 text-gray-200 border-gray-300 cursor-not-allowed opacity-60 hover:bg-gray-400" 
+                : "bg-blue-500/20 hover:bg-blue-500/30 text-blue-200 border-blue-500/20"}
+            `}
           >
             RSVP Now
           </button>

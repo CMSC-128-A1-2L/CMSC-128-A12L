@@ -25,9 +25,23 @@ export default function Navbar({
   const { unreadCount, loading } = useUnreadNotificationCount();
   
   // Determine the role label and profile path based on the user's role
+  const getRole = () => {
+    if(session?.user?.role?.includes(UserRole.ADMIN) && session?.user?.role?.includes(UserRole.ALUMNI)){
+      return "Alumni Admin"
+    }
+    else if (session?.user?.role?.includes(UserRole.ADMIN)){
+      return "Admin"
+    }
+    else if (session?.user?.role?.includes(UserRole.ALUMNI)){
+      return "Alumni"
+    }
+    else{
+      return "Unknown"
+    }
+  }
+  const currentRole = getRole();
   const isAdmin = session?.user?.role?.includes(UserRole.ADMIN);
-  const roleLabel = isAdmin ? "Admin" : "Alumni";
-  const profilePath = isAdmin ? "/admin/profile" : "/alumni/profile";
+  const profilePath = "/alumni/profile"
   
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
@@ -67,7 +81,7 @@ export default function Navbar({
                 </svg>
               </div>
               <span className="mx-2 text-gray-300/50 hidden sm:inline">•</span>
-              <span className="text-sm text-gray-300 hidden sm:inline">{roleLabel}</span>
+              <span className="text-sm text-gray-300 hidden sm:inline">{currentRole}</span>
             </motion.div>
           </Link>
         </div>
@@ -76,7 +90,7 @@ export default function Navbar({
         <div className="hidden md:flex items-center space-x-8">
           {session ? (
             <>
-              {session?.user.role.includes(UserRole.ALUMNI) && (
+              {(session?.user.role.includes(UserRole.ALUMNI) && pathname?.includes('/alumni')) && (
                 <>
                   <Link href="/alumni/notifications" className="text-sm font-medium hover:text-gray-200 transition-colors relative group">
                     <span className="flex items-center">

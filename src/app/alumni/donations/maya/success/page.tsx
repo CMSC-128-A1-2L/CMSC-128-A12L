@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { CheckCircle } from 'lucide-react';
 import ConstellationBackground from "@/app/components/constellationBackground";
 
-export default function StripeDonationSuccess() {
+export default function MayaDonationSuccess() {
     return (
         <div className="min-h-screen">
             {/* Hero Section */}
@@ -49,7 +49,7 @@ export default function StripeDonationSuccess() {
                     <div className="flex justify-center gap-4">
                         <Link 
                             href="/alumni/donations" 
-                            className="inline-block bg-purple-600 hover:bg-purple-700 text-white font-medium py-2 px-6 rounded transition-colors"
+                            className="inline-block bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-6 rounded transition-colors"
                         >
                             Return to Donations
                         </Link>

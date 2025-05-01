@@ -144,7 +144,7 @@ export default function CreateJL({ onClose, onSuccess }: { onClose: () => void, 
                 <option value="">Select work mode</option>
                 <option value="remote">Remote</option>
                 <option value="hybrid">Hybrid</option>
-                <option value="onsite">On-site</option>
+                <option value="on-site">On-site</option>
               </select>
             </div>
           </div>

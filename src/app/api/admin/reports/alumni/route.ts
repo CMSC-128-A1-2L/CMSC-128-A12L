@@ -2,26 +2,31 @@ import { NextResponse } from "next/server";
 import { getUserRepository } from "@/repositories/user_repository";
 import { User } from "@/entities/user";
 
+const FOUNDING_YEAR = 1909; 
+
 export async function GET(){
     try{
         const userRepository = getUserRepository();
         const alumniList: User[] = await userRepository.getAllAlumni();
+        const currentYear = new Date().getFullYear();
 
         // Alumni per Graduation Year
         const alumniByGradYear: {[key: number]: number} = {};
         for (const alumni of alumniList){
-            if(alumni.graduationYear){
+            if(alumni.graduationYear && 
+               alumni.graduationYear >= FOUNDING_YEAR && 
+               alumni.graduationYear <= currentYear){
                 const key = alumni.graduationYear;
                 alumniByGradYear[key] = (alumniByGradYear[key] || 0) + 1; 
             }
         }
 
-        const alumniPerGraduationYear = Object.entries(alumniByGradYear).map(([key, count]) => {
-            return {
+        const alumniPerGraduationYear = Object.entries(alumniByGradYear)
+            .map(([key, count]) => ({
                 year: key,
                 numOfAlumniPerGradYear: count,
-            }
-        })
+            }))
+            .sort((a, b) => parseInt(a.year) - parseInt(b.year)); // Sort by year
 
         // Distribution by Field
         const alumniByField: {[key: string]: number} = {};
@@ -40,8 +45,6 @@ export async function GET(){
         })
         
         // Monthly Active Alumni Report
-        const currentYear = new Date().getFullYear();
-
         const activeAlumniByMonth: {[key: string]: number} = {};
         for (const alumni of alumniList){
             const lastUpdate = new Date(alumni.updatedAt!);

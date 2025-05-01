@@ -26,8 +26,8 @@ export async function POST() {
                 },
             ],
             mode: 'payment',
-            success_url: `${origin}/stripe-donation/success?session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url:`${origin}/stripe-donation/?canceled=true`,
+            success_url: `${origin}/alumni/donations/stripe/success?session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${origin}/alumni/donations/stripe/failure`,
             
         });
         return NextResponse.redirect(session.url ?? '', 303);
