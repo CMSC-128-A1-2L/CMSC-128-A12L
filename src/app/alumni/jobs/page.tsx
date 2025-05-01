@@ -464,29 +464,31 @@ export default function JobListings() {
                       >
                         {isGridView ? (
                           <JobCard
-                          tags={job.tags}
-                          workMode={job.workMode.charAt(0).toUpperCase() + job.workMode.slice(1)}
-                          position={job.position}
-                          title={job.title}
-                          company={job.company}
-                          location={job.location}
-                          description={job.description}
-                          imageUrl={job.imageUrl}
-                          onDetailsClick={() => handleJobDetails(job)}
-                          onApplyClick={() => handleApply(job.title)}
+                            tags={job.tags}
+                            workMode={job.workMode.charAt(0).toUpperCase() + job.workMode.slice(1)}
+                            position={job.position}
+                            title={job.title}
+                            company={job.company}
+                            location={job.location}
+                            description={job.description}
+                            imageUrl={job.imageUrl}
+                            onDetailsClick={() => handleJobDetails(job)}
+                            onApplyClick={() => handleApply(job.title)}
+                            isOwnJob={job.userId === session?.user?.id}
                           />
                         ) : (
                           <JobRow
                             tags={job.tags}
-                              workMode={job.workMode.charAt(0).toUpperCase() + job.workMode.slice(1)}
-                              position={job.position}
-                              title={job.title}
-                              company={job.company}
-                              location={job.location}
-                              description={job.description}
-                              imageUrl={job.imageUrl}
-                              onDetailsClick={() => handleJobDetails(job)}
-                              onApplyClick={() => handleApply(job.title)}
+                            workMode={job.workMode.charAt(0).toUpperCase() + job.workMode.slice(1)}
+                            position={job.position}
+                            title={job.title}
+                            company={job.company}
+                            location={job.location}
+                            description={job.description}
+                            imageUrl={job.imageUrl}
+                            onDetailsClick={() => handleJobDetails(job)}
+                            onApplyClick={() => handleApply(job.title)}
+                            isOwnJob={job.userId === session?.user?.id}
                           />
                         )}
                       </motion.div>
@@ -531,6 +533,7 @@ export default function JobListings() {
                     onEditClick={() => handleEditClick(selectedJob)}
                     onDeleteClick={() => handleDelete(selectedJob)}
                     canEdit={selectedJob.userId === session?.user?.id}
+                    isOwnJob={selectedJob.userId === session?.user?.id}
                   />
                 )}
 
