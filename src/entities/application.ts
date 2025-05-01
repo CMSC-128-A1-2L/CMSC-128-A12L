@@ -1,8 +1,7 @@
 export enum ApplicationStatus {
-    PENDING = "pending",
-    ACCEPTED = "accepted",
-    REJECTED = "rejected",
-    WITHDRAWN = "withdrawn"
+    PENDING = 'PENDING',
+    ACCEPTED = 'ACCEPTED',
+    REJECTED = 'REJECTED'
 }
 
 export interface Application {
@@ -11,7 +10,11 @@ export interface Application {
     jobId: string;
     status: ApplicationStatus;
     appliedAt: Date;
-    updatedAt?: Date;
     coverLetter?: string;
     resumeUrl?: string;
+    fullName: string;
+    email: string;
+    phone: string;
+    portfolio?: string;
+    updatedAt?: Date;
 }

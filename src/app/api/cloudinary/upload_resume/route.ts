@@ -28,25 +28,27 @@ export async function POST(request: NextRequest) {
     }
 
     // Check file type
-    if (file.type !== 'application/pdf') {
+    if (file.type !== 'application/pdf' && !file.type.includes('msword') && !file.type.includes('officedocument')) {
       return NextResponse.json(
-        { error: 'File must be a PDF' },
+        { error: 'File must be a PDF or Word document' },
         { status: 400 }
       );
     }
 
+    // Convert file to base64
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
     const base64String = buffer.toString('base64');
     const dataURI = `data:${file.type};base64,${base64String}`;
 
+    // Upload to Cloudinary
     const result = await cloudinary.uploader.upload(dataURI, {
       resource_type: 'raw',
-      folder: 'job_applications',
-      format: 'pdf',
-      transformation: [
-        { quality: 'auto' }
-      ]
+      folder: 'job_applications/resumes',
+      allowed_formats: ['pdf', 'doc', 'docx'],
+      format: file.type.includes('pdf') ? 'pdf' : 'doc',
+      use_filename: true,
+      unique_filename: true
     });
 
     return NextResponse.json({

@@ -10,7 +10,11 @@ export function mapApplicationDtoToApplication(applicationDto: ApplicationDto): 
         appliedAt: applicationDto.appliedAt,
         updatedAt: applicationDto.updatedAt,
         coverLetter: applicationDto.coverLetter,
-        resumeUrl: applicationDto.resumeUrl
+        resumeUrl: applicationDto.resumeUrl,
+        fullName: applicationDto.fullName,
+        email: applicationDto.email,
+        phone: applicationDto.phone,
+        portfolio: applicationDto.portfolio
     };
 }
 
@@ -23,6 +27,10 @@ export function mapApplicationToApplicationDto(application: Application): Applic
         appliedAt: application.appliedAt,
         updatedAt: application.updatedAt,
         coverLetter: application.coverLetter,
-        resumeUrl: application.resumeUrl
+        resumeUrl: application.resumeUrl,
+        fullName: application.fullName,
+        email: application.email,
+        phone: application.phone,
+        portfolio: application.portfolio
     };
 }

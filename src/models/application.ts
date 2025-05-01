@@ -10,6 +10,10 @@ export interface ApplicationDto {
     updatedAt?: Date;
     coverLetter?: string;
     resumeUrl?: string;
+    fullName: string;
+    email: string;
+    phone: string;
+    portfolio?: string;
 }
 
 export const ApplicationSchema = new Schema<ApplicationDto>({
@@ -24,7 +28,11 @@ export const ApplicationSchema = new Schema<ApplicationDto>({
     appliedAt: { type: Date, required: true, default: Date.now },
     updatedAt: { type: Date },
     coverLetter: { type: String },
-    resumeUrl: { type: String }
+    resumeUrl: { type: String },
+    fullName: { type: String, required: true },
+    email: { type: String, required: true },
+    phone: { type: String, required: true },
+    portfolio: { type: String }
 }, {
     timestamps: { createdAt: 'appliedAt', updatedAt: 'updatedAt' }
 });

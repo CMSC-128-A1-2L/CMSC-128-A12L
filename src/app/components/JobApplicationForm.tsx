@@ -29,6 +29,7 @@ export default function JobApplicationForm({
     resumeUrl: '',
     portfolio: ''
   });
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   // Add useEffect to handle modal visibility
   useEffect(() => {
@@ -38,20 +39,85 @@ export default function JobApplicationForm({
     }
   }, []);
 
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.includes('pdf') && !file.type.includes('document')) {
+      toast.error('Please upload a PDF or Word document');
+      return;
+    }
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('File size must be less than 5MB');
+      return;
+    }
+
+    setSelectedFile(file);
+    // Create a temporary URL for preview
+    setFormData(prev => ({ ...prev, resumeUrl: URL.createObjectURL(file) }));
+  };
+
+  const uploadResume = async (file: File): Promise<string> => {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch('/api/cloudinary/upload_resume', {
+      method: 'POST',
+      body: formData
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to upload resume');
+    }
+
+    const data = await response.json();
+    return data.url;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!selectedFile) {
+      toast.error('Please upload your resume');
+      return;
+    }
+
     try {
       setLoading(true);
-      // Here we would typically send the application data to an API endpoint
-      // For now, we'll simulate a successful submission
-      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // First upload the resume to Cloudinary
+      const resumeUrl = await uploadResume(selectedFile);
       
+      // Then submit the application with the Cloudinary URL
+      const response = await fetch('/api/alumni/applications', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          jobId,
+          coverLetter: formData.coverLetter,
+          resume: resumeUrl,
+          fullName: formData.fullName,
+          email: formData.email,
+          phone: formData.phone,
+          portfolio: formData.portfolio
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to submit application');
+      }
+
       toast.success('Application submitted successfully');
       onSuccess();
       onClose();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting application:', error);
-      toast.error('Failed to submit application');
+      toast.error(error.message || 'Failed to submit application');
     } finally {
       setLoading(false);
     }
@@ -156,18 +222,19 @@ export default function JobApplicationForm({
                       type="file"
                       className="sr-only"
                       accept=".pdf,.doc,.docx"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          setFormData({ ...formData, resumeUrl: URL.createObjectURL(file) });
-                        }
-                      }}
+                      onChange={handleFileChange}
                       required
                     />
                   </label>
                   <p className="pl-1">or drag and drop</p>
                 </div>
-                <p className="text-xs text-white/40">PDF, DOC, DOCX up to 10MB</p>
+                <p className="text-xs text-white/40">
+                  {selectedFile ? (
+                    <span className="text-green-400">Selected: {selectedFile.name}</span>
+                  ) : (
+                    'PDF, DOC, DOCX up to 5MB'
+                  )}
+                </p>
               </div>
             </div>
           </div>
