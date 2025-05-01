@@ -15,6 +15,7 @@ const Redirect = () => {
     }
 
     if (status === "authenticated" && session) {
+      console.log("in redirect, testing for ", session.user.role)
       if (session.user.role.includes(UserRole.ALUMNI)) {
         router.push("/alumni");
       }

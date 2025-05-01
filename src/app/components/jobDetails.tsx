@@ -3,14 +3,13 @@ import React, { useEffect } from "react";
 import {
   Building2,
   MapPin,
-  Briefcase,
-  Clock,
-  Tags,
   User2,
   FileText,
   X,
   Edit2,
   Trash2,
+  Clock,
+  Tags
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -18,8 +17,7 @@ interface JobDetailsProps {
   title: string;
   company: string;
   location: string;
-  jobType: string;
-  workType: string;
+  workMode: string;
   description: string;
   position: string;
   tags?: string[];
@@ -35,8 +33,7 @@ export default function JobDetails({
   title,
   company,
   location,
-  jobType,
-  workType,
+  workMode,
   description,
   position,
   tags,
@@ -109,22 +106,6 @@ export default function JobDetails({
             </div>
 
             <div className="flex items-center gap-3 text-white/80">
-              <Briefcase size={20} />
-              <div>
-                <p className="text-sm font-medium text-white">Job Type</p>
-                <p>{jobType}</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 text-white/80">
-              <Clock size={20} />
-              <div>
-                <p className="text-sm font-medium text-white">Work Mode</p>
-                <p>{workType}</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 text-white/80">
               <User2 size={20} />
               <div>
                 <p className="text-sm font-medium text-white">Position</p>
@@ -132,6 +113,13 @@ export default function JobDetails({
               </div>
             </div>
 
+            <div className="flex items-center gap-3 text-white/80">
+              <Clock size={20} />
+              <div>
+                <p className="text-sm font-medium text-white">Work Mode</p>
+                <p>{workMode}</p>
+              </div>
+            </div>
           </div>
 
           {/* Description */}

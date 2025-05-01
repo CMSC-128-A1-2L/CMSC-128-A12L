@@ -17,21 +17,12 @@ export default function FilterSidebar({
 }) {
   // Initialize filter state with default values if activeFilters is undefined
   const defaultFilters = {
-    jobType: {
-      fullTime: false,
-      partTime: false,
-      contract: false
-    },
-    workType: {
+    workMode: {
       onSite: false,
       remote: false,
       hybrid: false
     },
-    experienceLevel: {
-      entry: false,
-      midLevel: false,
-      senior: false
-    }
+    sort: 'newest' // Add default sort option
   };
 
   const [filters, setFilters] = useState(activeFilters || defaultFilters);
@@ -60,25 +51,26 @@ export default function FilterSidebar({
   // Clear all filters
   const clearFilters = () => {
     const clearedFilters = {
-      jobType: {
-        fullTime: false,
-        partTime: false,
-        contract: false
-      },
-      workType: {
+      workMode: {
         onSite: false,
         remote: false,
         hybrid: false
       },
-      experienceLevel: {
-        entry: false,
-        midLevel: false,
-        senior: false
-      }
+      sort: 'newest'
     };
     
     setFilters(clearedFilters);
     onFilterChange(clearedFilters);
+  };
+
+  // Add sort change handler
+  const handleSortChange = (value: string) => {
+    const newFilters = {
+      ...filters,
+      sort: value
+    };
+    setFilters(newFilters);
+    onFilterChange(newFilters);
   };
 
   return (
@@ -94,7 +86,7 @@ export default function FilterSidebar({
           transition-all duration-300`}
       >
         <div className="bg-black/10 rounded-xl border border-white/10 p-4 space-y-6">
-          {/* Add Job Button - Add this at the top */}
+          {/* Post Job Button */}
           <button
             onClick={showModal}
             className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center justify-center gap-2"
@@ -113,52 +105,17 @@ export default function FilterSidebar({
             </button>
           </div>
 
-          {/* Job Type Filter */}
+          {/* Work Mode Filter */}
           <fieldset className="fieldset p-3 sm:p-4 bg-black/10 rounded-box gap-2 sm:gap-3">
-            <h3 className="font-semibold mb-2 text-white/90">Job Type</h3>
+            <h3 className="font-semibold mb-2 text-white/90">Work Mode</h3>
           
             <div className="space-y-1 sm:space-y-2">
               <label className="fieldset-label text-white/70 flex items-center gap-2 hover:bg-white/10 p-1.5 sm:p-2 rounded-lg transition-colors">
                 <input 
                   type="checkbox" 
                   className="checkbox checkbox-sm sm:checkbox-md border border-white/20 bg-white/5 [&:checked]:bg-blue-600 [&:checked]:border-blue-600" 
-                  checked={filters.jobType.fullTime}
-                  onChange={() => handleFilterChange('jobType', 'fullTime')}
-                /> 
-                Full-time
-              </label>
-              <label className="fieldset-label text-white/70 flex items-center gap-2 hover:bg-white/10 p-1.5 sm:p-2 rounded-lg transition-colors">
-                <input 
-                  type="checkbox" 
-                  className="checkbox checkbox-sm sm:checkbox-md border border-white/20 bg-white/5 [&:checked]:bg-blue-600 [&:checked]:border-blue-600" 
-                  checked={filters.jobType.partTime}
-                  onChange={() => handleFilterChange('jobType', 'partTime')}
-                /> 
-                Part-time
-              </label>
-              <label className="fieldset-label text-white/70 flex items-center gap-2 hover:bg-white/10 p-1.5 sm:p-2 rounded-lg transition-colors">
-                <input 
-                  type="checkbox" 
-                  className="checkbox checkbox-sm sm:checkbox-md border border-white/20 bg-white/5 [&:checked]:bg-blue-600 [&:checked]:border-blue-600" 
-                  checked={filters.jobType.contract}
-                  onChange={() => handleFilterChange('jobType', 'contract')}
-                /> 
-                Contract
-              </label>
-            </div>
-          </fieldset>
-
-          {/* Work Type Filter */}
-          <fieldset className="fieldset p-3 sm:p-4 bg-black/10 rounded-box gap-2 sm:gap-3">
-            <h3 className="font-semibold mb-2 text-white/90">Work Type</h3>
-          
-            <div className="space-y-1 sm:space-y-2">
-              <label className="fieldset-label text-white/70 flex items-center gap-2 hover:bg-white/10 p-1.5 sm:p-2 rounded-lg transition-colors">
-                <input 
-                  type="checkbox" 
-                  className="checkbox checkbox-sm sm:checkbox-md border border-white/20 bg-white/5 [&:checked]:bg-blue-600 [&:checked]:border-blue-600" 
-                  checked={filters.workType.onSite}
-                  onChange={() => handleFilterChange('workType', 'onSite')}
+                  checked={filters.workMode.onSite}
+                  onChange={() => handleFilterChange('workMode', 'onSite')}
                 /> 
                 On-site
               </label>
@@ -166,8 +123,8 @@ export default function FilterSidebar({
                 <input 
                   type="checkbox" 
                   className="checkbox checkbox-sm sm:checkbox-md border border-white/20 bg-white/5 [&:checked]:bg-blue-600 [&:checked]:border-blue-600" 
-                  checked={filters.workType.remote}
-                  onChange={() => handleFilterChange('workType', 'remote')}
+                  checked={filters.workMode.remote}
+                  onChange={() => handleFilterChange('workMode', 'remote')}
                 /> 
                 Remote
               </label>
@@ -175,64 +132,27 @@ export default function FilterSidebar({
                 <input 
                   type="checkbox" 
                   className="checkbox checkbox-sm sm:checkbox-md border border-white/20 bg-white/5 [&:checked]:bg-blue-600 [&:checked]:border-blue-600" 
-                  checked={filters.workType.hybrid}
-                  onChange={() => handleFilterChange('workType', 'hybrid')}
+                  checked={filters.workMode.hybrid}
+                  onChange={() => handleFilterChange('workMode', 'hybrid')}
                 /> 
                 Hybrid
               </label>
             </div>
           </fieldset>
 
-          {/* Experience Level Filter */}
+          {/* Sort Options */}
           <fieldset className="fieldset p-3 sm:p-4 bg-black/10 rounded-box gap-2 sm:gap-3">
-            <h3 className="font-semibold mb-2 text-white/90">Experience Level</h3>
-          
-            <div className="space-y-1 sm:space-y-2">
-              <label className="fieldset-label text-white/70 flex items-center gap-2 hover:bg-white/10 p-1.5 sm:p-2 rounded-lg transition-colors">
-                <input 
-                  type="checkbox" 
-                  className="checkbox checkbox-sm sm:checkbox-md border border-white/20 bg-white/5 [&:checked]:bg-blue-600 [&:checked]:border-blue-600" 
-                  checked={filters.experienceLevel.entry}
-                  onChange={() => handleFilterChange('experienceLevel', 'entry')}
-                /> 
-                Entry Level
-              </label>
-              <label className="fieldset-label text-white/70 flex items-center gap-2 hover:bg-white/10 p-1.5 sm:p-2 rounded-lg transition-colors">
-                <input 
-                  type="checkbox" 
-                  className="checkbox checkbox-sm sm:checkbox-md border border-white/20 bg-white/5 [&:checked]:bg-blue-600 [&:checked]:border-blue-600" 
-                  checked={filters.experienceLevel.midLevel}
-                  onChange={() => handleFilterChange('experienceLevel', 'midLevel')}
-                /> 
-                Mid-Level
-              </label>
-              <label className="fieldset-label text-white/70 flex items-center gap-2 hover:bg-white/10 p-1.5 sm:p-2 rounded-lg transition-colors">
-                <input 
-                  type="checkbox" 
-                  className="checkbox checkbox-sm sm:checkbox-md border border-white/20 bg-white/5 [&:checked]:bg-blue-600 [&:checked]:border-blue-600" 
-                  checked={filters.experienceLevel.senior}
-                  onChange={() => handleFilterChange('experienceLevel', 'senior')}
-                /> 
-                Senior
-              </label>
-            </div>
-          </fieldset>
-
-          {/* Salary Range Filter */}
-          <fieldset className="fieldset p-3 sm:p-4 bg-black/10 rounded-box gap-2 sm:gap-3">
-            <h3 className="font-semibold mb-2 text-white/90">Salary Range</h3>
-            <input 
-              type="range" 
-              min="0" 
-              max="100000" 
-              className="range range-primary" 
-              step="10000"
-            />
-            <div className="w-full flex justify-between text-xs px-2 text-white/70">
-              <span>₱0</span>
-              <span>₱50k</span>
-              <span>₱100k+</span>
-            </div>
+            <h3 className="font-semibold mb-2 text-white/90">Sort By</h3>
+            <select
+              value={filters.sort}
+              onChange={(e) => handleSortChange(e.target.value)}
+              className="w-full p-2 rounded-lg bg-white/5 text-white border border-white/20 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 [&>option]:bg-[#1a1f4d] [&>option]:text-white"
+            >
+              <option value="newest" className="bg-[#1a1f4d] text-white">Newest First</option>
+              <option value="oldest" className="bg-[#1a1f4d] text-white">Oldest First</option>
+              <option value="a-z" className="bg-[#1a1f4d] text-white">A-Z</option>
+              <option value="z-a" className="bg-[#1a1f4d] text-white">Z-A</option>
+            </select>
           </fieldset>
         </div>
       </div>

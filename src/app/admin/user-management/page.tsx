@@ -11,6 +11,7 @@ import { motion } from 'framer-motion';
 import { UserDto } from "@/models/user";
 import ScrollIndicator from "../../components/ScrollIndicator";
 import { createNotification } from "@/services/notification.service";
+import { UserRole } from "@/entities/user";
 
 interface PendingVerification {
     name: string;
@@ -62,6 +63,22 @@ export default function UsersManagement(){
     const [alumniUsers, setAlumniUsers] = useState<UserDto[]>([]);
     const [pendingVerificationUsers, setPendingVerificationUsers] = useState<UserDto[]>([]);
 
+
+    
+    const getRole = (role: any) => {
+        if(role.includes(UserRole.ADMIN) && role.includes(UserRole.ALUMNI)){
+          return "Alumni Admin"
+        }
+        else if (role.includes(UserRole.ADMIN)){
+          return "Admin"
+        }
+        else if (role.includes(UserRole.ALUMNI)){
+          return "Alumni"
+        }
+        else{
+          return "Pending Verification"
+        }
+      }
     const handleAccept = async (userId: string) => {
         console.log(userId);
         const response = await fetch(`/api/admin/users/${userId}`, {
@@ -168,10 +185,24 @@ export default function UsersManagement(){
 
     // Filter and sort users based on search query and role filter
     const filteredUsers = alumniUsers
-        .filter(user => 
-            user.name.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-        .filter(user => roleFilter === "All" || user.role.toString() === roleFilter);
+  .filter(user =>
+    user.name.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+  .filter(user => {
+    if (roleFilter === "All") return true;
+
+    if (roleFilter === "Alumni Admin") {
+      return user.role.includes(UserRole.ALUMNI) && user.role.includes(UserRole.ADMIN);
+    }
+
+    if(roleFilter === "Alumni") {
+        return user.role.includes(UserRole.ALUMNI)
+    }
+
+    if(roleFilter === "Admin") {
+        return user.role.includes(UserRole.ADMIN)
+    }
+  });
 
     if (sortOrder === "asc") {
         filteredUsers.sort((a, b) => a.name.localeCompare(b.name));
@@ -253,7 +284,7 @@ export default function UsersManagement(){
 
                     {/* Tabs - Scrollable on mobile */}
                     <div className="flex overflow-x-auto mb-6 pb-2 -mx-4 px-4 md:mx-0 md:px-0">
-                        {['All', 'admin', 'alumni', 'alumniadmin'].map((tab) => (
+                        {['All', 'Admin', 'Alumni', 'Alumni Admin'].map((tab) => (
                             <motion.button
                                 key={tab}
                                 whileHover={{ scale: 1.05 }}
@@ -320,18 +351,23 @@ export default function UsersManagement(){
                                 <div className="flex items-center text-sm text-gray-600">
                                     <Shield className="w-4 h-4 mr-2" />
                                     {/* bruh, don't mind these errors, it's just a type error */}
-                                    <span>{user.role[0] ? (user.role[0].charAt(0).toUpperCase() + user.role[0].slice(1)) : "Pending Verification"}</span>
+                                    <span>{getRole(user.role)}</span>
                                 </div>
                                 <div className="flex justify-end space-x-2 pt-2">
-                                {user.role[0] ? (
+                                {user.role ? (
                                                 user.role[0] === "alumni" ? (
                                                     <PromoteUser person={user} />
                                                 ) : (
                                                     <span className="text-gray-500 text-sm">Promoted</span>
                                                 )
-                                            ) : (
+                                            ) : (user.alumniStatus === "pending" ? (
                                                 <span className="text-gray-500 text-sm">Pending Verification</span>
-                                            )}
+                                            ) : (
+                                                <div className="flex items-center gap-x-2">
+                                                    <span className="text-gray-500 text-sm mr-5">Rejected</span>
+                                                    <DeleteUser person={user} deleteSuccess={deleteSuccess} />
+                                                </div>
+                                            ))}
                                 </div>
                             </motion.div>
                         ))}
@@ -361,7 +397,7 @@ export default function UsersManagement(){
                                         
                                         <div className="flex items-center text-sm text-gray-600">
                                             <Shield className="w-4 h-4 mr-2" />
-                                            <span>{user.role[0] ? (user.role[0].charAt(0).toUpperCase() + user.role[0].slice(1)) : "Pending Verification"}</span>
+                                            <span>{getRole(user.role)}</span>
                                         </div>
                                         
                                         <div className="flex justify-end space-x-2 pt-2">
@@ -372,7 +408,14 @@ export default function UsersManagement(){
                                                     <span className="text-gray-500 text-sm">Promoted</span>
                                                 )
                                             ) : (
-                                                <span className="text-gray-500 text-sm">Pending Verification</span>
+                                                user.alumniStatus === "pending" ? (
+                                                    <span className="text-gray-500 text-sm">Pending Verification</span>
+                                                ) : (
+                                                    <div className="flex items-center gap-x-2">
+                                                        <span className="text-gray-500 text-sm mr-5">Rejected</span>
+                                                        <DeleteUser person={user} deleteSuccess={deleteSuccess} />
+                                                    </div>
+                                                )
                                             )}
                                             {user.role[0] && user.role[0] !== "admin" && (
                                                 <DeleteUser person={user} deleteSuccess={deleteSuccess} />

@@ -6,8 +6,7 @@ import { IoIosArrowForward, IoIosArrowBack } from "react-icons/io";
 import userData from "@/dummy_data/user.json";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-
-
+import ConstellationBackground from "@/app/components/constellationBackground";
 
 type Alumni = {
   id: string;
@@ -112,8 +111,9 @@ export default function AlumniPage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <div className="relative text-white -mt-16 pt-16">
+      <div className="relative text-white -mt-16 pt-16 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-[#1a1f4d]/90 to-[#2a3f8f]/90"></div>
+        <ConstellationBackground />
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 z-10">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -285,110 +285,134 @@ export default function AlumniPage() {
               )}
             </div>
 
-            {/* Alumni Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {loading ? (
-                <div className="col-span-full text-center py-8">
-                  <p className="text-gray-400">Loading alumni data...</p>
-                </div>
-              ) : displayedAlumni.length > 0 ? (
-                displayedAlumni.map((alumni, index) => (
-                  <div
-                    key={alumni.id}
-                    className="w-full h-88 bg-white/10 backdrop-blur-sm rounded-lg overflow-hidden shadow-md flex flex-col relative group transition-all duration-300 border border-white/20"
-                  >
-                    {/* Front View - Default */}
-                    <div className="absolute inset-0 flex flex-col items-center justify-between opacity-100 group-hover:opacity-0 transition-all duration-300">
-                      <div className="w-full h-[85%] bg-white/20 overflow-hidden">
-                        {alumni.imageUrl ? (
-                          <img
-                            src={alumni.imageUrl}
-                            alt={alumni.name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-white/5">
-                            <FiUsers className="text-gray-400" size={64} />
-                          </div>
-                        )}
-                      </div>
-                      <div className="w-full py-3 px-2 text-center bg-black/20 backdrop-blur-sm">
-                        <p className="text-white font-medium">{alumni.name}</p>
-                        <p className="text-gray-300 text-sm">Batch {alumni.graduationYear || "N/A"}</p>
-                      </div>
-                    </div>
-
-                    {/* Hover View - Detailed Info */}
-                    <div className="absolute inset-0 flex flex-col justify-center items-center bg-[#1a1f4d]/90 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all duration-300 p-6">
-                      <div className="w-full space-y-4">
-                        <div className="text-center mb-2">
-                          <h3 className="text-xl font-semibold text-white">{alumni.name}</h3>
-                          <p className="text-gray-300">Class of {alumni.graduationYear || "N/A"}</p>
-                        </div>
-                        
-                        {/* Academic Info */}
-                        <div className="text-gray-200 text-sm">
-                          <p className="mb-1 text-center">{alumni.department || "Department not specified"}</p>
-                        </div>
-
-                        {/* Professional Info */}
-                        {(alumni.currentPosition || alumni.currentCompany) && (
-                          <div className="text-gray-200 text-center border-t border-white/10 pt-4">
-                            <p>{alumni.currentPosition}</p>
-                            <p className="text-gray-300">{alumni.currentCompany}</p>
-                          </div>
-                        )}
-
-                        {/* Contact Links */}
-                        <div className="flex justify-center gap-2 pt-4">
-                          {alumni.linkedIn && (
-                            <a
-                              href={alumni.linkedIn}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-blue-400 hover:text-blue-300 underline text-sm"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              LinkedIn Profile
-                            </a>
-                          )}
-                        </div>
-                      </div>
-                      
-                      <button 
-                        onClick={() => router.push(`/alumni/network/${alumni.id}`)}
-                        className="mt-6 px-6 py-2 bg-white/10 hover:bg-white/20 border border-white/40 rounded-lg text-white transition-colors"
-                      >
-                        View Full Profile
-                      </button>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="col-span-full text-center py-8">
-                  <p className="text-gray-400">
-                    No alumni found matching your filters.
-                  </p>
-                  <button
-                    className="btn btn-error btn-sm rounded-lg mt-4"
-                    onClick={clearFilters}
-                  >
-                    Clear all filters
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex items-center justify-center space-x-4 mt-4">
+            {/* Alumni Grid with Pagination */}
+            <div className="relative">
+              {currentPage > 1 && (
                 <button
                   onClick={() => setCurrentPage(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  className="btn btn-sm bg-white/10 backdrop-blur-sm text-white border-none"
+                  className="btn bg-white/10 backdrop-blur-sm text-white border-none flex-shrink-0 w-16 h-16 text-2xl absolute -left-20 top-1/2 -mt-8 z-10 rounded-full hover:bg-white/20 transition-all duration-300 shadow-lg hover:shadow-xl border border-white/20 hover:border-white/40"
                 >
                   <IoIosArrowBack />
                 </button>
+              )}
+
+              {/* Alumni Grid */}
+              <motion.div 
+                key={currentPage}
+                initial={{ opacity: 0, x: currentPage > 1 ? -20 : 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: currentPage > 1 ? 20 : -20 }}
+                transition={{ duration: 0.3 }}
+                className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"
+              >
+                {loading ? (
+                  <div className="col-span-full text-center py-8">
+                    <p className="text-gray-400">Loading alumni data...</p>
+                  </div>
+                ) : displayedAlumni.length > 0 ? (
+                  displayedAlumni.map((alumni, index) => (
+                    <motion.div
+                      key={alumni.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.3, delay: index * 0.05 }}
+                      className="w-full h-88 bg-white/10 backdrop-blur-sm rounded-lg overflow-hidden shadow-md flex flex-col relative group transition-all duration-300 border border-white/20"
+                    >
+                      {/* Front View - Default */}
+                      <div className="absolute inset-0 flex flex-col items-center justify-between opacity-100 group-hover:opacity-0 transition-all duration-300">
+                        <div className="w-full h-[85%] bg-white/20 overflow-hidden">
+                          {alumni.imageUrl ? (
+                            <img
+                              src={alumni.imageUrl}
+                              alt={alumni.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center bg-white/5">
+                              <FiUsers className="text-gray-400" size={64} />
+                            </div>
+                          )}
+                        </div>
+                        <div className="w-full py-3 px-2 text-center bg-black/20 backdrop-blur-sm">
+                          <p className="text-white font-medium">{alumni.name}</p>
+                          <p className="text-gray-300 text-sm">Batch {alumni.graduationYear || "N/A"}</p>
+                        </div>
+                      </div>
+
+                      {/* Hover View - Detailed Info */}
+                      <div className="absolute inset-0 flex flex-col justify-center items-center bg-[#1a1f4d]/90 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all duration-300 p-6">
+                        <div className="w-full space-y-4">
+                          <div className="text-center mb-2">
+                            <h3 className="text-xl font-semibold text-white">{alumni.name}</h3>
+                            <p className="text-gray-300">Class of {alumni.graduationYear || "N/A"}</p>
+                          </div>
+                          
+                          {/* Academic Info */}
+                          <div className="text-gray-200 text-sm">
+                            <p className="mb-1 text-center">{alumni.department || "Department not specified"}</p>
+                          </div>
+
+                          {/* Professional Info */}
+                          {(alumni.currentPosition || alumni.currentCompany) && (
+                            <div className="text-gray-200 text-center border-t border-white/10 pt-4">
+                              <p>{alumni.currentPosition}</p>
+                              <p className="text-gray-300">{alumni.currentCompany}</p>
+                            </div>
+                          )}
+
+                          {/* Contact Links */}
+                          <div className="flex justify-center gap-2 pt-4">
+                            {alumni.linkedIn && (
+                              <a
+                                href={alumni.linkedIn}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-400 hover:text-blue-300 underline text-sm"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                LinkedIn Profile
+                              </a>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <button 
+                          onClick={() => router.push(`/alumni/network/${alumni.id}`)}
+                          className="mt-6 px-6 py-2 bg-white/10 hover:bg-white/20 border border-white/40 rounded-lg text-white transition-colors cursor-pointer"
+                        >
+                          View Full Profile
+                        </button>
+                      </div>
+                    </motion.div>
+                  ))
+                ) : (
+                  <div className="col-span-full text-center py-8">
+                    <p className="text-gray-400">
+                      No alumni found matching your filters.
+                    </p>
+                    <button
+                      className="btn btn-error btn-sm rounded-lg mt-4"
+                      onClick={clearFilters}
+                    >
+                      Clear all filters
+                    </button>
+                  </div>
+                )}
+              </motion.div>
+
+              {currentPage < totalPages && (
+                <button
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                  className="btn bg-white/10 backdrop-blur-sm text-white border-none flex-shrink-0 w-16 h-16 text-2xl absolute -right-20 top-1/2 -mt-8 z-10 rounded-full hover:bg-white/20 transition-all duration-300 shadow-lg hover:shadow-xl border border-white/20 hover:border-white/40"
+                >
+                  <IoIosArrowForward />
+                </button>
+              )}
+            </div>
+
+            {/* Page Number Display */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center mt-4">
                 <div className="flex items-center space-x-2">
                   <input
                     type="number"
@@ -400,13 +424,6 @@ export default function AlumniPage() {
                   />
                   <span className="text-gray-300">/ {totalPages}</span>
                 </div>
-                <button
-                  onClick={() => setCurrentPage(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  className="btn btn-sm bg-white/10 backdrop-blur-sm text-white border-none"
-                >
-                  <IoIosArrowForward />
-                </button>
               </div>
             )}
           </main>

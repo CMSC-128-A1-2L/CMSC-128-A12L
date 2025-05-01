@@ -271,7 +271,7 @@ export default function AlumniDashboard() {
             className="text-center"
           >
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              Welcome back, {session?.user?.email?.split("@")[0] || "Alumni"}!
+              Welcome back, {session?.user?.name?.split(" ")[0] || "Alumni"}!
             </h1>
             <p className="text-xl text-gray-200">
               Your alumni network is growing stronger every day

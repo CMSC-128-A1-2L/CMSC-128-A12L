@@ -354,7 +354,7 @@ export default function EventsPage() {
           <button
             onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
             disabled={currentPage === 1}
-            className="btn btn-ghost btn-sm"
+            className="btn btn-sm btn-outline text-gray-700 hover:text-white"
           >
             <ChevronLeft size={16} />
           </button>
@@ -362,7 +362,11 @@ export default function EventsPage() {
             <button
               key={page}
               onClick={() => setCurrentPage(page)}
-              className={`btn btn-sm ${currentPage === page ? 'btn-primary' : 'btn-ghost'}`}
+              className={`btn btn-sm min-w-[2.5rem] ${
+                currentPage === page 
+                  ? 'btn-primary text-white'
+                  : 'btn-outline text-gray-700 hover:text-white'
+              }`}
             >
               {page}
             </button>
@@ -370,7 +374,7 @@ export default function EventsPage() {
           <button
             onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
             disabled={currentPage === totalPages}
-            className="btn btn-ghost btn-sm"
+            className="btn btn-sm btn-outline text-gray-700 hover:text-white"
           >
             <ChevronRight size={16} />
           </button>

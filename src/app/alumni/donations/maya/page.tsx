@@ -1,16 +1,17 @@
 'use client';
 
 import { useState } from 'react';
+import { motion } from "framer-motion";
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { usePathname } from 'next/navigation';
+import ConstellationBackground from "@/app/components/constellationBackground";
 
 export default function MayaDonationPage() {
   const [data, setData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const pathname = usePathname();
-  // Get the parent path by removing the last segment
   const parentPath = pathname ? pathname.split('/').slice(0, -1).join('/') : '/alumni/donations';
 
   const testMayaAPI = async () => {
@@ -18,36 +19,40 @@ export default function MayaDonationPage() {
     setError(null);
     setData(null);
     try {
-      // Send a POST request to the unified API route for checkout and simulated invoice.
       const res = await fetch('/api/maya-checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          "description": "Donation for XYZ",
+          "description": "Donation for Alumni Community",
           "totalAmount": { "value": 1000, "currency": "PHP" },
-          "invoiceNumber": "INV0001",
-          "type": "SINGLE", // or "OPEN" if desired
+          "invoiceNumber": `DON-${Date.now()}`,
+          "type": "SINGLE",
           "items": [
             { 
-              "name": "Donation", 
+              "name": "Alumni Community Donation", 
               "quantity": "1", 
               "amount": { "value": 1000, "currency": "PHP" },
               "totalAmount": { "value": 1000, "currency": "PHP" }
             }
           ],
-          "requestReferenceNumber": `TEST-${Date.now()}`,
+          "requestReferenceNumber": `DON-${Date.now()}`,
           "redirectUrl": {
-            "success": "https://example.com/success",
-            "failure": "https://example.com/failure",
-            "cancel": "https://example.com/cancel"
+            "success": `${window.location.origin}/alumni/donations/maya/success`,
+            "failure": `${window.location.origin}/alumni/donations/maya/failure`,
+            "cancel": `${window.location.origin}/alumni/donations/maya/failure`
           },
           "metadata": {
-            "customField": "Custom Value"
+            "type": "donation",
+            "source": "alumni_portal"
           }
         })
       });
       const responseData = await res.json();
-      setData(responseData);
+      if (responseData.checkout?.redirectUrl) {
+        window.location.href = responseData.checkout.redirectUrl;
+      } else {
+        setData(responseData);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     }
@@ -55,46 +60,85 @@ export default function MayaDonationPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-6">
-        <Link href={parentPath} className="flex items-center text-blue-600 hover:text-blue-800">
-          <ArrowLeft className="mr-2" size={18} />
-          Back to Donation Options
-        </Link>
-      </div>
-      
-      <div className="bg-white rounded-lg shadow-lg p-6 max-w-3xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6 text-gray-900">Maya Payment Donation</h1>
-        
-        <div className="mb-6">
-          <button 
-            onClick={testMayaAPI} 
-            disabled={loading}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded transition-colors disabled:opacity-50"
+    <div className="min-h-screen">
+      {/* Hero Section */}
+      <div className="relative text-white -mt-16 pt-16 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-[#1a1f4d]/90 to-[#2a3f8f]/90"></div>
+        <ConstellationBackground />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="text-center"
           >
-            {loading ? 'Processing...' : 'Donate with Maya'}
-          </button>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+              Maya Payment
+            </h1>
+            <p className="text-xl text-gray-200">
+              Secure local payments
+            </p>
+          </motion.div>
         </div>
+      </div>
 
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded mb-6">
-            <h2 className="font-semibold mb-2">Error:</h2>
-            <p>{error}</p>
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="bg-gradient-to-br from-green-500/20 to-green-600/20 p-8 rounded-xl border border-white/10 max-w-3xl mx-auto"
+        >
+          <div className="mb-6">
+            <Link href={parentPath} className="flex items-center text-white hover:text-gray-200">
+              <ArrowLeft className="mr-2" size={18} />
+              Back to Donation Options
+            </Link>
           </div>
-        )}
+          
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold mb-6 text-white">Make a Donation</h2>
+            
+            <div className="mb-8">
+              <button 
+                onClick={testMayaAPI} 
+                disabled={loading}
+                className="bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded transition-colors w-full disabled:opacity-50"
+              >
+                {loading ? 'Processing...' : 'Donate with Maya'}
+              </button>
+            </div>
 
-        {data && (
-          <div className="space-y-6">
-            <div className="bg-gray-50 p-4 rounded">
-              <h2 className="font-semibold mb-2">Checkout Response:</h2>
-              <pre className="overflow-auto p-2 bg-gray-100 rounded text-sm">{JSON.stringify(data.checkout, null, 2)}</pre>
-            </div>
-            <div className="bg-gray-50 p-4 rounded">
-              <h2 className="font-semibold mb-2">Simulated Invoice Response:</h2>
-              <pre className="overflow-auto p-2 bg-gray-100 rounded text-sm">{JSON.stringify(data.invoice, null, 2)}</pre>
-            </div>
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-red-500/20 border border-red-500/30 text-red-200 p-4 rounded mb-6"
+              >
+                <h2 className="font-semibold mb-2">Error:</h2>
+                <p>{error}</p>
+              </motion.div>
+            )}
+
+            {data && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-6"
+              >
+                <div className="bg-white/10 p-4 rounded">
+                  <h2 className="font-semibold mb-2 text-white">Checkout Response:</h2>
+                  <pre className="overflow-auto p-2 bg-white/5 rounded text-sm text-gray-200">{JSON.stringify(data.checkout, null, 2)}</pre>
+                </div>
+                <div className="bg-white/10 p-4 rounded">
+                  <h2 className="font-semibold mb-2 text-white">Invoice Details:</h2>
+                  <pre className="overflow-auto p-2 bg-white/5 rounded text-sm text-gray-200">{JSON.stringify(data.invoice, null, 2)}</pre>
+                </div>
+              </motion.div>
+            )}
           </div>
-        )}
+        </motion.div>
       </div>
     </div>
   );
