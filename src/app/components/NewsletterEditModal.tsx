@@ -1,19 +1,20 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { Newsletter } from '@/entities/newsletters';
-import { useSession } from 'next-auth/react';
+import { useState, useEffect, useRef } from 'react';
+import { X, Paperclip } from 'lucide-react';
 import { toast } from 'react-hot-toast';
-import Link from 'next/link';
-import { ArrowLeft, X, Paperclip } from 'lucide-react';
+import { Newsletter } from '@/entities/newsletters';
 
-export default function EditNewsletter() {
-    const params = useParams();
-    const router = useRouter();
-    const { data: session } = useSession();
-    const [isLoading, setIsLoading] = useState(true);
+interface NewsletterEditModalProps {
+    isOpen: boolean;
+    onClose: () => void;
+    newsletter: Newsletter | null;
+    onSave: () => void;
+}
+
+export default function NewsletterEditModal({ isOpen, onClose, newsletter, onSave }: NewsletterEditModalProps) {
     const [isSaving, setIsSaving] = useState(false);
+    const modalRef = useRef<HTMLDivElement>(null);
     const [formData, setFormData] = useState({
         title: '',
         content: '',
@@ -23,23 +24,9 @@ export default function EditNewsletter() {
         tags: ''
     });
 
+    // Update form data when newsletter changes
     useEffect(() => {
-        if (params?.id) {
-            loadNewsletter();
-        } else {
-            router.push('/admin/newsletters/list');
-        }
-    }, [params?.id]);
-
-    const loadNewsletter = async () => {
-        if (!params?.id) return;
-        
-        try {
-            const response = await fetch(`/api/admin/newsletters/${params.id}`);
-            if (!response.ok) {
-                throw new Error('Failed to fetch newsletter');
-            }
-            const newsletter = await response.json();
+        if (newsletter) {
             setFormData({
                 title: newsletter.title,
                 content: newsletter.content,
@@ -48,29 +35,36 @@ export default function EditNewsletter() {
                 attachments: newsletter.attachments || [],
                 tags: newsletter.tags || ''
             });
-        } catch (error) {
-            console.error('Error loading newsletter:', error);
-            toast.error('Failed to load newsletter');
-        } finally {
-            setIsLoading(false);
         }
-    };
+    }, [newsletter]);
+
+    // Handle click outside
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
+                onClose();
+            }
+        };
+
+        if (isOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isOpen, onClose]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!session?.user?.id) {
-            toast.error('You must be logged in to update a newsletter');
-            return;
-        }
-
-        if (!params?.id) {
+        if (!newsletter?._id) {
             toast.error('Newsletter ID is missing');
             return;
         }
 
         setIsSaving(true);
         try {
-            const response = await fetch(`/api/admin/newsletters/${params.id}`, {
+            const response = await fetch(`/api/admin/newsletters/${newsletter._id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -90,7 +84,8 @@ export default function EditNewsletter() {
             }
 
             toast.success('Newsletter updated successfully!');
-            router.push('/admin/newsletters/list');
+            onSave();
+            onClose();
         } catch (error) {
             console.error('Error updating newsletter:', error);
             toast.error('Failed to update newsletter');
@@ -99,105 +94,75 @@ export default function EditNewsletter() {
         }
     };
 
-    if (isLoading) {
-        return (
-            <div className="flex justify-center items-center min-h-screen">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-            </div>
-        );
-    }
+    if (!isOpen) return null;
 
     return (
-        <div className="max-w-4xl mx-auto px-4 py-8">
-            <div className="flex justify-between items-center mb-8">
-                <Link 
-                    href="/admin/newsletters/list" 
-                    className="inline-flex items-center text-blue-600 hover:text-blue-800"
-                >
-                    <ArrowLeft className="w-4 h-4 mr-2" />
-                    Back to Newsletters
-                </Link>
-            </div>
-
-            <div className="bg-white rounded-lg shadow-md p-6">
-                <h1 className="text-2xl font-bold text-gray-900 mb-6">Edit Newsletter</h1>
+        <div className="fixed inset-0 backdrop-blur-[2px] bg-white/30 flex items-center justify-center z-50">
+            <div ref={modalRef} className="bg-white rounded-lg shadow-xl p-4 w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-bold text-gray-900">Edit Newsletter</h2>
+                    <button
+                        onClick={onClose}
+                        className="text-gray-500 hover:text-gray-700"
+                    >
+                        <X className="w-5 h-5" />
+                    </button>
+                </div>
                 
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
-                        <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-                            Title
-                        </label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
                         <input
                             type="text"
-                            id="title"
                             value={formData.title}
                             onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                             required
                         />
                     </div>
 
                     <div>
-                        <label htmlFor="thumbnail" className="block text-sm font-medium text-gray-700 mb-1">
-                            Thumbnail URL
-                        </label>
-                        <div className="space-y-3">
-                            <input
-                                type="url"
-                                id="thumbnail"
-                                value={formData.thumbnail}
-                                onChange={(e) => setFormData({ ...formData, thumbnail: e.target.value })}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                                placeholder="https://example.com/image.jpg"
-                            />
-                            {formData.thumbnail && (
-                                <div className="relative rounded-lg overflow-hidden shadow-md">
-                                    <img 
-                                        src={formData.thumbnail}
-                                        alt="Thumbnail preview"
-                                        className="w-full h-48 object-cover"
-                                        onError={(e) => {
-                                            (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x200?text=Invalid+Image+URL';
-                                        }}
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => setFormData({ ...formData, thumbnail: '' })}
-                                        className="absolute top-2 right-2 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-                                    >
-                                        <X className="w-4 h-4" />
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    <div>
-                        <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-1">
-                            Content
-                        </label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Content</label>
                         <textarea
-                            id="content"
                             value={formData.content}
                             onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 min-h-[200px]"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-h-[200px] text-black"
                             required
                         />
                     </div>
 
                     <div>
-                        <label htmlFor="attachments" className="block text-sm font-medium text-gray-700 mb-1">
-                            Attachments (one URL per line)
-                        </label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Tags</label>
+                        <input
+                            type="text"
+                            value={formData.tags}
+                            onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
+                            placeholder="Enter tags separated by commas"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Thumbnail URL</label>
+                        <input
+                            type="text"
+                            value={formData.thumbnail}
+                            onChange={(e) => setFormData({ ...formData, thumbnail: e.target.value })}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
+                            placeholder="Enter thumbnail URL"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Attachments (one URL per line)</label>
                         <div className="space-y-3">
                             <textarea
-                                id="attachments"
                                 value={formData.attachments.join('\n')}
                                 onChange={(e) => setFormData({ 
                                     ...formData, 
                                     attachments: e.target.value.split('\n').filter(url => url.trim())
                                 })}
-                                className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-black"
                                 placeholder="https://example.com/file1.pdf&#10;https://example.com/file2.jpg"
                                 rows={4}
                             />
@@ -258,34 +223,27 @@ export default function EditNewsletter() {
                         </div>
                     </div>
 
-                    <div>
-                        <label htmlFor="tags" className="block text-sm font-medium text-gray-700 mb-1">
-                            Tags (comma-separated)
-                        </label>
-                        <input
-                            type="text"
-                            id="tags"
-                            value={formData.tags}
-                            onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-                            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                            placeholder="e.g., alumni, events, updates"
-                        />
-                    </div>
-
-                    <div className="flex items-center">
+                    <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
                         <input
                             type="checkbox"
                             id="isPinned"
                             checked={formData.isPinned}
                             onChange={(e) => setFormData({ ...formData, isPinned: e.target.checked })}
-                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                            className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 cursor-pointer"
                         />
-                        <label htmlFor="isPinned" className="ml-2 block text-sm text-gray-700">
+                        <label htmlFor="isPinned" className="text-sm font-medium text-gray-700 cursor-pointer">
                             Pin this newsletter
                         </label>
                     </div>
 
-                    <div className="flex justify-end">
+                    <div className="flex justify-end space-x-3">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            className="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                        >
+                            Cancel
+                        </button>
                         <button
                             type="submit"
                             disabled={isSaving}
@@ -298,4 +256,4 @@ export default function EditNewsletter() {
             </div>
         </div>
     );
-}
+} 
