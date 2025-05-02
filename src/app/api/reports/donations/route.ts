@@ -16,6 +16,8 @@ export async function GET() {
 
         // Donations Per Month
         const donationsAmtByMonth: {[key:string]: number} = {};
+        // Donations Per Year
+        const donationsAmtByYear: {[key:number]: number} = {};
 
         for (const donation of donations) {
             const receivedBy = new Date(donation.receiveDate!);
@@ -25,11 +27,15 @@ export async function GET() {
                 const key = `${year}-${month.toString().padStart(2, "0")}`;
                 donationsAmtByMonth[key] = (donationsAmtByMonth[key] || 0) + donation.monetaryValue;
                 // totals cash donations made within the last six months
-                lastSixMonthsTotalDonations = lastSixMonthsTotalDonations + donation.monetaryValue;
+                lastSixMonthsTotalDonations += donation.monetaryValue;
             }
             if(donation.type === 'Cash'){
                 // totals cash donations older than 6 months
-                totalDonations = totalDonations + donation.monetaryValue;
+                totalDonations += donation.monetaryValue;
+                
+                // Add to yearly totals
+                const year = receivedBy.getFullYear();
+                donationsAmtByYear[year] = (donationsAmtByYear[year] || 0) + donation.monetaryValue;
             }
         }
 
@@ -42,32 +48,36 @@ export async function GET() {
             };
         });
 
-        // Add both for computation of cumulatitve later
-        let superTotalDonations = totalDonations + lastSixMonthsTotalDonations;
-
-        const cumulativeDonations: {[key:string]: number} = {};
-        const monthGroups = Object.keys(donationsAmtByMonth);
-        for(const month in monthGroups){
-            const donationInMonth = donationsAmtByMonth[month];
-            // subtract that month's donation from the sixMonthsTotal to get cumulative by that month
-            const monthTotal = superTotalDonations - lastSixMonthsTotalDonations - donationInMonth;
-            const key = month;
-            cumulativeDonations[key] = monthTotal;
+        // Get yearly stats for past 6 years
+        const currentYear = new Date().getFullYear();
+        const yearlyStats = [];
+        for (let year = currentYear - 5; year <= currentYear; year++) {
+            yearlyStats.push({
+                year: year,
+                amtOfDonations: donationsAmtByYear[year] || 0
+            });
         }
 
-        // Cumulative Donations by the month
-        const cumulativeStats = Object.entries(cumulativeDonations).map(([key, amount]) => {
-            const [year, month] = key.split("-");
-            return {
-                year: parseInt(year),
-                month: parseInt(month),
-                cumulativeThisMonth: amount,
-            }
-        });
-        
+        // Calculate cumulative stats
+        let runningTotal = 0;
+        const cumulativeStats = monthlyStats
+            .sort((a, b) => {
+                if (a.year !== b.year) return a.year - b.year;
+                return a.month - b.month;
+            })
+            .map(stat => {
+                runningTotal += stat.amtOfDonations;
+                return {
+                    year: stat.year,
+                    month: stat.month,
+                    cumulativeThisMonth: runningTotal
+                };
+            });
+
         return NextResponse.json(
             {
                 monthlyStats,
+                yearlyStats,
                 cumulativeStats,
             },
             {status: 200}

@@ -115,13 +115,20 @@ export default function ReportsPage() {
       try {
         const response = await fetch('/api/reports/donations');
         if (!response.ok) {
-          throw new Error('Failed to fetch dashboard stats');
+          throw new Error('Failed to fetch donations data');
         }
         const data = await response.json();
-        setMonthlyStats(data.monthlyStats);
-        setYearlyStats(data.yearlyStats);
-        setCumulativeStats(data.cumulativeStats);
+        
+        // Log the data to see what we're getting
+        console.log('Donations data:', data);
+
+        // Set each stat independently with fallbacks
+        setMonthlyStats(data.monthlyStats || []);
+        setYearlyStats(data.yearlyStats || []);
+        setCumulativeStats(data.cumulativeStats || []);
+
       } catch (err) {
+        console.error('Error fetching donations:', err);
         setDonationsError(err instanceof Error ? err.message : 'An error occurred');
       } finally {
         setIsDonationsLoading(false);
@@ -278,13 +285,34 @@ export default function ReportsPage() {
   };
 
   const processCumulativeData = () => {
-    const labels = yearlyStats?.map(stat => stat.year.toString()) || [];
-    const data = yearlyStats?.map(stat => stat.amtOfDonations) || [];
+    if (!yearlyStats || yearlyStats.length === 0) {
+      return {
+        labels: [],
+        datasets: [{
+          label: "Cumulative Donations (₱)",
+          data: [],
+          borderColor: "rgb(255, 99, 132)",
+          backgroundColor: "rgba(255, 99, 132, 0.2)", 
+          fill: true,
+          tension: 0.4
+        }]
+      };
+    }
+
+    // Sort yearly stats by year to ensure correct cumulative calculation
+    const sortedStats = [...yearlyStats].sort((a, b) => a.year - b.year);
+    
+    const labels = sortedStats.map(stat => stat.year.toString());
+    let cumulative = 0;
+    const data = sortedStats.map(stat => {
+      cumulative += stat.amtOfDonations;
+      return cumulative;
+    });
 
     return {
       labels,
       datasets: [{
-        label: "Cumulative Donations (₱)",
+        label: "Cumulative Donations (₱)", 
         data,
         borderColor: "rgb(255, 99, 132)",
         backgroundColor: "rgba(255, 99, 132, 0.2)",
@@ -400,14 +428,8 @@ export default function ReportsPage() {
   return (
     <div className="min-h-screen bg-white p-8">
       <div className="flex items-center gap-4 mb-8">
-        <Image
-          src="/logo_ares.png"
-          alt="Aegis Logo"
-          width={50}
-          height={50}
-          className="object-contain"
-        />
-        <h1 className="text-3xl font-bold text-black">System Statistics</h1>
+        
+        <h1 className="text-3xl font-bold text-black">AEGIS System Statistics</h1>
       </div>
       
       <div className="container mx-auto p-6 space-y-8 overflow-y-auto">

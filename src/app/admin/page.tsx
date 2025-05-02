@@ -136,12 +136,33 @@ useEffect(() => {
               </button>
             </Link>
 
-            <Link href="/admin/reports" className="block">
-              <button className="w-full bg-[#1a1f4d] hover:bg-[#0d47a1] text-white rounded-lg p-3 sm:p-4 text-left flex items-center justify-between transition-colors cursor-pointer">
-                <span className="text-sm sm:text-base">Generate Reports</span>
-                <span className="text-lg sm:text-xl">+</span>
-              </button>
-            </Link>
+           
+
+            <button 
+              onClick={async () => {
+                try {
+                  const response = await fetch('/api/puppeteer');
+                  if (!response.ok) throw new Error('Failed to generate PDF');
+                  
+                  const blob = await response.blob();
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = 'admin-reports.pdf';
+                  document.body.appendChild(a);
+                  a.click();
+                  window.URL.revokeObjectURL(url);
+                  document.body.removeChild(a);
+                } catch (error) {
+                  console.error('Error generating PDF:', error);
+                  alert('Failed to generate PDF report');
+                }
+              }}
+              className="w-full bg-[#1a1f4d] hover:bg-[#0d47a1] text-white rounded-lg p-3 sm:p-4 text-left flex items-center justify-between transition-colors cursor-pointer"
+            >
+              <span className="text-sm sm:text-base">Download Reports PDF</span>
+              <span className="text-lg sm:text-xl">↓</span>
+            </button>
 
             <Link href="/admin/communications" className="block">
               <button className="w-full bg-[#1a1f4d] hover:bg-[#0d47a1] text-white rounded-lg p-3 sm:p-4 text-left flex items-center justify-between transition-colors cursor-pointer">
