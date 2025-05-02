@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
                 createdAt: donation.receiveDate ? new Date(donation.receiveDate).toISOString() : new Date().toISOString(),
                 date: donation.receiveDate ? new Date(donation.receiveDate).toLocaleDateString() : 'N/A'
             }));
-        
+
         return NextResponse.json(userDonations, { status: 200 });
     } catch (error) {
         console.error("Failed to fetch user donations:", error);

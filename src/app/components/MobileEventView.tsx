@@ -152,6 +152,48 @@ export default function MobileEventView({
           </div>
         )}
 
+        {/* Top Pagination */}
+        {totalPages > 1 && (
+          <div className="sm:hidden mb-6">
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                className={`btn ${currentPage > 1 ? 'bg-white/10 hover:bg-white/20' : 'bg-white/5 cursor-not-allowed'} backdrop-blur-sm text-white border-none flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-white/20`}
+                disabled={currentPage === 1}
+              >
+                <ChevronLeft className="text-xl" />
+                <span>Prev</span>
+              </button>
+
+              <div className="flex items-center space-x-2">
+                <input
+                  type="number"
+                  value={currentPage}
+                  onChange={(e) => {
+                    const value = parseInt(e.target.value);
+                    if (!isNaN(value) && value >= 1 && value <= totalPages) {
+                      setCurrentPage(value);
+                    }
+                  }}
+                  min={1}
+                  max={totalPages}
+                  className="w-12 input input-bordered input-sm text-center text-base bg-white/10 text-white border-white/20"
+                />
+                <span className="text-gray-300">/ {totalPages}</span>
+              </div>
+
+              <button
+                onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                className={`btn ${currentPage < totalPages ? 'bg-white/10 hover:bg-white/20' : 'bg-white/5 cursor-not-allowed'} backdrop-blur-sm text-white border-none flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-white/20`}
+                disabled={currentPage === totalPages}
+              >
+                <span>Next</span>
+                <ChevronRight className="text-xl" />
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Events List */}
         {loading ? (
           <div className="flex justify-center py-8">
@@ -189,26 +231,45 @@ export default function MobileEventView({
               )}
             </div>
 
-            {/* Pagination */}
+            {/* Bottom Pagination */}
             {totalPages > 1 && (
-              <div className="flex justify-center items-center gap-4 mt-8">
-                <button
-                  onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                  disabled={currentPage === 1}
-                  className="p-2 bg-white/5 hover:bg-white/10 text-white rounded-lg disabled:opacity-50"
-                >
-                  <ChevronLeft size={20} />
-                </button>
-                <span className="text-white/80">
-                  {currentPage} / {totalPages}
-                </span>
-                <button
-                  onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                  disabled={currentPage === totalPages}
-                  className="p-2 bg-white/5 hover:bg-white/10 text-white rounded-lg disabled:opacity-50"
-                >
-                  <ChevronRight size={20} />
-                </button>
+              <div className="sm:hidden mt-6">
+                <div className="flex items-center justify-between">
+                  <button
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    className={`btn ${currentPage > 1 ? 'bg-white/10 hover:bg-white/20' : 'bg-white/5 cursor-not-allowed'} backdrop-blur-sm text-white border-none flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-white/20`}
+                    disabled={currentPage === 1}
+                  >
+                    <ChevronLeft className="text-xl" />
+                    <span>Prev</span>
+                  </button>
+
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="number"
+                      value={currentPage}
+                      onChange={(e) => {
+                        const value = parseInt(e.target.value);
+                        if (!isNaN(value) && value >= 1 && value <= totalPages) {
+                          setCurrentPage(value);
+                        }
+                      }}
+                      min={1}
+                      max={totalPages}
+                      className="w-12 input input-bordered input-sm text-center text-base bg-white/10 text-white border-white/20"
+                    />
+                    <span className="text-gray-300">/ {totalPages}</span>
+                  </div>
+
+                  <button
+                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                    className={`btn ${currentPage < totalPages ? 'bg-white/10 hover:bg-white/20' : 'bg-white/5 cursor-not-allowed'} backdrop-blur-sm text-white border-none flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-white/20`}
+                    disabled={currentPage === totalPages}
+                  >
+                    <span>Next</span>
+                    <ChevronRight className="text-xl" />
+                  </button>
+                </div>
               </div>
             )}
           </>

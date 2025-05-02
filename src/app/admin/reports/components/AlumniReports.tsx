@@ -119,31 +119,37 @@ const monthlyActiveData = {
   return (
     <div className={className}>
       {/* Charts */}
-      <div className="grid gap-6 md:grid-cols-2 text-black">
-        <Card>
-          <CardHeader>
-            <CardTitle>Alumni per Graduation Year</CardTitle>
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-2 text-black">
+        <Card className="overflow-hidden">
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="text-lg sm:text-xl">Alumni per Graduation Year</CardTitle>
           </CardHeader>
-          <CardContent>
-            <BarChart title="Alumni by Year" data={alumniByYearData} />
+          <CardContent className="p-4 sm:p-6">
+            <div className="w-full min-h-[300px] sm:min-h-[350px]">
+              <BarChart title="Alumni by Year" data={alumniByYearData} />
+            </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Distribution by Field</CardTitle>
+        <Card className="overflow-hidden">
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="text-lg sm:text-xl">Distribution by Field</CardTitle>
           </CardHeader>
-          <CardContent>
-            <PieChart title="Alumni by Field" data={alumniByFieldData} />
+          <CardContent className="p-4 sm:p-6">
+            <div className="w-full min-h-[300px] sm:min-h-[350px]">
+              <PieChart title="Alumni by Field" data={alumniByFieldData} />
+            </div>
           </CardContent>
         </Card>
 
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <CardTitle>Monthly Active Alumni</CardTitle>
+        <Card className="md:col-span-2 overflow-hidden">
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="text-lg sm:text-xl">Monthly Active Alumni</CardTitle>
           </CardHeader>
-          <CardContent>
-            <LineChart title="Engagement Trends" data={monthlyActiveData} />
+          <CardContent className="p-4 sm:p-6">
+            <div className="w-full min-h-[300px] sm:min-h-[400px]">
+              <LineChart title="Engagement Trends" data={monthlyActiveData} />
+            </div>
           </CardContent>
         </Card>
       </div>

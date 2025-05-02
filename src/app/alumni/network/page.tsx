@@ -328,14 +328,42 @@ export default function AlumniPage() {
 
             {/* Alumni Grid with Pagination */}
             <div className="relative">
-              {currentPage > 1 && (
-                <button
-                  onClick={() => setCurrentPage(currentPage - 1)}
-                  className="btn bg-white/10 backdrop-blur-sm text-white border-none flex-shrink-0 w-16 h-16 text-2xl absolute -left-20 top-1/2 -mt-8 z-10 rounded-full hover:bg-white/20 transition-all duration-300 shadow-lg hover:shadow-xl border border-white/20 hover:border-white/40"
-                >
-                  <IoIosArrowBack />
-                </button>
-              )}
+              {/* Mobile Top Pagination */}
+              <div className="sm:hidden mb-6">
+                <div className="flex items-center justify-between">
+                  <button
+                    onClick={() => currentPage > 1 && setCurrentPage(currentPage - 1)}
+                    className={`btn ${currentPage > 1 ? 'bg-white/10 hover:bg-white/20' : 'bg-white/5 cursor-not-allowed'} backdrop-blur-sm text-white border-none flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-white/20`}
+                    disabled={currentPage <= 1}
+                  >
+                    <IoIosArrowBack className="text-xl" />
+                    <span>Prev</span>
+                  </button>
+
+                  {totalPages > 1 && (
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="number"
+                        value={pageInput}
+                        onChange={handlePageInput}
+                        min={1}
+                        max={totalPages}
+                        className="w-12 input input-bordered input-sm text-center text-base bg-white/10 text-white border-white/20"
+                      />
+                      <span className="text-gray-300">/ {totalPages}</span>
+                    </div>
+                  )}
+
+                  <button
+                    onClick={() => currentPage < totalPages && setCurrentPage(currentPage + 1)}
+                    className={`btn ${currentPage < totalPages ? 'bg-white/10 hover:bg-white/20' : 'bg-white/5 cursor-not-allowed'} backdrop-blur-sm text-white border-none flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-white/20`}
+                    disabled={currentPage >= totalPages}
+                  >
+                    <span>Next</span>
+                    <IoIosArrowForward className="text-xl" />
+                  </button>
+                </div>
+              </div>
 
               {/* Alumni Grid */}
               <motion.div 
@@ -344,7 +372,7 @@ export default function AlumniPage() {
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: currentPage > 1 ? 20 : -20 }}
                 transition={{ duration: 0.3 }}
-                className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4"
+                className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-4"
               >
                 {loading ? (
                   <div className="col-span-full text-center py-8">
@@ -357,10 +385,10 @@ export default function AlumniPage() {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.3, delay: index * 0.05 }}
-                      className="w-full h-88 bg-white/10 backdrop-blur-sm rounded-lg overflow-hidden shadow-md flex flex-col relative group transition-all duration-300 border border-white/20"
+                      className="w-full h-[248px] sm:h-88 bg-white/10 backdrop-blur-sm rounded-lg overflow-hidden shadow-md flex flex-col relative group transition-all duration-300 border border-white/20"
                     >
                       {/* Front View - Default */}
-                      <div className="absolute inset-0 flex flex-col items-center justify-between opacity-100 group-hover:opacity-0 transition-all duration-300">
+                      <div className="relative w-full h-full flex flex-col bg-white/10">
                         <div className="w-full h-[85%] bg-white/20 overflow-hidden">
                           {alumni.imageUrl ? (
                             <img
@@ -370,45 +398,45 @@ export default function AlumniPage() {
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center bg-white/5">
-                              <FiUsers className="text-gray-400" size={64} />
+                              <FiUsers className="text-gray-400 w-12 h-12 sm:w-16 sm:h-16" />
                             </div>
                           )}
                         </div>
-                        <div className="w-full py-3 px-2 text-center bg-black/20 backdrop-blur-sm">
-                          <p className="text-white font-medium">{alumni.name}</p>
-                          <p className="text-gray-300 text-sm">Batch {alumni.graduationYear || "N/A"}</p>
+                        <div className="w-full flex-1 py-2 sm:py-3 px-2 text-center bg-black/20 backdrop-blur-sm">
+                          <p className="text-white font-medium text-sm sm:text-base truncate">{alumni.name}</p>
+                          <p className="text-gray-300 text-xs sm:text-sm">Batch {alumni.graduationYear || "N/A"}</p>
                         </div>
                       </div>
 
                       {/* Hover View - Detailed Info */}
-                      <div className="absolute inset-0 flex flex-col justify-center items-center bg-[#1a1f4d]/90 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all duration-300 p-6">
-                        <div className="w-full space-y-4">
-                          <div className="text-center mb-2">
-                            <h3 className="text-xl font-semibold text-white">{alumni.name}</h3>
-                            <p className="text-gray-300">Class of {alumni.graduationYear || "N/A"}</p>
+                      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm p-3 sm:p-4 flex flex-col items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <div className="w-full space-y-2 sm:space-y-4">
+                          <div className="text-center mb-1 sm:mb-2">
+                            <h3 className="text-base sm:text-xl font-semibold text-white truncate">{alumni.name}</h3>
+                            <p className="text-gray-300 text-xs sm:text-sm">Class of {alumni.graduationYear || "N/A"}</p>
                           </div>
                           
                           {/* Academic Info */}
-                          <div className="text-gray-200 text-sm">
-                            <p className="mb-1 text-center">{alumni.department || "Department not specified"}</p>
+                          <div className="text-gray-200 text-xs sm:text-sm">
+                            <p className="mb-1 text-center line-clamp-1">{alumni.department || "Department not specified"}</p>
                           </div>
 
                           {/* Professional Info */}
                           {(alumni.currentPosition || alumni.currentCompany) && (
-                            <div className="text-gray-200 text-center border-t border-white/10 pt-4">
-                              <p>{alumni.currentPosition}</p>
-                              <p className="text-gray-300">{alumni.currentCompany}</p>
+                            <div className="text-gray-200 text-center border-t border-white/10 pt-2 sm:pt-4">
+                              <p className="text-xs sm:text-sm line-clamp-1">{alumni.currentPosition}</p>
+                              <p className="text-gray-300 text-xs sm:text-sm line-clamp-1">{alumni.currentCompany}</p>
                             </div>
                           )}
 
                           {/* Contact Links */}
-                          <div className="flex justify-center gap-2 pt-4">
+                          <div className="flex justify-center space-x-2">
                             {alumni.linkedIn && (
                               <a
                                 href={alumni.linkedIn}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-blue-400 hover:text-blue-300 underline text-sm"
+                                className="text-blue-400 hover:text-blue-300 underline text-xs sm:text-sm"
                                 onClick={(e) => e.stopPropagation()}
                               >
                                 LinkedIn Profile
@@ -419,7 +447,7 @@ export default function AlumniPage() {
                         
                         <button 
                           onClick={() => router.push(`/alumni/network/${alumni.id}`)}
-                          className="mt-6 px-6 py-2 bg-white/10 hover:bg-white/20 border border-white/40 rounded-lg text-white transition-colors cursor-pointer"
+                          className="mt-2 sm:mt-6 px-4 sm:px-6 py-1.5 sm:py-2 bg-white/10 hover:bg-white/20 border border-white/40 rounded-lg text-white transition-colors cursor-pointer text-xs sm:text-sm"
                         >
                           View Full Profile
                         </button>
@@ -441,19 +469,68 @@ export default function AlumniPage() {
                 )}
               </motion.div>
 
-              {currentPage < totalPages && (
-                <button
-                  onClick={() => setCurrentPage(currentPage + 1)}
-                  className="btn bg-white/10 backdrop-blur-sm text-white border-none flex-shrink-0 w-16 h-16 text-2xl absolute -right-20 top-1/2 -mt-8 z-10 rounded-full hover:bg-white/20 transition-all duration-300 shadow-lg hover:shadow-xl border border-white/20 hover:border-white/40"
-                >
-                  <IoIosArrowForward />
-                </button>
-              )}
+              {/* Mobile Bottom Pagination */}
+              <div className="sm:hidden mt-6">
+                <div className="flex items-center justify-between">
+                  <button
+                    onClick={() => currentPage > 1 && setCurrentPage(currentPage - 1)}
+                    className={`btn ${currentPage > 1 ? 'bg-white/10 hover:bg-white/20' : 'bg-white/5 cursor-not-allowed'} backdrop-blur-sm text-white border-none flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-white/20`}
+                    disabled={currentPage <= 1}
+                  >
+                    <IoIosArrowBack className="text-xl" />
+                    <span>Prev</span>
+                  </button>
+
+                  {totalPages > 1 && (
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="number"
+                        value={pageInput}
+                        onChange={handlePageInput}
+                        min={1}
+                        max={totalPages}
+                        className="w-12 input input-bordered input-sm text-center text-base bg-white/10 text-white border-white/20"
+                      />
+                      <span className="text-gray-300">/ {totalPages}</span>
+                    </div>
+                  )}
+
+                  <button
+                    onClick={() => currentPage < totalPages && setCurrentPage(currentPage + 1)}
+                    className={`btn ${currentPage < totalPages ? 'bg-white/10 hover:bg-white/20' : 'bg-white/5 cursor-not-allowed'} backdrop-blur-sm text-white border-none flex items-center justify-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl border border-white/20`}
+                    disabled={currentPage >= totalPages}
+                  >
+                    <span>Next</span>
+                    <IoIosArrowForward className="text-xl" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Desktop Pagination Buttons */}
+              <div className="hidden sm:block">
+                {currentPage > 1 && (
+                  <button
+                    onClick={() => setCurrentPage(currentPage - 1)}
+                    className="btn bg-white/10 backdrop-blur-sm text-white border-none flex-shrink-0 w-16 h-16 text-2xl absolute -left-20 top-1/2 -mt-8 z-10 rounded-full hover:bg-white/20 transition-all duration-300 shadow-lg hover:shadow-xl border border-white/20 hover:border-white/40"
+                  >
+                    <IoIosArrowBack />
+                  </button>
+                )}
+
+                {currentPage < totalPages && (
+                  <button
+                    onClick={() => setCurrentPage(currentPage + 1)}
+                    className="btn bg-white/10 backdrop-blur-sm text-white border-none flex-shrink-0 w-16 h-16 text-2xl absolute -right-20 top-1/2 -mt-8 z-10 rounded-full hover:bg-white/20 transition-all duration-300 shadow-lg hover:shadow-xl border border-white/20 hover:border-white/40"
+                  >
+                    <IoIosArrowForward />
+                  </button>
+                )}
+              </div>
             </div>
 
-            {/* Page Number Display */}
+            {/* Desktop Page Number Display */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-center mt-4">
+              <div className="hidden sm:flex items-center justify-center mt-4">
                 <div className="flex items-center space-x-2">
                   <input
                     type="number"
