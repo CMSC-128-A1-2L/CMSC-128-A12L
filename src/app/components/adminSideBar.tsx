@@ -9,6 +9,7 @@ import {
   MessageCircleWarningIcon,
   LogsIcon,
   SwitchCamera,
+  Newspaper,
 } from "lucide-react";
 import { RefObject } from "react";
 import Link from "next/link";
@@ -59,6 +60,11 @@ export default function AdminSidebar({
         name: "Events",
         icon: <CalendarCogIcon size={20} />,
         path: "/admin/events",
+      },
+      {
+        name: "Newsletters",
+        icon: <Newspaper size={20} />,
+        path: "/admin/newsletters",
       },
       {
         name: "Communications",

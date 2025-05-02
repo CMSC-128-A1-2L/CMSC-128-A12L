@@ -10,6 +10,7 @@ import {
   SwitchCamera,
   Settings,
   LayoutDashboard,
+  Newspaper,
 } from "lucide-react";
 import { RefObject } from "react";
 import Link from "next/link";
@@ -75,6 +76,11 @@ export default function AlumniSidebar({
         path: "/alumni/jobs",
       },
       { name: "Events", icon: <Calendar size={20} />, path: "/alumni/events" },
+      {
+        name: "Newsletters",
+        icon: <Newspaper size={20} />,
+        path: "/alumni/newsletters",
+      },
       {
         name: "Announcements",
         icon: <Bell size={20} />,
