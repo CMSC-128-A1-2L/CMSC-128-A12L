@@ -6,13 +6,11 @@ import AlumniReports from "./components/AlumniReports";
 import JobsReports from "./components/JobsReports";
 import EventsReports from "./components/EventsReports";
 import DonationsReports from "./components/DonationsReports";
-import DownloadModal from "./components/DownloadModal";
 
 type ReportType = "alumni" | "jobs" | "events" | "donations" | null;
 
 export default function ReportsPage() {
   const [selectedReport, setSelectedReport] = useState<ReportType>("alumni");
-  const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
 
   const renderReport = () => {
     switch (selectedReport) {
@@ -31,10 +29,6 @@ export default function ReportsPage() {
           </div>
         );
     }
-  };
-
-  const handleExportToPDF = () => {
-    setIsDownloadModalOpen(true);
   };
 
   return (
@@ -79,22 +73,10 @@ export default function ReportsPage() {
           >
             Export to PDF
           </Button>
-          <Button
-            className="text-black ml-auto"
-            variant="outline"
-            onClick={handleExportToPDF}
-          >
-            Export to PDF
-          </Button>
         </div>
       </div>
 
       {renderReport()}
-
-      <DownloadModal
-        isOpen={isDownloadModalOpen}
-        onClose={() => setIsDownloadModalOpen(false)}
-      />
     </div>
   );
 }
