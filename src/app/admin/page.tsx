@@ -5,6 +5,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import ConstellationBackground from '../components/constellation_background';
 import Modal from '../components/modal';
+import DownloadModal from './reports/components/DownloadModal';
 
 interface ActivityItem {
   id: number;
@@ -29,6 +30,7 @@ export default function AdminDashboard() {
     numberOfUpcomingEvents: 0,
     numberOfOpportunities: 0,
   });
+  const [isDownloadModalOpen, setIsDownloadModalOpen] = useState(false);
 
   useEffect(() => {
     async function fetchDashboardStats() {
@@ -86,6 +88,9 @@ useEffect(() => {
   fetchActivities();
 }, []);
 
+const handleExportToPDF = () => {
+  setIsDownloadModalOpen(true);
+};
 
   return (
     <div className="px-4 sm:px-6 md:px-8 py-4 sm:py-6">
@@ -135,29 +140,9 @@ useEffect(() => {
                 <span className="text-lg sm:text-xl">+</span>
               </button>
             </Link>
-
-           
-
+            
             <button 
-              onClick={async () => {
-                try {
-                  const response = await fetch('/api/puppeteer');
-                  if (!response.ok) throw new Error('Failed to generate PDF');
-                  
-                  const blob = await response.blob();
-                  const url = window.URL.createObjectURL(blob);
-                  const a = document.createElement('a');
-                  a.href = url;
-                  a.download = 'admin-reports.pdf';
-                  document.body.appendChild(a);
-                  a.click();
-                  window.URL.revokeObjectURL(url);
-                  document.body.removeChild(a);
-                } catch (error) {
-                  console.error('Error generating PDF:', error);
-                  alert('Failed to generate PDF report');
-                }
-              }}
+              onClick={handleExportToPDF}
               className="w-full bg-[#1a1f4d] hover:bg-[#0d47a1] text-white rounded-lg p-3 sm:p-4 text-left flex items-center justify-between transition-colors cursor-pointer"
             >
               <span className="text-sm sm:text-base">Download Reports PDF</span>
@@ -200,6 +185,11 @@ useEffect(() => {
         title={selectedActivity?.title || ""}
         content={selectedActivity?.content || ""}
         timestamp={selectedActivity?.timestamp || ""}
+      />
+
+      <DownloadModal
+        isOpen={isDownloadModalOpen}
+        onClose={() => setIsDownloadModalOpen(false)}
       />
     </div>
   );
