@@ -1,74 +1,79 @@
-import { NextApiRequest, NextApiResponse } from "next/server";
-import { getServerSession } from "next-auth"; 
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+// app/api/donations/[id]/route.ts
+import { NextRequest, NextResponse } from "next/server";
 import { getEducationRepository } from "@/repositories/donation_repository";
 import { Donation } from "@/entities/donation";
-import { UserRole } from "@/entities/user";  
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { UserRole } from "@/entities/user";
 
-
-
-export async function GET(req: NextApiRequest, res: NextApiResponse) {
-    const { id } = req.query;
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
     const session = await getServerSession(authOptions);
-    //authorization check: ensure the user is authenticated and has the "ADMIN" role
+
     if (!session || !session.user.role.includes(UserRole.ADMIN)) {
-        return res.status(401).json({ error: "Unauthorized" });
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const donationRepo = getEducationRepository();
+
     try {
-        const donationRepository = getEducationRepository();
-        const donation = await donationRepository.getDonationById(id as string);
+        const donation = await donationRepo.getDonationById(params.id);
+
         if (donation) {
-            res.status(200).json(donation);
+        return NextResponse.json(donation, { status: 200 });
         } else {
-            res.status(404).json({ error: "Donation not found" });
+        return NextResponse.json({ error: "Donation not found" }, { status: 404 });
         }
-    } catch (error) {
-        res.status(500).json({ error: "Error retrieving donation" });
+    } catch (err) {
+        console.error("Failed to fetch donation:", err);
+        return new NextResponse("Failed to fetch donation", { status: 500 });
     }
 }
 
-export async function PUT(req: NextApiRequest, res: NextApiResponse) {
-    const { id } = req.query;
+export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
     const session = await getServerSession(authOptions);
 
     if (!session || !session.user.role.includes(UserRole.ADMIN)) {
-        return res.status(401).json({ error: "Unauthorized" });
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const donationRepo = getEducationRepository();
+
     try {
-        const donationRepository = getEducationRepository();
-        const existingDonation = await donationRepository.getDonationById(id as string);
-        if (existingDonation) {
-            const donationData: Donation = req.body;
-            donationData._id = id as string;
-            await donationRepository.updateDonation(donationData);
-            res.status(200).json({ message: "Donation updated successfully" });
-        } else {
-            res.status(404).json({ error: "Donation not found" });
+        const existingDonation = await donationRepo.getDonationById(params.id);
+        if (!existingDonation) {
+        return NextResponse.json({ error: "Donation not found" }, { status: 404 });
         }
-    } catch (error) {
-        res.status(500).json({ error: "Error updating donation" });
+
+        const donationData: Donation = await req.json();
+        donationData._id = params.id;
+        await donationRepo.updateDonation(donationData);
+
+        return NextResponse.json({ message: "Donation updated successfully" }, { status: 200 });
+    } catch (err) {
+        console.error("Failed to update donation:", err);
+        return new NextResponse("Failed to update donation", { status: 500 });
     }
 }
 
-export async function DELETE(req: NextApiRequest, res: NextApiResponse) {
-    const { id } = req.query;
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
     const session = await getServerSession(authOptions);
+
     if (!session || !session.user.role.includes(UserRole.ADMIN)) {
-        return res.status(401).json({ error: "Unauthorized" });
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const donationRepo = getEducationRepository();
+
     try {
-        const donationRepository = getEducationRepository();
-        const existingDonation = await donationRepository.getDonationById(id as string);
-        if (existingDonation) {
-            await donationRepository.deleteDonation(id as string);
-            res.status(200).json({ message: "Donation deleted successfully" });
-        } else {
-            res.status(404).json({ error: "Donation not found" });
+        const existingDonation = await donationRepo.getDonationById(params.id);
+        if (!existingDonation) {
+        return NextResponse.json({ error: "Donation not found" }, { status: 404 });
         }
-    } catch (error) {
-        res.status(500).json({ error: "Error deleting donation" });
+
+        await donationRepo.deleteDonation(params.id);
+        return NextResponse.json({ message: "Donation deleted successfully" }, { status: 200 });
+    } catch (err) {
+        console.error("Failed to delete donation:", err);
+        return new NextResponse("Failed to delete donation", { status: 500 });
     }
 }

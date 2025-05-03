@@ -4,42 +4,40 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { UserRole } from "@/entities/user";
 
-// * NOTE: Possibly disable clicking of other correspondence buttons until/unless previously clicked is unclicked. 
-
-
-// MARKS an event as interested
 export async function POST(req: NextRequest, { params }: { params: {id: string}}) {
     try {
-        // get session info
         const session = await getServerSession(authOptions);
         if(!session || !session.user.role.includes(UserRole.ALUMNI)){
             return NextResponse.json({error: "Unauthorized"}, {status: 401})
         }
 
-        const {id} = params;
+        const {id} = await params;
         const eventRepository = getEventRepository();
+        const event = await eventRepository.getEventById(id);
 
-        // URL Query Ver
-        // const qParams = req.nextUrl.searchParams;
-        // const interest = qParams.get('interest'); 
-        // if(interest === 'true'){
-        
-        // marking as interested
-        if(req.body){
-            return await eventRepository.addToEventWGo(id, session.user.id)
-            .then(() => new NextResponse("Successfully added interest to event", {status: 200}))
-            .catch(() => new NextResponse("Failed to mark event interest", {status: 500}));
-        }else{
-        // toggle user INTEREST to false, remove user from wouldGo
-            return await eventRepository.deleteFromEventWGo(id, session.user.id)
-            .then(() => new NextResponse("Successfully removed interest to event", {status: 200}))
-            .catch(() => new NextResponse("Failed to remove event interest", {status: 500}));
+        if (!event) {
+            return NextResponse.json({error: "Event not found"}, {status: 404});
         }
-        
+
+        const userId = session.user.id;
+
+        // Check if user is already in wouldGo
+        if (event.wouldGo.includes(userId)) {
+            // Remove from wouldGo if already present
+            await eventRepository.deleteFromEventWGo(id, userId);
+            return NextResponse.json({message: "Response removed", action: "removed"}, {status: 200});
+        } else {
+            // Remove from other arrays first
+            await eventRepository.deleteFromEventWNotGo(id, userId);
+            await eventRepository.deleteFromEventWMaybeGo(id, userId);
+            // Add to wouldGo
+            await eventRepository.addToEventWGo(id, userId);
+            return NextResponse.json({message: "Response updated", action: "added"}, {status: 200});
+        }
     } catch (error) {
-        console.log("Failed to mark as interested: ", error);
+        console.error("Failed to update response:", error);
         return NextResponse.json(
-            { error: "Failed to mark as interested"},
+            { error: "Failed to update response"},
             { status: 500 }
         );
     }

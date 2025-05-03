@@ -1,17 +1,30 @@
 "use client";
 import React from "react";
+import { Calendar, MapPin, Users, Image as ImageIcon } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface EventCardProps {
   title: string;
   organizer: string;
   location: string;
-  date: string;
+  date: Date;
   description: string;
   imageUrl: string;
+  eventStatus: string;
   onDetailsClick: () => void;
   onSponsorClick: () => void;
   onApplyClick: () => void;
 }
+
+const DefaultEventBanner = ({ title }: { title: string }) => (
+  <div className="relative h-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center p-4">
+    <div className="text-center">
+      <ImageIcon className="w-12 h-12 mx-auto mb-2 text-white/40" />
+      <h3 className="text-xl font-bold text-white/80 line-clamp-2">{title}</h3>
+    </div>
+    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+  </div>
+);
 
 const EventCard: React.FC<EventCardProps> = ({
   title,
@@ -20,52 +33,84 @@ const EventCard: React.FC<EventCardProps> = ({
   date,
   description,
   imageUrl,
+  eventStatus,
   onDetailsClick,
   onSponsorClick,
   onApplyClick,
 }) => {
   return (
-    <div className="card bg-white hover:bg-white rounded-xl overflow-hidden transition-all duration-200 h-[500px] shadow-lg">
-      <figure className="relative h-48">
-        <img 
-          src={imageUrl} 
-          alt={`${title} event banner`} 
-          className="w-full h-full object-cover" 
-        />
-      </figure>
+    <motion.div
+      whileHover={{ y: -5 }}
+      transition={{ type: "spring", stiffness: 400, damping: 10 }}
+      className="h-full flex flex-col bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg overflow-hidden transition-colors cursor-pointer"
+    >
+      {/* Image container */}
+      <div className="relative h-48 overflow-hidden">
+        {imageUrl ? (
+          <img
+            src={imageUrl}
+            alt={title}
+            className="w-full h-full object-cover"
+          />
+        ) : (
+          <div className="w-full h-full bg-white/5 flex items-center justify-center">
+            <Calendar className="h-12 w-12 text-white/20" />
+          </div>
+        )}
+      </div>
 
-      <div className="card-body p-4 flex flex-col h-[calc(500px-12rem)]">
-        <h2 className="card-title text-lg font-semibold text-gray-800 mb-1 line-clamp-2">{title}</h2>
-        <p className="text-sm text-gray-600 mb-3 line-clamp-1">
-          {organizer} • {location}
-        </p>
+      {/* Content */}
+      <div className="flex flex-col flex-grow p-4">
+        {/* Title and Status */}
+        <div className="flex items-start justify-between gap-4 mb-2">
+          <h3 className="text-lg font-semibold text-white line-clamp-2">{title}</h3>
+          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+            eventStatus === 'upcoming' ? 'bg-green-500/20 text-green-400' :
+            eventStatus === 'ongoing' ? 'bg-blue-500/20 text-blue-400' :
+            'bg-gray-500/20 text-gray-400'
+          }`}>
+            {eventStatus.charAt(0).toUpperCase() + eventStatus.slice(1)}
+          </span>
+        </div>
+
+        {/* Organizer */}
+        <p className="text-sm text-gray-300 mb-2">{organizer}</p>
+
+        {/* Location and Date */}
+        <div className="space-y-2 mb-4">
+          <div className="flex items-center gap-2 text-sm text-gray-400">
+            <MapPin size={14} />
+            <span>{location}</span>
+          </div>
+          <div className="flex items-center gap-2 text-sm text-gray-400">
+            <Calendar size={14} />
+            <span>{new Date(date).toLocaleDateString()}</span>
+          </div>
+        </div>
+
+        {/* Description */}
+        <p className="text-sm text-gray-300 line-clamp-3 mb-4 flex-grow">{description}</p>
+
+        {/* Action Buttons */}
         <div className="flex flex-col gap-2 mt-auto">
           <button
             onClick={onDetailsClick}
-            className="btn btn-sm btn-ghost bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg w-full"
+            className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors border border-white/10 cursor-pointer"
           >
             Details
-          </button>
-          <button
-            onClick={() => {
-              onSponsorClick();
-            }}
-            className="btn btn-sm btn-primary rounded-lg w-full"
-          >
-            Sponsor
           </button>
           <button
             onClick={(e) => {
               e.stopPropagation();
               onApplyClick();
             }}
-            className="btn btn-sm btn-primary rounded-lg w-full"
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors cursor-pointer"
           >
-            Respond
+            RSVP
           </button>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

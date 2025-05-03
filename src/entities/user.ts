@@ -34,4 +34,27 @@ export interface User extends AdapterUser {
      * URL to the user's uploaded image.
      **/
     imageUrl?: string;
+
+    /**
+     * When the user was created.
+     **/
+    createdAt?: Date;
+
+    /**
+     * When the user was last updated.
+     **/
+    updatedAt?: Date;
+
+    /**
+     * Profile-related fields
+     **/
+    graduationYear?: number;
+    department?: string;
+    bio?: string;
+    phoneNumber?: string;
+    currentLocation?: string;
+    currentCompany?: string;
+    currentPosition?: string;
+    linkedIn?: string;
+    website?: string;
 };

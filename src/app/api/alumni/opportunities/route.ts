@@ -5,26 +5,33 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { UserRole } from "@/entities/user";
 import { Opportunity } from "@/entities/opportunity";
-
-export async function GET(request: NextRequest) {
-    try {
-        // Check alumni authentication
-        const session = await getServerSession(authOptions);
-        if (!session || !session.user.role.includes(UserRole.ALUMNI)) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-        }
-
-        const opportunityRepository = getOpportunityRepository();
-        const opportunities = await opportunityRepository.getAllOpportunities();
-        
-        return NextResponse.json(opportunities);
-    } catch (error) {
-        console.error("Failed to fetch opportunities:", error);
-        return NextResponse.json(
-            { error: "Failed to fetch opportunities" },
-            { status: 500 }
-        );
+export async function GET(req: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    const { searchParams } = new URL(req.url);
+    const filter = searchParams.get("filter") || "all";
+
+    const opportunityRepository = getOpportunityRepository();
+    let opportunities;
+
+    if (filter === "user") {
+      opportunities = await opportunityRepository.getOpportunitiesByUserId(session.user.id);
+    } else {
+      opportunities = await opportunityRepository.getAllOpportunities();
+    }
+
+    return NextResponse.json(opportunities);
+  } catch (error) {
+    console.error("Error fetching opportunities:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch opportunities" },
+      { status: 500 }
+    );
+  }
 }
 
 export async function POST(request: NextRequest) {

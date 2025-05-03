@@ -3,151 +3,254 @@
 // see 'page_1.tsx' for full version
 
 "use client";
-import { useState } from "react";
-import { EllipsisVertical, Trash } from "lucide-react";
 
-
-const initialNotifications = [
-  { id: 1, type: "event", message: "You are invited to the ICS Grand Alumni Homecoming 2025.", time: "2h", unread: true },
-  { id: 2, type: "job", message: "New job posted by Momi Oni at Secret Lung: Front-End Developer.", time: "5h", unread: true },
-  { id: 3, type: "announcement", message: "Admin posted an announcement: ICS Palicsihan.", time: "9h", unread: true },
-  { id: 4, type: "announcement", message: "Admin posted an announcement: Hiring", time: "9h", unread: false },
-  { id: 5, type: "donation", message: "You successfully donated ₱500 to the ICS Scholarship Fund.", time: "1d", unread: false },
-  { id: 6, type: "event", message: "You are invited in the event discussion: 'TechTalks 2025'.", time: "2d", unread: false },
-  { id: 7, type: "donation", message: "You successfully donated ₱100000 to the ICS Scholarship Fund.", time: "1d", unread: false },
-  { id: 8, type: "announcement", message: "You are invited to Momi Oni's birthday party ", time: "4d", unread: false },
-  { id: 9, type: "announcement", message: "Welcome to AEGIS", time: "4d", unread: false },
-  { id: 10, type: "announcement", message: "Reminder: Event tomorrow ", time: "4d", unread: false },
-  { id: 11, type: "announcement", message: "Check out the new features", time: "4d", unread: false },
-  { id: 12, type: "announcement", message: "Welcome to AEGIS ", time: "4d", unread: false },
-];
+import { useState, useEffect } from "react";
+import { Trash } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { Notification } from "@/entities/notifications";
+import ConstellationBackground from "@/app/components/constellationBackground";
 
 export default function NotificationsPage() {
-    const [tab, setTab] = useState<'all' | 'unread'>('all');
-    const [showOptions, setShowOptions] = useState<number | null>(null); 
-    const [notifications, setNotifications] = useState(initialNotifications);
-  
-    const filtered = tab === 'all' ? notifications : notifications.filter((n) => n.unread);
-  
-    const handleMarkAllAsRead = () => {
-      
-      const updatedNotifications = notifications.map((notif) => ({
-        ...notif,
-        unread: false,
-      }));
-      setNotifications(updatedNotifications);
-    };
-  
-    const handleMarkAsRead = (id: number) => {
-      setNotifications((prevNotifications) =>
-        prevNotifications.map((notif) =>
-          notif.id === id ? { ...notif, unread: false } : notif
-        )
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [tab, setTab] = useState<'all' | 'unread'>('all');
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/login");
+      return;
+    }
+    if (status === "authenticated") {
+      fetchNotifications();
+    }
+  }, [status, session]);
+
+  const fetchNotifications = async () => {
+    try {
+      if (!session?.user?.id) {
+        setError("User session not found");
+        setLoading(false);
+        return;
+      }
+      const response = await fetch(`/api/notifications?userId=${session.user.id}`);
+      if (!response.ok) throw new Error("Failed to fetch notifications");
+      const data = await response.json();
+      setNotifications(data);
+      setLoading(false);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to load notifications");
+      setLoading(false);
+    }
+  };
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      const response = await fetch("/api/notifications/mark-all-read", { method: "PUT" });
+      if (!response.ok) throw new Error("Failed to mark all as read");
+
+      setNotifications(prev =>
+        prev.map(notif => ({ ...notif, isRead: true }))
       );
-    };
-  
-    const handleMarkAsUnread = (id: number) => {
-      setNotifications((prevNotifications) =>
-        prevNotifications.map((notif) =>
-          notif.id === id ? { ...notif, unread: true } : notif
-        )
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleMarkAsRead = async (id: string) => {
+    try {
+      const response = await fetch(`/api/notifications/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isRead: true }),
+      });
+      if (!response.ok) throw new Error("Failed to mark as read");
+
+      setNotifications(prev =>
+        prev.map(notif => notif._id === id ? { ...notif, isRead: true } : notif)
       );
-    };
-  
-    const handleDelete = (id: number) => {
-      setNotifications((prevNotifications) =>
-        prevNotifications.filter((notif) => notif.id !== id)
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleMarkAsUnread = async (id: string) => {
+    try {
+      const response = await fetch(`/api/notifications/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isRead: false }),
+      });
+      if (!response.ok) throw new Error("Failed to mark as unread");
+
+      setNotifications(prev =>
+        prev.map(notif => notif._id === id ? { ...notif, isRead: false } : notif)
       );
-    };
-  
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      const response = await fetch(`/api/notifications/${id}`, { method: "DELETE" });
+      if (!response.ok) throw new Error("Failed to delete");
+
+      setNotifications(prev =>
+        prev.filter(notif => notif._id !== id)
+      );
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const filtered = tab === 'all'
+    ? notifications
+    : notifications.filter((n) => !n.isRead);
+
+  const formatTimeAgo = (date: Date) => {
+    const now = new Date();
+    const diff = now.getTime() - new Date(date).getTime();
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+    if (days > 0) return `${days}d`;
+    if (hours > 0) return `${hours}h`;
+    if (minutes > 0) return `${minutes}m`;
+    return 'Just now';
+  };
+
+  if (loading) {
     return (
-      <div className="flex-1 overflow-y-auto p-6 bg-white text-[#0c0051] font-montserrat">
-        <h1 className="text-2xl font-bold mb-4 text-[#0c0051]">Notifications</h1>
-  
-        {/* Tab Navigation */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex space-x-4">
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="loading loading-spinner loading-lg"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-red-500">{error}</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen">
+      {/* Hero section */}
+      <div className="relative text-white -mt-16 pt-16 overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-r from-[#1a1f4d]/90 to-[#2a3f8f]/90"></div>
+        <ConstellationBackground />
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 z-10 text-center">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4">Notifications</h1>
+          <p className="text-2xl text-gray-200 mt-2">View your recent notifications</p>
+        </div>
+      </div>
+
+      {/* Main content */}
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 z-10">
+        {/* Tabs and Mark all */}
+        <div className="flex items-center justify-between mb-6 gap-2">
+          <div className="flex gap-2">
             <button
-              className={`px-4 py-2 rounded-md ${tab === 'all' ? 'bg-[#0c0051] text-white' : 'bg-gray-100 text-[#0c0051]'}`}
+              className={`px-3 py-2 rounded-md transition-colors cursor-pointer text-sm ${
+                tab === 'all'
+                  ? 'bg-white/10 text-white'
+                  : 'bg-white/5 text-gray-300 hover:bg-white/10'
+              }`}
               onClick={() => setTab('all')}
             >
-              All Notifications
+              All
             </button>
             <button
-              className={`px-4 py-2 rounded-md ${tab === 'unread' ? 'bg-[#0c0051] text-white' : 'bg-gray-100 text-[#0c0051]'}`}
+              className={`px-3 py-2 rounded-md transition-colors cursor-pointer text-sm ${
+                tab === 'unread'
+                  ? 'bg-white/10 text-white'
+                  : 'bg-white/5 text-gray-300 hover:bg-white/10'
+              }`}
               onClick={() => setTab('unread')}
             >
-              Unread Notifications
+              Unread
             </button>
           </div>
-  
-          {/* Mark All as Read Button */}
           <button
-            className="px-4 py-2 bg-[#0c0051] text-white rounded-md"
+            className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors cursor-pointer text-sm whitespace-nowrap"
             onClick={handleMarkAllAsRead}
           >
             Mark all as read
           </button>
         </div>
-  
-        {/* Notifications List */}
-        <div className="w-full max-w-[1200px] h-[calc(100vh-200px)] overflow-y-auto mx-auto">
-          {filtered.length === 0 ? (
-            <p className="text-gray-500">No notifications available.</p>
-          ) : (
-            filtered.map((notif) => (
-              <div
-                key={notif.id}
-                className={`p-4 mb-4 bg-[#f0f0f0] rounded-lg shadow-sm transition-all duration-200 hover:bg-[#0c0051] hover:text-white ${
-                  notif.unread ? 'border-l-4 border-[#0c0051]' : ''
-                } relative group`}
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <p className="font-semibold">{notif.message}</p>
-                    <span className="text-sm text-gray-500">{notif.time} ago</span>
-                  </div>
-                  {/* Unread Dot */}
-                  {notif.unread && (
-                    <div className="w-2.5 h-2.5 bg-[#0c0051] rounded-full"></div>
-                  )}
-                </div>
-  
-                {/* Ellipsis Button*/}
-                <div className="absolute top-1/2 right-4 transform -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
-                  <button
-                    className="p-2 text-[#0c0051] hover:bg-[#f0f0f0] rounded-full"
-                    onClick={() => setShowOptions(showOptions === notif.id ? null : notif.id)}
-                  >
-                    <EllipsisVertical size={20} />
-                  </button>
-  
-                  {/* Dropdown options */}
-                    {showOptions === notif.id && (
-                    <div className="absolute top-[-50px] right-0 mt-2 bg-white shadow-lg rounded-md p-2 z-30">
-                        <button
-                        className="block w-full text-left text-[#0c0051] text-sm py-1 px-3 hover:bg-[#f0f0f0] rounded-md whitespace-nowrap"
-                        onClick={() =>
-                            notif.unread ? handleMarkAsRead(notif.id) : handleMarkAsUnread(notif.id)
-                        }
-                        >
-                        {notif.unread ? "Mark as read" : "Mark as unread"}
-                        </button>
-                        <button
-                        className="block w-full text-left text-[#0c0051] text-sm py-1 px-3 hover:bg-[#f0f0f0] rounded-md whitespace-nowrap"
-                        onClick={() => handleDelete(notif.id)}
-                        >
-                        <Trash size={14} className="inline mr-1" />
-                        Delete
-                        </button>
-                    </div>
-                    )}
 
+        {/* Notifications list */}
+        <div className="space-y-4">
+          {filtered.length === 0 ? (
+            <div className="text-center text-gray-400 py-12 text-lg">
+              No notifications found.
+            </div>
+          ) : (
+            filtered.map(notif => (
+              <div
+                key={notif._id}
+                className={`group p-4 sm:p-6 rounded-xl border border-white/10 backdrop-blur-md bg-white/5 hover:bg-white/10 transition-all duration-200 ${
+                  notif.isRead ? "border-l-4 border-blue-500" : ""
+                }`}
+              >
+                <div className="flex items-start sm:items-center justify-between">
+                  <div className="flex-1 min-w-0 pr-4">
+                    <p className="text-base sm:text-lg text-white font-semibold line-clamp-2">{notif.message}</p>
+                    <div className="flex flex-wrap items-center gap-1 sm:gap-2 text-gray-400 text-xs sm:text-sm mt-1">
+                      <span>{formatTimeAgo(notif.createdAt)} ago</span>
+                      <span>•</span>
+                      <span className="capitalize">{notif.type}</span>
+                      {!notif.userId && (
+                        <>
+                          <span>•</span>
+                          <span>Global</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Actions  */}
+                  <div className="flex flex-col sm:flex-row gap-1 sm:gap-2 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        notif.isRead ? handleMarkAsUnread(notif._id!) : handleMarkAsRead(notif._id!);
+                      }}
+                      className="px-2 sm:px-3 py-1 rounded-md bg-white/10 hover:bg-white/20 text-gray-200 text-xs cursor-pointer whitespace-nowrap"
+                    >
+                      {notif.isRead ? "Mark as Unread" : "Mark as Read"}
+                    </button>
+                    {notif.userId === session?.user?.id && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(notif._id!);
+                        }}
+                        className="px-2 sm:px-3 py-1 rounded-md bg-blue-600 hover:bg-blue-700 text-white text-xs flex items-center justify-center cursor-pointer"
+                      >
+                        <Trash size={12} className="mr-1" />
+                        Delete
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Unread dot */}
+                  {!notif.isRead && (
+                    <div className="w-2 sm:w-2.5 h-2 sm:h-2.5 bg-blue-500 rounded-full ml-2 flex-shrink-0"></div>
+                  )}
                 </div>
               </div>
             ))
           )}
         </div>
       </div>
-    );
-  }
+    </div>
+  );
+}

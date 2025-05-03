@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document, Model, Types} from "mongoose";
+import { UserRole } from "@/entities/user";
 
 // function isValidLinkedIn(url: string): boolean {
 //   const linkedInRegex = /^https:\/\/www\.linkedin\.com\/in\/[A-Za-z0-9-]+\/?$/
@@ -26,57 +27,89 @@ export enum AlumniStatus {
   REJECTED = "rejected"
 }
 
+/**
+ * The data model for a user.
+ **/
 export interface UserDto {
-  // In case of google authentication, we need to store the google id and refresh token.
-  // googleId?: string,
-  // refreshToken?: string,
-  id: string,
-  email: string,
-  emailVerified?: Date,
-  role: number,
-  studentId?: string,
-  name: string,
-  suffix?: string,
-  alumniStatus?: string,
-  documentUrl?: string,
-  imageUrl?: string,
-  // gender: string,
-  // currentAddress: string,
-  // bio: string,
-  // linkedIn: string,
-  // contactNumbers: number[],
-  // adviser: Types.ObjectId,
+  /**
+   * The user's ID.
+   **/
+  id: string;
+
+  /**
+   * The user's name.
+   **/
+  name: string;
+
+  /**
+   * The user's email.
+   **/
+  email: string;
+
+  /**
+   * The user's role.
+   **/
+  role: number;
+
+  /**
+   * The user's status.
+   **/
+  alumniStatus: AlumniStatus;
+  
+  /**
+   * URL to the user's uploaded document (PDF).
+   **/
+  documentUrl?: string;
+
+  /**
+   * URL to the user's uploaded image.
+   **/
+  imageUrl?: string;
+
+  /**
+   * When the user was created.
+   **/
+  createdAt?: Date;
+
+  /**
+   * When the user was last updated.
+   **/
+  updatedAt?: Date;
+
+  /**
+   * Profile-related fields
+   **/
+  graduationYear?: number;
+  department?: string;
+  bio?: string;
+  phoneNumber?: string;
+  currentLocation?: string;
+  currentCompany?: string;
+  currentPosition?: string;
+  linkedIn?: string;
+  website?: string;
 }
 
 export const UserSchema = new Schema<UserDto>(
   {
     id: { type: String, required: true },
-    role: { type: Number, required: true },
-    // googleId: { type: String },
-    // refreshToken: { type: String },
-    email: { type: String, required: true },
-    emailVerified: { type: Date },
-    studentId: { type: String },
     name: { type: String, required: true },
-    suffix: { type: String },
-    alumniStatus: { type: String, enum: AlumniStatus, default: AlumniStatus.PENDING },
+    role: { type: Number, required: true },
+    email: { type: String, required: true },
+    alumniStatus: { type: String, enum: AlumniStatus, required: true },
     documentUrl: { type: String },
     imageUrl: { type: String },
-    // currentAddress: { type: String, default: "" },
-    // bio : { type: String, default: "" },
-    // linkedIn: { type: String, validate: {
-    //     validator: isValidLinkedIn,
-    //     message: "Invalid LinkedIn contact number."
-    //   } 
-    // },
-    // contactNumbers : {
-    //   type: [String],
-    //   validate: {
-    //     validator: isValidContactNumber,
-    //     message: "Invalid contact number."
-    //   } 
-    // },
-    // adviser: { type: Schema.Types.ObjectId }
+    createdAt: { type: Date },
+    updatedAt: { type: Date },
+    graduationYear: { type: Number },
+    department: { type: String },
+    bio: { type: String },
+    phoneNumber: { type: String },
+    currentLocation: { type: String },
+    currentCompany: { type: String },
+    currentPosition: { type: String },
+    linkedIn: { type: String },
+    website: { type: String },
   },
   {
     timestamps: true,

@@ -22,7 +22,18 @@ export function mapUserDtoToUser(userDto: UserDto): User {
         role: role,
         alumniStatus: (userDto.alumniStatus as AlumniStatus) ?? AlumniStatus.PENDING,
         documentUrl: userDto.documentUrl,
-        imageUrl: userDto.imageUrl
+        imageUrl: userDto.imageUrl,
+        createdAt: userDto.createdAt,
+        updatedAt: userDto.updatedAt,
+        graduationYear: userDto.graduationYear,
+        department: userDto.department,
+        bio: userDto.bio,
+        phoneNumber: userDto.phoneNumber,
+        currentLocation: userDto.currentLocation,
+        currentCompany: userDto.currentCompany,
+        currentPosition: userDto.currentPosition,
+        linkedIn: userDto.linkedIn,
+        website: userDto.website
     }
 }
 
@@ -45,7 +56,18 @@ export function mapUserToUserDto(user: User): UserDto {
         role: role,
         alumniStatus: user.alumniStatus,
         documentUrl: user.documentUrl,
-        imageUrl: user.imageUrl
+        imageUrl: user.imageUrl,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
+        graduationYear: user.graduationYear,
+        department: user.department,
+        bio: user.bio,
+        phoneNumber: user.phoneNumber,
+        currentLocation: user.currentLocation,
+        currentCompany: user.currentCompany,
+        currentPosition: user.currentPosition,
+        linkedIn: user.linkedIn,
+        website: user.website
     };
 
     if (user.emailVerified !== null) {

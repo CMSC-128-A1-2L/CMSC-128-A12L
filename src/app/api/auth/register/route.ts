@@ -1,4 +1,4 @@
-import { User, UserRole } from "@/entities/user";
+import { User } from "@/entities/user";
 import { UserCredentials } from "@/entities/user_credentials";
 import { getPasswordEncryptionProvider } from "@/providers/password_encryption";
 import { getUserIdProvider } from "@/providers/user_id";
@@ -6,6 +6,7 @@ import { getUserCredentialRepository } from "@/repositories/user_credentials_rep
 import { getUserRepository } from "@/repositories/user_repository";
 import { NextRequest, NextResponse } from "next/server";
 import { uploadPdf } from "../../cloudinary/upload_pdf";
+import { AlumniStatus } from "@/models/user";
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
     try {
@@ -51,14 +52,22 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         const userRepository = getUserRepository();
         const userCredentialsRepository = getUserCredentialRepository();
 
+        const userCheck: User | null = await userRepository.getUserByEmail(email);
+
+        if (userCheck) {
+            return NextResponse.json({
+                success: false,
+                error: "User already exists"
+            }, { status: 400 });
+        }
+
         const user: User = {
             id,
             name,
             email,
             emailVerified: null,
             role: [],
-
-            // PDF url (cloudinary thingy)
+            alumniStatus: AlumniStatus.PENDING,
             documentUrl: uploadResult.url
         };
 
@@ -77,13 +86,13 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
             userCredentialsRepository.createUserCredentials(userCredentials)
         ]);
 
-        return new NextResponse(JSON.stringify({
+        return NextResponse.json({
             success: true,
             user: {
                 ...user,
                 documentUrl: uploadResult.url
             }
-        }), { status: 200 });
+        }, { status: 200 });
     } catch (error) {
         console.error("Registration error:", error);
         return NextResponse.json(

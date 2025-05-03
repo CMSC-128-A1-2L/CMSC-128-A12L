@@ -38,37 +38,46 @@ export default function ReportsPage() {
   };
 
   return (
-    <div className="container mx-auto py-8 space-y-8">
+    <div className="container mx-auto px-4 py-6 sm:py-8 space-y-6 sm:space-y-8">
       <div className="flex flex-col space-y-4">
-        <h1 className="text-3xl font-bold">Reports Dashboard</h1>
-        <div className="flex flex-wrap gap-4">
+        <h1 className="text-2xl sm:text-3xl font-bold">Reports Dashboard</h1>
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 sm:flex gap-2 sm:gap-4">
+            <Button
+              className="text-black w-full sm:w-auto"
+              variant={selectedReport === "alumni" ? "default" : "outline"}
+              onClick={() => setSelectedReport("alumni")}
+            >
+              Alumni Reports
+            </Button>
+            <Button
+              className="text-black w-full sm:w-auto"
+              variant={selectedReport === "jobs" ? "default" : "outline"}
+              onClick={() => setSelectedReport("jobs")}
+            >
+              Jobs Reports
+            </Button>
+            <Button
+              className="text-black w-full sm:w-auto"
+              variant={selectedReport === "events" ? "default" : "outline"}
+              onClick={() => setSelectedReport("events")}
+            >
+              Events Reports
+            </Button>
+            <Button
+              className="text-black w-full sm:w-auto"
+              variant={selectedReport === "donations" ? "default" : "outline"}
+              onClick={() => setSelectedReport("donations")}
+            >
+              Donations Reports
+            </Button>
+          </div>
           <Button
-            className="text-black"
-            variant={selectedReport === "alumni" ? "default" : "outline"}
-            onClick={() => setSelectedReport("alumni")}
+            className="text-black w-full sm:w-auto sm:ml-auto"
+            variant="outline"
+            onClick={() => {}}
           >
-            Alumni Reports
-          </Button>
-          <Button
-            className="text-black"
-            variant={selectedReport === "jobs" ? "default" : "outline"}
-            onClick={() => setSelectedReport("jobs")}
-          >
-            Jobs Reports
-          </Button>
-          <Button
-            className="text-black"
-            variant={selectedReport === "events" ? "default" : "outline"}
-            onClick={() => setSelectedReport("events")}
-          >
-            Events Reports
-          </Button>
-          <Button
-            className="text-black"
-            variant={selectedReport === "donations" ? "default" : "outline"}
-            onClick={() => setSelectedReport("donations")}
-          >
-            Donations Reports
+            Export to PDF
           </Button>
           <Button
             className="text-black ml-auto"
