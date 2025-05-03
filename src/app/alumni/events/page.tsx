@@ -597,7 +597,6 @@ export default function EventListings() {
                                 onDetailsClick={() => handleEventDetails(event)}
                                 onSponsorClick={() => handleSponsor(event)}
                                 onApplyClick={() => setRsvpEvent(event)}
-                                eventId={event._id!}
                               />
                             ) : (
                               <EventRow
@@ -611,7 +610,6 @@ export default function EventListings() {
                                 onDetailsClick={() => handleEventDetails(event)}
                                 onSponsorClick={() => handleSponsor(event)}
                                 onApplyClick={() => setRsvpEvent(event)}
-                                eventId={event._id!}
                               />
                             )}
                           </motion.div>
@@ -654,7 +652,7 @@ export default function EventListings() {
                         onClose={handleCloseDetailsModal}
                         onRSVPClick={() => {
                           // Close the details modal first
-                          const modal = document.getElementById("event_details_modal") as HTMLDialogElement;
+                          const modal = document.getElementById("job_details_modal") as HTMLDialogElement;
                           if (modal) {
                             modal.close();
                             setShowDetailsModal(false);
@@ -671,10 +669,9 @@ export default function EventListings() {
                     )}
 
                     {/* Sponsorship Details Modal */}
-                    {selectedEvent && showSponsorModal && (
-                      <SponsorshipsModal
+                    {selectedEvent && (
+                        <SponsorshipsModal
                         onClose={handleCloseSponsorModal}
-                        eventId={selectedEvent._id!}
                       />
                     )}
 

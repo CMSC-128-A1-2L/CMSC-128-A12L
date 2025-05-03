@@ -8,7 +8,12 @@ interface EditEventModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (updatedEvent: Event) => void;
-  event: Event;
+  event: Event | null;
+}
+
+interface SponsorshipChip {
+  id: string;
+  name: string;
 }
 
 // Helper to format date for datetime-local input
@@ -33,41 +38,57 @@ const formatDateTimeLocal = (date: Date | string | undefined): string => {
   }
 };
 
-// Helper function to safely format dates
-const formatDateForInput = (date: Date | string | undefined) => {
-  if (!date) return "";
-  const dateObj = date instanceof Date ? date : new Date(date);
-  if (isNaN(dateObj.getTime())) return ""; // Return empty string if invalid date
-  return dateObj.toISOString().slice(0, 16); // Format as YYYY-MM-DDTHH:mm
-};
-
-export default function EditEventModal({
-  isOpen,
-  onClose,
-  onSave,
-  event
-}: EditEventModalProps) {
-  const [formData, setFormData] = useState({
-    ...event,
-    startDate: event.startDate ? new Date(event.startDate) : new Date(),
-    endDate: event.endDate ? new Date(event.endDate) : new Date(),
+const EditEventModal: React.FC<EditEventModalProps> = ({ isOpen, onClose, onSave, event }) => {
+  const [formData, setFormData] = useState<Partial<Event>>({
+    name: event?.name || "",
+    organizer: event?.organizer || "",
+    description: event?.description || "",
+    type: event?.type || "social",
+    startDate: event?.startDate ? new Date(event.startDate) : new Date(),
+    endDate: event?.endDate ? new Date(event.endDate) : new Date(),
+    location: event?.location || "",
+    imageUrl: event?.imageUrl || "",
     sponsorship: {
-      enabled: event.sponsorship?.enabled || false,
-      goal: event.sponsorship?.goal || 0,
-      currentAmount: event.sponsorship?.currentAmount || 0,
-      sponsors: event.sponsorship?.sponsors || []
-    }
+      currentAmount: event?.sponsorship?.currentAmount || 0,
+      goal: event?.sponsorship?.goal || 0,
+      enabled: false,
+      sponsors: []
+    },
   });
   const [sponsorshipInput, setSponsorshipInput] = useState<string>("");
-  const [sponsorshipChips, setSponsorshipChips] = useState(
-    event.sponsorship?.sponsors.map(sponsor => ({
-      id: Date.now().toString() + sponsor,
-      name: sponsor
-    })) || []
-  );
-  const [previewImage, setPreviewImage] = useState<string | null>(event.imageUrl || null);
+  const [sponsorshipChips, setSponsorshipChips] = useState<SponsorshipChip[]>([]);
+  const [sponsorshipEnabled, setSponsorshipEnabled] = useState(false);
+  const [rsvpEnabled, setRsvpEnabled] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(event?.imageUrl || null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (event) {
+      setFormData({
+        ...event,
+        startDate: event.startDate ? new Date(event.startDate) : new Date(),
+        endDate: event.endDate ? new Date(event.endDate) : new Date(),
+      });
+      setSponsorshipEnabled(event.sponsorship?.enabled || false);
+      if (event.sponsorship?.sponsors) {
+        setSponsorshipChips(
+          event.sponsorship.sponsors.map(sponsor => ({
+            id: Date.now().toString() + sponsor,
+            name: sponsor
+          }))
+        );
+      }
+      setRsvpEnabled(event.rsvp?.enabled || false);
+      setPreviewImage(event.imageUrl || null);
+    } else {
+      setFormData({});
+      setSponsorshipEnabled(false);
+      setSponsorshipChips([]);
+      setRsvpEnabled(false);
+      setPreviewImage(null);
+    }
+  }, [event]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -93,6 +114,11 @@ export default function EditEventModal({
     }
   };
 
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, checked } = e.target;
+    setFormData(prev => ({ ...prev, [name]: checked }));
+  };
+
   const handleSponsorshipInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSponsorshipInput(e.target.value);
   };
@@ -107,7 +133,7 @@ export default function EditEventModal({
         setFormData(prev => ({
           ...prev,
           sponsorship: {
-            ...prev.sponsorship,
+            enabled: true,
             sponsors: [...(prev.sponsorship?.sponsors || []), sponsor]
           }
         }));
@@ -123,11 +149,33 @@ export default function EditEventModal({
       setFormData(prev => ({
         ...prev,
         sponsorship: {
-          ...prev.sponsorship,
+          enabled: true,
           sponsors: prev.sponsorship?.sponsors?.filter(s => s !== chipToRemove.name) || []
         }
       }));
     }
+  };
+
+  const handleSponsorshipToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const enabled = e.target.checked;
+    setSponsorshipEnabled(enabled);
+    if (!enabled) {
+      setFormData(prev => ({
+        ...prev,
+        sponsorship: {
+          enabled: false,
+          sponsors: []
+        }
+      }));
+      setSponsorshipChips([]);
+      setSponsorshipInput('');
+    }
+  };
+
+  const handleRsvpToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setRsvpEnabled(e.target.checked);
+    // Add logic here if disabling RSVP should clear wouldGo arrays etc.
+    // For now, just toggles the state.
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -285,6 +333,19 @@ export default function EditEventModal({
                   />
                 </div>
               </div>
+              
+              {/* RSVP Toggle */}
+              <div className="flex items-center gap-2 pt-2">
+                <label htmlFor="rsvpToggle" className="text-sm font-medium text-gray-700 flex-1">Enable RSVP</label>
+                <input 
+                  type="checkbox" 
+                  id="rsvpToggle"
+                  checked={rsvpEnabled}
+                  onChange={handleRsvpToggle}
+                  className="toggle toggle-primary border-2 border-gray-300 checked:bg-blue-500"
+                 />
+              </div>
+
             </div>
 
             {/* Column 2 */} 
@@ -295,7 +356,7 @@ export default function EditEventModal({
                   <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-800 z-10" size={18} />
                   <input
                     type="datetime-local"
-                    value={formatDateForInput(formData.startDate)}
+                    value={formData.startDate ? formData.startDate.toISOString().slice(0, 16) : ""}
                     onChange={(e) => setFormData({ ...formData, startDate: new Date(e.target.value) })}
                     className="input input-bordered w-full pl-10 bg-white border-gray-200 no-input-date"
                     onKeyDown={(e) => e.preventDefault()}
@@ -310,7 +371,7 @@ export default function EditEventModal({
                   <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-800 z-10" size={18} />
                   <input
                     type="datetime-local"
-                    value={formatDateForInput(formData.endDate)}
+                    value={formData.endDate ? formData.endDate.toISOString().slice(0, 16) : ""}
                     onChange={(e) => setFormData({ ...formData, endDate: new Date(e.target.value) })}
                     className="input input-bordered w-full pl-10 bg-white border-gray-200 no-input-date"
                     onKeyDown={(e) => e.preventDefault()}
@@ -319,53 +380,50 @@ export default function EditEventModal({
                 </div>
               </div>
 
-              {/* Sponsorship Section */}
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Sponsorship Settings</h3>
-                <div className="form-control">
-                  <label className="label cursor-pointer justify-start gap-2">
-                    <input
-                      type="checkbox"
-                      className="toggle toggle-primary border-2 border-gray-300 checked:bg-blue-500"
-                      checked={formData.sponsorship.enabled}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          sponsorship: {
-                            ...formData.sponsorship,
-                            enabled: e.target.checked
-                          }
-                        })
-                      }
-                    />
-                    <span className="label-text">Enable Sponsorship for this Event</span>
-                  </label>
-                </div>
-
-                {formData.sponsorship.enabled && (
-                    <div className="form-control">
-                    <label className="label">
-                      <span className="label-text text-gray-700">Sponsorship Goal (₱)</span>
-                    </label>
-                    <input
-                      type="number"
-                      className="input input-bordered bg-white [&::-webkit-inner-spin-button]:text-gray-500"
-                      style={{ colorScheme: 'light' }}
-                      value={formData.sponsorship.goal}
-                      onChange={(e) =>
-                      setFormData({
-                      ...formData,
-                      sponsorship: {
-                      ...formData.sponsorship,
-                      goal: parseInt(e.target.value) || 0
-                      }
-                      })
-                      }
-                      min="0"
-                    />
-                    </div>
-                )}
+              {/* Sponsorship Toggle & Value */}
+              <div className="flex items-center gap-2 pt-2">
+                 <label htmlFor="sponsorshipToggle" className="text-sm font-medium text-gray-700 flex-1">Enable Sponsorship</label>
+                 <input 
+                  type="checkbox" 
+                  id="sponsorshipToggle"
+                  checked={sponsorshipEnabled}
+                  onChange={handleSponsorshipToggle}
+                  className="toggle toggle-primary border-2 border-gray-300 checked:bg-blue-500"
+                 />
               </div>
+              
+              {sponsorshipEnabled && (
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Add Sponsorships</label>
+                  <div className="flex flex-wrap gap-2 p-3 bg-gray-50 border border-gray-200 rounded-xl min-h-[42px] hover:border-blue-300 transition-colors duration-200">
+                    {sponsorshipChips.map((chip) => (
+                      <motion.div
+                        key={chip.id}
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="flex items-center gap-1 bg-blue-100 text-blue-700 px-3 py-1.5 rounded-full text-sm hover:bg-blue-200 transition-colors duration-200"
+                      >
+                        <span>{chip.name}</span>
+                        <button
+                          type="button"
+                          onClick={() => removeSponsorshipChip(chip.id)}
+                          className="hover:text-blue-500 transition-colors"
+                        >
+                          <X size={16} />
+                        </button>
+                      </motion.div>
+                    ))}
+                    <input
+                      type="text"
+                      value={sponsorshipInput}
+                      onChange={handleSponsorshipInput}
+                      onKeyDown={handleSponsorshipKeyDown}
+                      className="flex-1 bg-transparent border-none outline-none text-gray-900 placeholder-gray-400 min-w-[200px]"
+                      placeholder="Type sponsorship and press Enter"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
@@ -398,4 +456,6 @@ export default function EditEventModal({
       </motion.div>
     </div>
   );
-}
+};
+
+export default EditEventModal;
