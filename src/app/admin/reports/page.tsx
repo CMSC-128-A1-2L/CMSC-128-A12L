@@ -73,13 +73,6 @@ export default function ReportsPage() {
             </Button>
           </div>
           <Button
-            className="text-black w-full sm:w-auto sm:ml-auto"
-            variant="outline"
-            onClick={() => {}}
-          >
-            Export to PDF
-          </Button>
-          <Button
             className="text-black ml-auto"
             variant="outline"
             onClick={handleExportToPDF}
