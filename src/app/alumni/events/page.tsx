@@ -639,7 +639,17 @@ export default function EventListings() {
                         </div>
                       )}
                     </motion.div>
-
+                    
+                    {rsvpEvent && (
+                      <div 
+                        className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+                        onClick={(e) => {
+                          if (e.target === e.currentTarget) setRsvpEvent(null);
+                        }}
+                      >
+                        <RSVPOptions event={rsvpEvent} />
+                      </div>
+                )}
                     {/* Event Details Modal */}
                     {selectedEvent && (
                       <EventDetails
