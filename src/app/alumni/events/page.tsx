@@ -291,7 +291,7 @@ export default function EventListings() {
   const handleEventDetails = (event: Event) => {
     setSelectedEvent(event);
     const modal = document.getElementById(
-      "job_details_modal"
+      "event_details_modal"
     ) as HTMLDialogElement;
     if (modal) {
       modal.showModal();
