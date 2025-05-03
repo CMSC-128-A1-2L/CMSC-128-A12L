@@ -59,7 +59,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({
   };
 
   return (
-    <dialog id="job_details_modal" className="modal modal-bottom sm:modal-middle">
+    <dialog id="event_details_modal" className="modal modal-bottom sm:modal-middle">
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

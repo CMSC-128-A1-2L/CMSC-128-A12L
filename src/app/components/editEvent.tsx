@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import { Event } from "@/entities/event";
-import { Calendar, MapPin, X, Handshake, Info, Users, Image as ImageIcon, ChevronDown } from "lucide-react";
+import { Calendar, MapPin, X, Handshake, Info, Users, Image as ImageIcon, ChevronDown, DollarSign } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface EditEventModalProps {
@@ -49,8 +49,10 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ isOpen, onClose, onSave
     location: event?.location || "",
     imageUrl: event?.imageUrl || "",
     sponsorship: {
-      enabled: false,
-      sponsors: []
+      enabled: event?.sponsorship?.enabled || false,
+      goal: event?.sponsorship?.goal || 0,
+      currentAmount: event?.sponsorship?.currentAmount || 0,
+      sponsors: event?.sponsorship?.sponsors || [],
     },
   });
   const [sponsorshipInput, setSponsorshipInput] = useState<string>("");
@@ -389,28 +391,61 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ isOpen, onClose, onSave
                   <label className="font-bold text-left text-gray-800">Enable Sponsorship</label>
                 </div>
                 {sponsorshipEnabled && (
-                  <div className="space-y-2">
-                    <input
-                      type="text"
-                      value={sponsorshipInput}
-                      onChange={handleSponsorshipInput}
-                      onKeyDown={handleSponsorshipKeyDown}
-                      placeholder="Add sponsors (press Enter)"
-                      className="input w-full bg-white border-black text-black placeholder:text-gray-400"
-                    />
-                    <div className="flex flex-wrap gap-2">
-                      {sponsorshipChips.map(chip => (
-                        <div key={chip.id} className="badge gap-2 bg-[#242937] text-white border-none">
-                          {chip.name}
-                          <button
-                            type="button"
-                            onClick={() => removeSponsorshipChip(chip.id)}
-                            className="btn btn-xs btn-ghost btn-circle hover:bg-[#1b1f4e]"
-                          >
-                            <X size={14} />
-                          </button>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Sponsorship Goal (₱)
+                      </label>
+                      <div className="relative">
+                        <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                        <input
+                          type="number"
+                          value={formData.sponsorship?.goal || ''}
+                          onChange={(e) => setFormData(prev => ({
+                            ...prev,
+                            sponsorship: {
+                              ...prev.sponsorship,
+                              enabled: true,
+                              goal: parseFloat(e.target.value) || 0
+                            }
+                          }))}
+                          className="input input-bordered w-full pl-10 bg-white"
+                          placeholder="Enter sponsorship goal amount"
+                          min="1"
+                          step="any"
+                          required={sponsorshipEnabled}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Add Sponsorship Options
+                      </label>
+                      <div className="space-y-2">
+                        <input
+                          type="text"
+                          value={sponsorshipInput}
+                          onChange={handleSponsorshipInput}
+                          onKeyDown={handleSponsorshipKeyDown}
+                          placeholder="Add sponsors (press Enter)"
+                          className="input w-full bg-white border-black text-black placeholder:text-gray-400"
+                        />
+                        <div className="flex flex-wrap gap-2">
+                          {sponsorshipChips.map(chip => (
+                            <div key={chip.id} className="badge gap-2 bg-[#242937] text-white border-none">
+                              {chip.name}
+                              <button
+                                type="button"
+                                onClick={() => removeSponsorshipChip(chip.id)}
+                                className="btn btn-xs btn-ghost btn-circle hover:bg-[#1b1f4e]"
+                              >
+                                <X size={14} />
+                              </button>
+                            </div>
+                          ))}
                         </div>
-                      ))}
+                      </div>
                     </div>
                   </div>
                 )}

@@ -48,6 +48,29 @@ export interface DonationRepository {
      * @returns A promise that resolves when the school or institution is deleted successfully.
      */
     deleteDonation(id: string): Promise<void>;
+
+    /**
+     * Creates or updates an event sponsorship.
+     * @param eventId The ID of the event being sponsored
+     * @param sponsorshipData The sponsorship details including goal amount
+     * @returns A promise that resolves to the sponsorship ID
+     */
+    createEventSponsorship(eventId: string, sponsorshipData: Donation): Promise<string>;
+
+    /**
+     * Gets sponsorship details for an event
+     * @param eventId The ID of the event
+     * @returns A promise that resolves to the sponsorship details or null if not found
+     */
+    getEventSponsorship(eventId: string): Promise<Donation | null>;
+
+    /**
+     * Adds a sponsorship contribution to an event
+     * @param eventId The ID of the event
+     * @param contribution The contribution details including amount and donor
+     * @returns A promise that resolves when the contribution is added
+     */
+    addSponsorshipContribution(eventId: string, contribution: Donation): Promise<void>;
 }
 
 class MongoDBDonationRepository implements DonationRepository {
@@ -79,6 +102,50 @@ class MongoDBDonationRepository implements DonationRepository {
         await this.model.findByIdAndDelete(id);
     }
 
+    async createEventSponsorship(eventId: string, sponsorshipData: Donation): Promise<string> {
+        const sponsorshipDto = mapDonationToDonationDto({
+            ...sponsorshipData,
+            eventId,
+            isEventSponsorship: true,
+            currentAmount: 0
+        });
+        const created = await this.model.create(sponsorshipDto);
+        return created._id.toString();
+    }
+
+    async getEventSponsorship(eventId: string): Promise<Donation | null> {
+        const sponsorshipDto = await this.model.findOne({ 
+            eventId, 
+            isEventSponsorship: true 
+        });
+        return sponsorshipDto ? mapDonationDtoToDonation(sponsorshipDto) : null;
+    }
+
+    async addSponsorshipContribution(eventId: string, contribution: Donation): Promise<void> {
+        const sponsorship = await this.model.findOne({ 
+            eventId, 
+            isEventSponsorship: true 
+        });
+
+        if (!sponsorship) {
+            throw new Error('Sponsorship not found for this event');
+        }
+
+        // Update the current amount
+        const newAmount = (sponsorship.currentAmount || 0) + contribution.monetaryValue;
+        await this.model.findByIdAndUpdate(sponsorship._id, {
+            $set: { currentAmount: newAmount }
+        });
+
+        // Create the contribution record
+        const contributionDto = mapDonationToDonationDto({
+            ...contribution,
+            eventId,
+            isEventSponsorship: false
+        });
+        await this.model.create(contributionDto);
+    }
+
     constructor(connection: Connection) {
         this.connection = connection;
         this.model = connection.models["Donation"] ?? connection.model("Donation", DonationSchema, "donations");    //not sure if tama yung connection -- Caleb
@@ -95,4 +162,4 @@ export function getEducationRepository(): DonationRepository {
     const connection = connectDB();
     donationRepository = new MongoDBDonationRepository(connection);
     return donationRepository;
-} 
+}

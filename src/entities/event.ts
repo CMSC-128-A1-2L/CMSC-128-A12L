@@ -10,6 +10,8 @@ export interface Event {
     imageUrl?: string;
     sponsorship?: {
         enabled: boolean;
+        goal: number;
+        currentAmount: number;
         sponsors: string[];
     };
     rsvp?: {
@@ -20,4 +22,4 @@ export interface Event {
     wouldGo: string[];    
     wouldNotGo: string[]; 
     wouldMaybeGo: string[]; 
-} 
+}
