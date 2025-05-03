@@ -62,6 +62,7 @@ export default function UsersManagement(){
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [alumniUsers, setAlumniUsers] = useState<UserDto[]>([]);
     const [pendingVerificationUsers, setPendingVerificationUsers] = useState<UserDto[]>([]);
+    const [activeSection, setActiveSection] = useState<'users' | 'pending'>('users');
 
 
     
@@ -253,28 +254,54 @@ export default function UsersManagement(){
     };
 
     return (
-        <div className="w-full px-4 md:px-10">
-            <div className="flex flex-col lg:flex-row gap-6">
+        <div className="w-full px-2 sm:px-4 md:px-10">
+            <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
                 {/* User Management Card */}
                 <motion.div 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5 }}
-                    className="bg-white/10 backdrop-blur-md shadow-xl rounded-3xl p-4 md:p-6 w-full lg:w-2/3"
+                    className="bg-white/10 backdrop-blur-md shadow-xl rounded-3xl p-3 sm:p-4 md:p-6 w-full lg:w-2/3"
                 >
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
+                    {/* Mobile Navigation Tabs */}
+                    <div className="md:hidden flex justify-center mb-4">
+                        <div className="flex bg-gray-100 rounded-lg p-1 w-full max-w-xs">
+                            <button
+                                onClick={() => setActiveSection('users')}
+                                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                                    activeSection === 'users'
+                                        ? 'bg-white text-blue-600 shadow-sm'
+                                        : 'text-gray-600 hover:text-gray-800'
+                                }`}
+                            >
+                                Manage Users
+                            </button>
+                            <button
+                                onClick={() => setActiveSection('pending')}
+                                className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
+                                    activeSection === 'pending'
+                                        ? 'bg-white text-blue-600 shadow-sm'
+                                        : 'text-gray-600 hover:text-gray-800'
+                                }`}
+                            >
+                                Pending Verifications
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 sm:mb-6">
                         <h2
-                            className="text-2xl md:text-3xl font-bold text-gray-800 mb-4 md:mb-0 flex items-center"
+                            className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-800 mb-3 md:mb-0 flex items-center"
                             style={{ fontFamily: "Montserrat, sans-serif" }}
                         >
-                            <Users className="w-8 h-8 mr-3 text-blue-600" />
+                            <Users className="w-6 h-6 sm:w-8 sm:h-8 mr-2 sm:mr-3 text-blue-600" />
                             User Management
                         </h2>
-                        <div className="flex space-x-2 w-full md:w-auto">
+                        <div className="flex space-x-2 w-full md:w-auto mt-3 md:mt-0">
                             <motion.button
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
-                                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center w-full md:w-auto justify-center cursor-pointer"
+                                className="bg-blue-600 hover:bg-blue-700 text-white px-3 sm:px-4 py-2 rounded-lg flex items-center w-full md:w-auto justify-center cursor-pointer text-sm sm:text-base"
                             >
                                 <Download className="w-4 h-4 mr-2" />
                                 Export
@@ -283,7 +310,7 @@ export default function UsersManagement(){
                     </div>
 
                     {/* Tabs - Scrollable on mobile */}
-                    <div className="flex overflow-x-auto mb-6 pb-2 -mx-4 px-4 md:mx-0 md:px-0">
+                    <div className="flex overflow-x-auto pb-2 mb-4 sm:mb-6 gap-2">
                         {['All', 'Admin', 'Alumni', 'Alumni Admin'].map((tab) => (
                             <motion.button
                                 key={tab}
@@ -293,7 +320,7 @@ export default function UsersManagement(){
                                     setRoleFilter(tab);
                                     setCurrentPage(1);
                                 }}
-                                className={`px-4 py-2 mr-2 rounded-lg whitespace-nowrap flex-shrink-0 cursor-pointer ${
+                                className={`px-3 sm:px-4 py-2 rounded-lg whitespace-nowrap flex-shrink-0 cursor-pointer text-sm sm:text-base ${
                                     roleFilter === tab 
                                         ? 'bg-blue-600 text-white font-semibold' 
                                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
@@ -305,49 +332,47 @@ export default function UsersManagement(){
                     </div>
 
                     {/* Search and Filter - Stack on mobile */}
-                    <div className="flex flex-col md:flex-row gap-4 mb-6">
+                    <div className="flex flex-col sm:flex-row gap-3 mb-4 sm:mb-6">
                         <div className="relative flex-grow">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
                             <input
                                 type="text"
                                 placeholder="Search users..."
                                 value={tempQuery}
                                 onChange={(e) => setTempQuery(e.target.value)}
                                 onKeyDown={handleSearch}
-                                className="w-full pl-10 pr-4 py-2 rounded-lg bg-gray-100 text-gray-800 placeholder-gray-500 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full pl-9 sm:pl-10 pr-4 py-2 rounded-lg bg-gray-100 text-gray-800 placeholder-gray-500 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                             />
                         </div>
-                        <div className="flex space-x-2">
-                            <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => setIsModalOpen(true)}
-                                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center w-full md:w-auto justify-center cursor-pointer"
-                            >
-                                Filters
-                            </motion.button>
-                        </div>
+                        <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => setIsModalOpen(true)}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-3 sm:px-4 py-2 rounded-lg flex items-center justify-center cursor-pointer text-sm sm:text-base"
+                        >
+                            Filters
+                        </motion.button>
                     </div>
 
                     {/* Mobile Card View for User Management */}
-                    <div className="md:hidden space-y-4">
+                    <div className={`md:hidden space-y-3 ${activeSection === 'users' ? 'block' : 'hidden'}`}>
                         {currentUsers.map((user, index) => (
                             <motion.div
                                 key={index}
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 transition={{ duration: 0.3 }}
-                                className="bg-white rounded-lg shadow-md p-4"
+                                className="bg-white rounded-lg shadow-md p-3 sm:p-4"
                             >
                                 {/* User Info Header */}
                                 <div className="flex items-center space-x-3 mb-3">
-                                    <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                        <User className="w-6 h-6 text-gray-500" />
+                                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                        <User className="w-5 h-5 sm:w-6 sm:h-6 text-gray-500" />
                                     </div>
-                                    <div className="flex-1 min-w-0"> {/* Added min-w-0 to prevent overflow */}
-                                        <h3 className="font-semibold text-gray-800 truncate">{user.name}</h3>
-                                        <div className="flex items-center text-sm text-gray-500 truncate">
-                                            <Mail className="w-4 h-4 mr-1 flex-shrink-0" />
+                                    <div className="flex-1 min-w-0">
+                                        <h3 className="font-semibold text-gray-800 truncate text-sm sm:text-base">{user.name}</h3>
+                                        <div className="flex items-center text-xs sm:text-sm text-gray-500 truncate">
+                                            <Mail className="w-3 h-3 sm:w-4 sm:h-4 mr-1 flex-shrink-0" />
                                             <span className="truncate">{user.email}</span>
                                         </div>
                                     </div>
@@ -355,7 +380,7 @@ export default function UsersManagement(){
 
                                 {/* Role Badge */}
                                 <div className="mb-3">
-                                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium
+                                    <span className={`inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs font-medium
                                         ${getRole(user.role) === 'Alumni Admin' ? 'bg-purple-100 text-purple-800' :
                                         getRole(user.role) === 'Admin' ? 'bg-red-100 text-red-800' :
                                         getRole(user.role) === 'Alumni' ? 'bg-blue-100 text-blue-800' :
@@ -366,34 +391,32 @@ export default function UsersManagement(){
                                 </div>
 
                                 {/* Action Buttons */}
-                                <div className="flex flex-wrap gap-2 mt-3 border-t pt-3">
+                                <div className="flex flex-col space-y-2">
                                     {user.role ? (
                                         user.role[0] === "alumni" ? (
-                                            <div className="w-full">
+                                            <div className="w-full flex justify-end space-x-2">
                                                 <PromoteUser person={user} />
+                                                <DeleteUser person={user} deleteSuccess={deleteSuccess} />
                                             </div>
                                         ) : (
-                                            <span className="text-sm text-gray-500 bg-gray-50 px-3 py-2 rounded-md w-full text-center">
-                                                Promoted
-                                            </span>
-                                        )
-                                    ) : (
-                                        user.alumniStatus === "pending" ? (
-                                            <span className="text-sm text-gray-500 bg-gray-50 px-3 py-2 rounded-md w-full text-center">
-                                                Pending Verification
-                                            </span>
-                                        ) : (
-                                            <div className="flex items-center justify-between w-full">
-                                                <span className="text-sm text-gray-500">Rejected</span>
+                                            <div className="w-full flex justify-end space-x-2">
+                                                <span className="text-xs sm:text-sm text-gray-500 bg-gray-50 px-3 py-2 rounded-md text-center">
+                                                    Promoted
+                                                </span>
                                                 <DeleteUser person={user} deleteSuccess={deleteSuccess} />
                                             </div>
                                         )
-                                    )}
-                                    
-                                    {user.role[0] && user.role[0] !== "admin" && (
-                                        <div className="w-full flex justify-end">
-                                            <DeleteUser person={user} deleteSuccess={deleteSuccess} />
-                                        </div>
+                                    ) : (
+                                        user.alumniStatus === "pending" ? (
+                                            <span className="text-xs sm:text-sm text-gray-500 bg-gray-50 px-3 py-2 rounded-md w-full text-center">
+                                                Pending Verification
+                                            </span>
+                                        ) : (
+                                            <div className="w-full flex justify-end space-x-2">
+                                                <span className="text-xs sm:text-sm text-gray-500">Rejected</span>
+                                                <DeleteUser person={user} deleteSuccess={deleteSuccess} />
+                                            </div>
+                                        )
                                     )}
                                 </div>
                             </motion.div>
@@ -401,9 +424,81 @@ export default function UsersManagement(){
 
                         {/* Empty State for Mobile */}
                         {filteredUsers.length === 0 && (
-                            <div className="text-center py-8 bg-white rounded-lg shadow-md">
-                                <Users className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                                <p className="text-gray-500 text-sm">No users found</p>
+                            <div className="text-center py-6 bg-white rounded-lg shadow-md">
+                                <Users className="w-10 h-10 sm:w-12 sm:h-12 text-gray-400 mx-auto mb-2" />
+                                <p className="text-gray-500 text-sm sm:text-base">No users found</p>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Mobile View for Pending Verifications */}
+                    <div className={`md:hidden space-y-3 ${activeSection === 'pending' ? 'block' : 'hidden'}`}>
+                        {pendingVerificationUsers.length > 0 ? (
+                            pendingVerificationUsers.map((user: UserDto, index) => (
+                                <motion.div
+                                    key={index}
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ duration: 0.3 }}
+                                    className="bg-white rounded-lg shadow p-3 sm:p-4 space-y-3"
+                                >
+                                    <div className="flex items-center space-x-3">
+                                        <div className="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
+                                            <User className="w-5 h-5 text-gray-600" />
+                                        </div>
+                                        <div>
+                                            <div className="font-medium text-gray-900 text-sm sm:text-base">{user.name}</div>
+                                            <div className="text-xs sm:text-sm text-gray-500">{user.email}</div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div>
+                                        {user.documentUrl ? (
+                                            <div className="flex items-center text-xs sm:text-sm text-gray-600">
+                                                <FileCheck className="w-4 h-4 mr-2 text-blue-500" />
+                                                <a 
+                                                    href="#" 
+                                                    className="text-blue-600 hover:text-blue-800 underline flex items-center"
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        const fileName = user.documentUrl?.split("/").pop()?.split(".")[0] || "document";
+                                                        handleDocumentDownload(user.documentUrl, fileName);
+                                                    }}
+                                                >
+                                                    View Verification Document
+                                                </a>
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center text-xs sm:text-sm text-gray-600 bg-yellow-50 p-2 sm:p-3 rounded-lg">
+                                                <FileCheck className="w-4 h-4 mr-2 text-yellow-500" />
+                                                <span className="text-yellow-700">{user.name} has not submitted a verification document</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                    
+                                    <div className="flex justify-end space-x-2 pt-2">
+                                        <motion.button
+                                            whileHover={{ scale: 1.05 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            className="bg-green-600 hover:bg-green-700 text-white px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm"
+                                            onClick={() => handleAccept(user.id)}
+                                        >
+                                            Accept
+                                        </motion.button>
+                                        <motion.button
+                                            whileHover={{ scale: 1.05 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            className="bg-red-600 hover:bg-red-700 text-white px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm"
+                                            onClick={() => handleDecline(user.id)}
+                                        >
+                                            Decline
+                                        </motion.button>
+                                    </div>
+                                </motion.div>
+                            ))
+                        ) : (
+                            <div className="bg-white rounded-lg shadow p-4 sm:p-6 text-center">
+                                <p className="text-gray-500 text-sm sm:text-base">No pending verifications</p>
                             </div>
                         )}
                     </div>
@@ -424,7 +519,7 @@ export default function UsersManagement(){
                                             <div className="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
                                                 <User className="w-5 h-5 text-gray-600" />
                                             </div>
-                                            <div className="flex-1 min-w-0"> {/* Added min-w-0 to prevent overflow */}
+                                            <div className="flex-1 min-w-0">
                                                 <div className="font-medium text-gray-900 truncate">{user.name}</div>
                                                 <div className="text-sm text-gray-500 truncate">{user.email || "N/A"}</div>
                                             </div>
@@ -528,12 +623,12 @@ export default function UsersManagement(){
                     )}
                 </motion.div>
 
-                {/* Pending Verifications Card - Mobile Friendly */}
+                {/* Pending Verifications Card - Desktop Only */}
                 <motion.div 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.2 }}
-                    className="bg-white/10 backdrop-blur-md shadow-xl rounded-3xl p-4 md:p-6 w-full lg:w-1/3 h-fit"
+                    className="hidden md:block bg-white/10 backdrop-blur-md shadow-xl rounded-3xl p-4 md:p-6 w-full lg:w-1/3 h-fit"
                 >
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6">
                         <h2
@@ -545,8 +640,7 @@ export default function UsersManagement(){
                         </h2>
                     </div>
 
-                    {/* Mobile Card View for Pending Verifications */}
-                    <div className="md:hidden space-y-4">
+                    <div className="grid grid-cols-1 gap-4 p-4">
                         {pendingVerificationUsers.length > 0 ? (
                             pendingVerificationUsers.map((user: UserDto, index) => (
                                 <motion.div
@@ -554,61 +648,63 @@ export default function UsersManagement(){
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                     transition={{ duration: 0.3 }}
-                                    className="bg-white rounded-lg shadow p-4 space-y-3"
+                                    className="bg-white rounded-lg shadow p-4"
                                 >
-                                    <div className="flex items-center space-x-3">
-                                        <div className="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
-                                            <User className="w-5 h-5 text-gray-600" />
-                                        </div>
-                                        <div>
-                                            <div className="font-medium text-gray-900">{user.name}</div>
-                                            <div className="text-sm text-gray-500">{user.email}</div>
-                                        </div>
-                                    </div>
-                                    
-                                    <div className="flex flex-col space-y-2">
-                                        {user.documentUrl ? (
-                                            <div className="flex items-center text-sm text-gray-600">
-                                                <FileCheck className="w-4 h-4 mr-2 text-blue-500" />
-                                                <a 
-                                                    href="#" 
-                                                    className="text-blue-600 hover:text-blue-800 underline flex items-center"
-                                                    onClick={(e) => {
-                                                        e.preventDefault();
-                                                        const fileName = user.documentUrl?.split("/").pop()?.split(".")[0] || "document";
-                                                        handleDocumentDownload(user.documentUrl, fileName);
-                                                    }}
-                                                >
-                                                    View Verification Document
-                                                </a>
+                                    <div className="flex flex-col space-y-3">
+                                        <div className="flex items-center space-x-3">
+                                            <div className="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
+                                                <User className="w-5 h-5 text-gray-600" />
                                             </div>
-                                        ) : (
-                                            <div className="flex items-center text-sm text-gray-600 bg-yellow-50 p-3 rounded-lg">
-                                                <FileCheck className="w-4 h-4 mr-2 text-yellow-500" />
-                                                <span className="text-yellow-700">{user.name} has not submitted a verification document</span>
+                                            <div>
+                                                <div className="font-medium text-gray-900">{user.name}</div>
+                                                <div className="text-sm text-gray-500">{user.email}</div>
                                             </div>
-                                        )}
+                                        </div>
                                         
-                                        {user.documentUrl && (
-                                            <div className="flex justify-end space-x-2 pt-2">
-                                                <motion.button
-                                                    whileHover={{ scale: 1.05 }}
-                                                    whileTap={{ scale: 0.95 }}
-                                                    className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-sm"
-                                                    onClick={() => handleAccept(user.id)}
-                                                >
-                                                    Accept
-                                                </motion.button>
-                                                <motion.button
-                                                    whileHover={{ scale: 1.05 }}
-                                                    whileTap={{ scale: 0.95 }}
-                                                    className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm"
-                                                    onClick={() => handleDecline(user.id)}
-                                                >
-                                                    Decline
-                                                </motion.button>
-                                            </div>
-                                        )}
+                                        <div className="flex flex-col space-y-2">
+                                            {user.documentUrl ? (
+                                                <div className="flex items-center text-sm text-gray-600">
+                                                    <FileCheck className="w-4 h-4 mr-2 text-blue-500" />
+                                                    <a 
+                                                        href="#" 
+                                                        className="text-blue-600 hover:text-blue-800 underline flex items-center"
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            const fileName = user.documentUrl?.split("/").pop()?.split(".")[0] || "document";
+                                                            handleDocumentDownload(user.documentUrl, fileName);
+                                                        }}
+                                                    >
+                                                        View Verification Document
+                                                    </a>
+                                                </div>
+                                            ) : (
+                                                <div className="flex items-center text-sm text-gray-600 bg-yellow-50 p-3 rounded-lg">
+                                                    <FileCheck className="w-4 h-4 mr-2 text-yellow-500" />
+                                                    <span className="text-yellow-700">{user.name} has not submitted a verification document</span>
+                                                </div>
+                                            )}
+                                            
+                                            {user.documentUrl && (
+                                                <div className="flex justify-end space-x-2 pt-2">
+                                                    <motion.button
+                                                        whileHover={{ scale: 1.05 }}
+                                                        whileTap={{ scale: 0.95 }}
+                                                        className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg"
+                                                        onClick={() => handleAccept(user.id)}
+                                                    >
+                                                        Accept
+                                                    </motion.button>
+                                                    <motion.button
+                                                        whileHover={{ scale: 1.05 }}
+                                                        whileTap={{ scale: 0.95 }}
+                                                        className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
+                                                        onClick={() => handleDecline(user.id)}
+                                                    >
+                                                        Decline
+                                                    </motion.button>
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </motion.div>
                             ))
@@ -617,84 +713,6 @@ export default function UsersManagement(){
                                 <p className="text-gray-500 text-lg">No pending verifications</p>
                             </div>
                         )}
-                    </div>
-
-                    {/* Desktop Table View for Pending Verifications */}
-                    <div className="hidden md:block">
-                        <div className="grid grid-cols-1 gap-4 p-4">
-                            {pendingVerificationUsers.length > 0 ? (
-                                pendingVerificationUsers.map((user: UserDto, index) => (
-                                    <motion.div
-                                        key={index}
-                                        initial={{ opacity: 0 }}
-                                        animate={{ opacity: 1 }}
-                                        transition={{ duration: 0.3 }}
-                                        className="bg-white rounded-lg shadow p-4"
-                                    >
-                                        <div className="flex flex-col space-y-3">
-                                            <div className="flex items-center space-x-3">
-                                                <div className="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
-                                                    <User className="w-5 h-5 text-gray-600" />
-                                                </div>
-                                                <div>
-                                                    <div className="font-medium text-gray-900">{user.name}</div>
-                                                    <div className="text-sm text-gray-500">{user.email}</div>
-                                                </div>
-                                            </div>
-                                            
-                                            <div className="flex flex-col space-y-2">
-                                                {user.documentUrl ? (
-                                                    <div className="flex items-center text-sm text-gray-600">
-                                                        <FileCheck className="w-4 h-4 mr-2 text-blue-500" />
-                                                        <a 
-                                                            href="#" 
-                                                            className="text-blue-600 hover:text-blue-800 underline flex items-center"
-                                                            onClick={(e) => {
-                                                                e.preventDefault();
-                                                                const fileName = user.documentUrl?.split("/").pop()?.split(".")[0] || "document";
-                                                                handleDocumentDownload(user.documentUrl, fileName);
-                                                            }}
-                                                        >
-                                                            View Verification Document
-                                                        </a>
-                                                    </div>
-                                                ) : (
-                                                    <div className="flex items-center text-sm text-gray-600 bg-yellow-50 p-3 rounded-lg">
-                                                        <FileCheck className="w-4 h-4 mr-2 text-yellow-500" />
-                                                        <span className="text-yellow-700">{user.name} has not submitted a verification document</span>
-                                                    </div>
-                                                )}
-                                                
-                                                {user.documentUrl && (
-                                                    <div className="flex justify-end space-x-2 pt-2">
-                                                        <motion.button
-                                                            whileHover={{ scale: 1.05 }}
-                                                            whileTap={{ scale: 0.95 }}
-                                                            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg"
-                                                            onClick={() => handleAccept(user.id)}
-                                                        >
-                                                            Accept
-                                                        </motion.button>
-                                                        <motion.button
-                                                            whileHover={{ scale: 1.05 }}
-                                                            whileTap={{ scale: 0.95 }}
-                                                            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg"
-                                                            onClick={() => handleDecline(user.id)}
-                                                        >
-                                                            Decline
-                                                        </motion.button>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </motion.div>
-                                ))
-                            ) : (
-                                <div className="bg-white rounded-lg shadow p-6 text-center">
-                                    <p className="text-gray-500 text-lg">No pending verifications</p>
-                                </div>
-                            )}
-                        </div>
                     </div>
                 </motion.div>
             </div>
