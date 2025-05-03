@@ -530,6 +530,7 @@ export default function ReportsPage() {
                 )}
               </CardContent>
             </Card>
+            
 
             <Card>
               <CardHeader>
@@ -557,7 +558,40 @@ export default function ReportsPage() {
             </Card>
           </div>
         </section>
+        <div className="h-[130px]"></div>
+        {/* Alumni Section */}
+        <section className="space-y-6">
+          <h2 className="text-2xl font-semibold text-black">Alumni</h2>
+          <div className="grid gap-6 md:grid-cols-2 text-black">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-black">Alumni per Graduation Year</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <BarChart title="Alumni by Year" data={alumniByYearData} />
+              </CardContent>
+            </Card>
 
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-black">Distribution by Field</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <PieChart title="Alumni by Field" data={alumniByFieldData} />
+              </CardContent>
+            </Card>
+            <div className="h-[300px]"></div>
+            <Card className="md:col-span-2">
+              <CardHeader>
+                <CardTitle className="text-black">Monthly Active Alumni</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <LineChart title="Engagement Trends" data={monthlyActiveData} />
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+        <div className="h-[250px]"></div>
         {/* Jobs Section */}
         <section className="space-y-6">
           <h2 className="text-2xl font-semibold text-black">Jobs</h2>
@@ -570,7 +604,7 @@ export default function ReportsPage() {
                 <BarChart title="Job Postings per Month" data={jobPostingsData} />
               </CardContent>
             </Card>
-
+            <div className="h-[50px]"></div>
             <Card>
               <CardHeader>
                 <CardTitle className="text-black">Job Listings</CardTitle>
@@ -606,39 +640,6 @@ export default function ReportsPage() {
                     </TableBody>
                   </Table>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-        </section>
-
-        {/* Alumni Section */}
-        <section className="space-y-6">
-          <h2 className="text-2xl font-semibold text-black">Alumni</h2>
-          <div className="grid gap-6 md:grid-cols-2 text-black">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-black">Alumni per Graduation Year</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <BarChart title="Alumni by Year" data={alumniByYearData} />
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-black">Distribution by Field</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <PieChart title="Alumni by Field" data={alumniByFieldData} />
-              </CardContent>
-            </Card>
-
-            <Card className="md:col-span-2">
-              <CardHeader>
-                <CardTitle className="text-black">Monthly Active Alumni</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <LineChart title="Engagement Trends" data={monthlyActiveData} />
               </CardContent>
             </Card>
           </div>

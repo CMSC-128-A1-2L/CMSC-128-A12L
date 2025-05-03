@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Dialog,
   DialogContent,
@@ -17,27 +17,62 @@ interface DownloadModalProps {
 }
 
 export default function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
-  const [isDownloading, setIsDownloading] = useState(true);
+  const [isDownloading, setIsDownloading] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [error, setError] = useState<string | null>(null);
+  const [downloaded, setDownloaded] = useState(false);
+  const progressInterval = useRef<NodeJS.Timeout | undefined>(undefined);
 
   useEffect(() => {
     if (isOpen) {
       setIsDownloading(true);
       setProgress(0);
+      setDownloaded(false);
+      setError(null);
 
-      const interval = setInterval(() => {
-        setProgress((prev) => {
-          if (prev >= 100) {
-            clearInterval(interval);
-            setIsDownloading(false);
-            return 100;
+      // Simulate progress updates
+      progressInterval.current = setInterval(() => {
+        setProgress(prev => {
+          if (prev < 90) {
+            return prev + 10;
           }
-          return prev + 10;
+          return prev;
         });
       }, 500);
 
-      return () => clearInterval(interval);
+      const generatePDF = async () => {
+        try {
+          const response = await fetch('/api/puppeteer');
+          if (!response.ok) throw new Error('Failed to generate PDF');
+          
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'admin-reports.pdf';
+          document.body.appendChild(a);
+          a.click();
+          window.URL.revokeObjectURL(url);
+          document.body.removeChild(a);
+          
+          setProgress(100);
+          setDownloaded(true);
+          setIsDownloading(false);
+        } catch (err) {
+          console.error('Error generating PDF:', err);
+          setError('Failed to generate PDF report');
+          setIsDownloading(false);
+        } finally {
+          if (progressInterval.current) clearInterval(progressInterval.current as NodeJS.Timeout);
+        }
+      };
+
+      generatePDF();
     }
+
+    return () => {
+      if (progressInterval.current) clearInterval(progressInterval.current as NodeJS.Timeout);
+    };
   }, [isOpen]);
 
   return (
@@ -62,17 +97,21 @@ export default function DownloadModal({ isOpen, onClose }: DownloadModalProps) {
                 />
               </div>
               <p className="text-sm text-muted-foreground">
-                Preparing your report for download...
+                {progress < 100 ? "Preparing your report for download..." : "Finalizing download..."}
               </p>
             </>
-          ) : (
+          ) : downloaded ? (
             <>
               <CheckCircle2 className="h-12 w-12 text-green-500" />
               <p className="text-sm text-muted-foreground">
                 Report downloaded successfully!
               </p>
             </>
-          )}
+          ) : error ? (
+            <>
+              <p className="text-sm text-red-500">{error}</p>
+            </>
+          ) : null}
         </div>
       </DialogContent>
     </Dialog>
