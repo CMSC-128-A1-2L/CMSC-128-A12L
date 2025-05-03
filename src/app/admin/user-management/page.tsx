@@ -329,7 +329,7 @@ export default function UsersManagement(){
                         </div>
                     </div>
 
-                    {/* Mobile Card View */}
+                    {/* Mobile Card View for User Management */}
                     <div className="md:hidden space-y-4">
                         {currentUsers.map((user, index) => (
                             <motion.div
@@ -337,44 +337,79 @@ export default function UsersManagement(){
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
                                 transition={{ duration: 0.3 }}
-                                className="bg-white rounded-lg shadow p-4 space-y-3"
+                                className="bg-white rounded-lg shadow-md p-4"
                             >
-                                <div className="flex items-center space-x-3">
-                                    <div className="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
-                                        <User className="w-5 h-5 text-gray-600" />
+                                {/* User Info Header */}
+                                <div className="flex items-center space-x-3 mb-3">
+                                    <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                        <User className="w-6 h-6 text-gray-500" />
                                     </div>
-                                    <div>
-                                        <div className="font-medium text-gray-900">{user.name}</div>
-                                        <div className="text-sm text-gray-500">{user.email}</div>
+                                    <div className="flex-1 min-w-0"> {/* Added min-w-0 to prevent overflow */}
+                                        <h3 className="font-semibold text-gray-800 truncate">{user.name}</h3>
+                                        <div className="flex items-center text-sm text-gray-500 truncate">
+                                            <Mail className="w-4 h-4 mr-1 flex-shrink-0" />
+                                            <span className="truncate">{user.email}</span>
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="flex items-center text-sm text-gray-600">
-                                    <Shield className="w-4 h-4 mr-2" />
-                                    {/* bruh, don't mind these errors, it's just a type error */}
-                                    <span>{getRole(user.role)}</span>
+
+                                {/* Role Badge */}
+                                <div className="mb-3">
+                                    <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium
+                                        ${getRole(user.role) === 'Alumni Admin' ? 'bg-purple-100 text-purple-800' :
+                                        getRole(user.role) === 'Admin' ? 'bg-red-100 text-red-800' :
+                                        getRole(user.role) === 'Alumni' ? 'bg-blue-100 text-blue-800' :
+                                        'bg-gray-100 text-gray-800'}`}>
+                                        <Shield className="w-3 h-3 mr-1 flex-shrink-0" />
+                                        {getRole(user.role)}
+                                    </span>
                                 </div>
-                                <div className="flex justify-end space-x-2 pt-2">
-                                {user.role ? (
-                                                user.role[0] === "alumni" ? (
-                                                    <PromoteUser person={user} />
-                                                ) : (
-                                                    <span className="text-gray-500 text-sm">Promoted</span>
-                                                )
-                                            ) : (user.alumniStatus === "pending" ? (
-                                                <span className="text-gray-500 text-sm">Pending Verification</span>
-                                            ) : (
-                                                <div className="flex items-center gap-x-2">
-                                                    <span className="text-gray-500 text-sm mr-5">Rejected</span>
-                                                    <DeleteUser person={user} deleteSuccess={deleteSuccess} />
-                                                </div>
-                                            ))}
+
+                                {/* Action Buttons */}
+                                <div className="flex flex-wrap gap-2 mt-3 border-t pt-3">
+                                    {user.role ? (
+                                        user.role[0] === "alumni" ? (
+                                            <div className="w-full">
+                                                <PromoteUser person={user} />
+                                            </div>
+                                        ) : (
+                                            <span className="text-sm text-gray-500 bg-gray-50 px-3 py-2 rounded-md w-full text-center">
+                                                Promoted
+                                            </span>
+                                        )
+                                    ) : (
+                                        user.alumniStatus === "pending" ? (
+                                            <span className="text-sm text-gray-500 bg-gray-50 px-3 py-2 rounded-md w-full text-center">
+                                                Pending Verification
+                                            </span>
+                                        ) : (
+                                            <div className="flex items-center justify-between w-full">
+                                                <span className="text-sm text-gray-500">Rejected</span>
+                                                <DeleteUser person={user} deleteSuccess={deleteSuccess} />
+                                            </div>
+                                        )
+                                    )}
+                                    
+                                    {user.role[0] && user.role[0] !== "admin" && (
+                                        <div className="w-full flex justify-end">
+                                            <DeleteUser person={user} deleteSuccess={deleteSuccess} />
+                                        </div>
+                                    )}
                                 </div>
                             </motion.div>
                         ))}
+
+                        {/* Empty State for Mobile */}
+                        {filteredUsers.length === 0 && (
+                            <div className="text-center py-8 bg-white rounded-lg shadow-md">
+                                <Users className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                                <p className="text-gray-500 text-sm">No users found</p>
+                            </div>
+                        )}
                     </div>
 
                     {/* Desktop Table View */}
-                    <div className="hidden md:block overflow-y-auto max-h-[calc(100vh-300px)] rounded-lg border border-gray-200 [&::-webkit-scrollbar]:hidden">
+                    <div className="hidden md:block overflow-y-auto max-h-[calc(100vh-300px)] rounded-lg border border-gray-200">
                         <div className="grid grid-cols-1 gap-4 p-4">
                             {currentUsers.map((user, index) => (
                                 <motion.div
@@ -389,15 +424,21 @@ export default function UsersManagement(){
                                             <div className="flex-shrink-0 h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center">
                                                 <User className="w-5 h-5 text-gray-600" />
                                             </div>
-                                            <div>
-                                                <div className="font-medium text-gray-900">{user.name}</div>
-                                                <div className="text-sm text-gray-500">{user.email || "N/A"}</div>
+                                            <div className="flex-1 min-w-0"> {/* Added min-w-0 to prevent overflow */}
+                                                <div className="font-medium text-gray-900 truncate">{user.name}</div>
+                                                <div className="text-sm text-gray-500 truncate">{user.email || "N/A"}</div>
                                             </div>
                                         </div>
                                         
-                                        <div className="flex items-center text-sm text-gray-600">
-                                            <Shield className="w-4 h-4 mr-2" />
-                                            <span>{getRole(user.role)}</span>
+                                        <div className="flex items-center">
+                                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium
+                                                ${getRole(user.role) === 'Alumni Admin' ? 'bg-purple-100 text-purple-800' :
+                                                getRole(user.role) === 'Admin' ? 'bg-red-100 text-red-800' :
+                                                getRole(user.role) === 'Alumni' ? 'bg-blue-100 text-blue-800' :
+                                                'bg-gray-100 text-gray-800'}`}>
+                                                <Shield className="w-3 h-3 mr-1 flex-shrink-0" />
+                                                {getRole(user.role)}
+                                            </span>
                                         </div>
                                         
                                         <div className="flex justify-end space-x-2 pt-2">
