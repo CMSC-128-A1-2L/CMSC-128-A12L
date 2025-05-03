@@ -34,7 +34,7 @@ export async function GET(req: NextRequest) {
         });
 
         // Wait for content to fully render
-        await new Promise(resolve => setTimeout(resolve, 10000));
+        await new Promise(resolve => setTimeout(resolve, 5000));
 
         // Get the full height of the page
         const pageHeight = await page.evaluate(() => {
@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
         const pdf = await page.pdf({
             printBackground: true,
             width: '1920px',
-            height: `${pageHeight}px`,
+            height: '297mm', // A4 height
             margin: {
                 top: '20px',
                 right: '20px',
