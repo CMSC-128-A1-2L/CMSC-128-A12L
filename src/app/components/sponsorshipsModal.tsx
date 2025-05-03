@@ -9,11 +9,10 @@ interface SponsorDetailsProps {
   onClose: () => void;
   eventId: string;
   eventName: string;
+  isOpen: boolean;
 }
 
-const SponsorDetails: React.FC<SponsorDetailsProps> = ({ onClose, eventId, eventName }) => {
-  const [amount, setAmount] = useState("");
-  const [loading, setLoading] = useState(false);
+const SponsorDetails: React.FC<SponsorDetailsProps> = ({ onClose, eventId, eventName, isOpen }) => {
   const [showRequestForm, setShowRequestForm] = useState(false);
   const [sponsorshipStatus, setSponsorshipStatus] = useState<{
     currentAmount: number;
@@ -22,8 +21,10 @@ const SponsorDetails: React.FC<SponsorDetailsProps> = ({ onClose, eventId, event
   }>({ currentAmount: 0, goal: 0, isActive: false });
 
   useEffect(() => {
-    fetchSponsorshipStatus();
-  }, [eventId]);
+    if (isOpen) {
+      fetchSponsorshipStatus();
+    }
+  }, [isOpen, eventId]);
 
   const fetchSponsorshipStatus = async () => {
     try {
@@ -53,7 +54,7 @@ const SponsorDetails: React.FC<SponsorDetailsProps> = ({ onClose, eventId, event
         throw new Error(error.message || 'Failed to process sponsorship');
       }
 
-      await fetchSponsorshipStatus(); // Refresh the status
+      await fetchSponsorshipStatus();
       toast.success('Sponsorship request submitted successfully!');
       setShowRequestForm(false);
     } catch (error) {
@@ -62,61 +63,65 @@ const SponsorDetails: React.FC<SponsorDetailsProps> = ({ onClose, eventId, event
     }
   };
 
+  if (!isOpen) return null;
+
   return (
-    <>
-      <dialog id="sponsor_details_modal" className="modal">
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.9 }}
-          className="modal-box rounded-3xl bg-white"
-        >
-          <form method="dialog">
-            <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 text-gray-600 hover:bg-[#242937] hover:text-white">✕</button>
-          </form>
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[60]">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.9 }}
+        className="bg-white rounded-3xl p-6 max-w-lg w-full mx-4"
+      >
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="font-bold text-xl text-gray-900">Event Sponsorship</h3>
+          <button 
+            onClick={onClose}
+            className="btn btn-sm btn-circle btn-ghost text-gray-600 hover:bg-[#242937] hover:text-white"
+          >
+            <X size={20} />
+          </button>
+        </div>
 
-          <h3 className="font-bold text-xl text-gray-900 mt-4">Event Sponsorship</h3>
-
-          <div className="mt-6">
-            <div className="bg-[#242937] p-6 rounded-xl text-white">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <DollarSign className="w-5 h-5" />
-                  <span className="font-medium">Current Progress</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Target className="w-5 h-5" />
-                  <span className="font-medium">Goal: ₱{sponsorshipStatus.goal.toLocaleString()}</span>
-                </div>
+        <div className="mt-6">
+          <div className="bg-[#242937] p-6 rounded-xl text-white">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <DollarSign className="w-5 h-5" />
+                <span className="font-medium">Current Progress</span>
               </div>
-
-              <div className="flex flex-col gap-2">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-gray-300">Raised</span>
-                  <span className="font-medium">₱{sponsorshipStatus.currentAmount.toLocaleString()}</span>
-                </div>
-                <div className="w-full bg-white/10 rounded-full h-2">
-                  <div
-                    className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-                    style={{
-                      width: `${Math.min((sponsorshipStatus.currentAmount / sponsorshipStatus.goal) * 100, 100)}%`
-                    }}
-                  />
-                </div>
+              <div className="flex items-center gap-2">
+                <Target className="w-5 h-5" />
+                <span className="font-medium">Goal: ₱{sponsorshipStatus.goal.toLocaleString()}</span>
               </div>
             </div>
 
-            <div className="mt-6 flex justify-end">
-              <button
-                onClick={() => setShowRequestForm(true)}
-                className="btn btn-primary bg-blue-600 hover:bg-blue-700"
-              >
-                Sponsor Now
-              </button>
+            <div className="flex flex-col gap-2">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-300">Raised</span>
+                <span className="font-medium">₱{sponsorshipStatus.currentAmount.toLocaleString()}</span>
+              </div>
+              <div className="w-full bg-white/10 rounded-full h-2">
+                <div
+                  className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                  style={{
+                    width: `${Math.min((sponsorshipStatus.currentAmount / sponsorshipStatus.goal) * 100, 100)}%`
+                  }}
+                />
+              </div>
             </div>
           </div>
-        </motion.div>
-      </dialog>
+
+          <div className="mt-6 flex justify-end">
+            <button
+              onClick={() => setShowRequestForm(true)}
+              className="btn btn-primary bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              Sponsor Now
+            </button>
+          </div>
+        </div>
+      </motion.div>
 
       <CustomModal
         modalId="sponsorship_request_modal"
@@ -126,7 +131,7 @@ const SponsorDetails: React.FC<SponsorDetailsProps> = ({ onClose, eventId, event
         onSubmit={handleSubmit}
         eventName={eventName}
       />
-    </>
+    </div>
   );
 };
 

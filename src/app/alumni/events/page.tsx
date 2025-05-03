@@ -305,6 +305,7 @@ export default function EventListings() {
 
   // Handle Sponsor Details button click
   const handleSponsor = (event: Event) => {
+    console.log("sponsor me")
     setSelectedEvent(event);
     const modal = document.getElementById(
       "sponsor_details_modal"
@@ -595,7 +596,6 @@ export default function EventListings() {
                                 imageUrl={event.imageUrl || ''}
                                 eventStatus={timelineFilter}
                                 onDetailsClick={() => handleEventDetails(event)}
-                                onSponsorClick={() => handleSponsor(event)}
                                 onApplyClick={() => setRsvpEvent(event)}
                                 eventId={event._id!}
                               />
@@ -672,19 +672,32 @@ export default function EventListings() {
                           // Then show RSVP options
                           setRsvpEvent(selectedEvent);
                         }}
+                        onSponsorClick={() => {
+                          // Close the details modal first
+                          const modal = document.getElementById("event_details_modal") as HTMLDialogElement;
+                          if (modal) {
+                            modal.close();
+                            setShowDetailsModal(false);
+                          }
+                          // Then open sponsor modal
+                          setShowSponsorModal(true);
+                        }}
                         imageUrl={selectedEvent.imageUrl}
                         type={selectedEvent.type}
                         wouldGo={selectedEvent.wouldGo}
                         wouldNotGo={selectedEvent.wouldNotGo}
                         wouldMaybeGo={selectedEvent.wouldMaybeGo}
+                        sponsorship={selectedEvent.sponsorship}
                       />
                     )}
 
                     {/* Sponsorship Details Modal */}
-                    {selectedEvent && showSponsorModal && (
+                    {selectedEvent && (
                       <SponsorshipsModal
+                        eventName={selectedEvent.name}
                         onClose={handleCloseSponsorModal}
                         eventId={selectedEvent._id!}
+                        isOpen={showSponsorModal}
                       />
                     )}
 

@@ -7,7 +7,8 @@ import {
   ThumbsUp,
   ThumbsDown,
   HelpCircle,
-  Building2
+  Building2,
+  DollarSign
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -21,12 +22,18 @@ interface EventDetailsProps {
   eventStatus: string;
   onClose: () => void;
   onRSVPClick: () => void;
+  onSponsorClick?: () => void;
   imageUrl?: string;
   type: string;
   endDate: Date;
   wouldGo: string[];
   wouldNotGo: string[];
   wouldMaybeGo: string[];
+  sponsorship?: {
+    enabled: boolean;
+    goal: number;
+    currentAmount: number;
+  };
 }
 
 const EventDetails: React.FC<EventDetailsProps> = ({
@@ -40,11 +47,13 @@ const EventDetails: React.FC<EventDetailsProps> = ({
   isOpen,
   onClose,
   onRSVPClick,
+  onSponsorClick,
   imageUrl,
   type,
   wouldGo,
   wouldNotGo,
-  wouldMaybeGo
+  wouldMaybeGo,
+  sponsorship
 }) => {
   // Format the dates
   const formatDate = (date: Date) => {
@@ -146,18 +155,66 @@ const EventDetails: React.FC<EventDetailsProps> = ({
             <p className="text-gray-300 whitespace-pre-wrap">{description}</p>
           </div>
 
-          {/* Single Action Button */}
-          <button
-            disabled={eventStatus === "finished"}
-            onClick={onRSVPClick}
-            className={`btn w-full rounded-lg border 
-              ${eventStatus === "finished" 
-                ? "bg-gray-400 text-gray-200 border-gray-300 cursor-not-allowed opacity-60 hover:bg-gray-400" 
-                : "bg-blue-500/20 hover:bg-blue-500/30 text-blue-200 border-blue-500/20"}
-            `}
-          >
-            RSVP Now
-          </button>
+          {/* Sponsorship Section */}
+          {sponsorship?.enabled && (
+            <div className="mb-6">
+              <div className="bg-white/5 p-4 rounded-xl border border-white/10">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="w-5 h-5 text-gray-300" />
+                    <span className="font-medium text-white">Sponsorship Progress</span>
+                  </div>
+                  <span className="text-sm text-gray-300">
+                    Goal: ₱{sponsorship.goal.toLocaleString()}
+                  </span>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm text-gray-300">
+                    <span>Raised</span>
+                    <span>₱{sponsorship.currentAmount.toLocaleString()}</span>
+                  </div>
+                  <div className="w-full bg-white/10 rounded-full h-2">
+                    <div
+                      className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                      style={{
+                        width: `${Math.min((sponsorship.currentAmount / sponsorship.goal) * 100, 100)}%`
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="flex gap-4">
+            <button
+              disabled={eventStatus === "finished"}
+              onClick={onRSVPClick}
+              className={`btn flex-1 rounded-lg border 
+                ${eventStatus === "finished" 
+                  ? "bg-gray-400 text-gray-200 border-gray-300 cursor-not-allowed opacity-60 hover:bg-gray-400" 
+                  : "bg-blue-500/20 hover:bg-blue-500/30 text-blue-200 border-blue-500/20"}
+              `}
+            >
+              RSVP Now
+            </button>
+            
+            {sponsorship?.enabled && (
+              <button
+                disabled={eventStatus === "finished"}
+                onClick={onSponsorClick}
+                className={`btn flex-1 rounded-lg border 
+                  ${eventStatus === "finished" 
+                    ? "bg-gray-400 text-gray-200 border-gray-300 cursor-not-allowed opacity-60 hover:bg-gray-400" 
+                    : "bg-green-500/20 hover:bg-green-500/30 text-green-200 border-green-500/20"}
+                `}
+              >
+                <DollarSign className="w-4 h-4" />
+                Sponsor
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Close button */}

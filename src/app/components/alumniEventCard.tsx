@@ -12,9 +12,8 @@ interface EventCardProps {
   imageUrl: string;
   eventStatus: string;
   onDetailsClick: () => void;
-  onSponsorClick: () => void;
   onApplyClick: () => void;
-  eventId: string; // Add this prop
+  eventId: string;
 }
 
 const DefaultEventBanner = ({ title }: { title: string }) => (
@@ -36,7 +35,6 @@ const EventCard: React.FC<EventCardProps> = ({
   imageUrl,
   eventStatus,
   onDetailsClick,
-  onSponsorClick,
   onApplyClick,
   eventId,
 }) => {
@@ -148,19 +146,6 @@ const EventCard: React.FC<EventCardProps> = ({
           >
             Details
           </button>
-          {sponsorshipStatus.isActive && (
-            <button
-              disabled={eventStatus === "finished"}
-              onClick={onSponsorClick}
-              className={`px-4 py-2 rounded-lg transition-colors border-none text-white 
-                ${eventStatus === "finished" 
-                  ? "bg-gray-400 cursor-not-allowed opacity-60 hover:bg-gray-400" 
-                  : "bg-blue-600 hover:bg-blue-700"}
-              `}
-            >
-              Sponsor
-            </button>
-          )}
           <button
             disabled={eventStatus === "finished"}
             onClick={(e) => {
