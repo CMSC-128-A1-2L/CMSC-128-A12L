@@ -13,6 +13,11 @@ const nextConfig: NextConfig = {
   images: {
     domains: ['lh3.googleusercontent.com'],
   },
+  experimental: {
+    // Force use of PostCSS instead of Lightning CSS
+    // because the Lightning CSS binary is failing in Vercel
+    optimizeCss: false,
+  },
 };
 
 export default nextConfig;
