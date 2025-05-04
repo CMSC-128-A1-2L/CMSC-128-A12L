@@ -2,7 +2,7 @@
 import { useParams, useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { ArrowLeft, Calendar, ImageIcon } from "lucide-react";
+import { ArrowLeft, Calendar, ImageIcon, User } from "lucide-react";
 import ConstellationBackground from "@/app/components/constellationBackground";
 import { Card } from "@/components/ui/card";
 
@@ -13,6 +13,7 @@ interface NewsletterItem {
   content: string;
   authorId: string;
   publishDate: string;
+  updatedAt?: string;
   isPinned: boolean;
   attachments: string[];
   thumbnail: string;
@@ -67,7 +68,7 @@ export default function NewsletterDetailsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0a0f2e] text-white flex items-center justify-center">
+      <div className="min-h-screen text-white flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
       </div>
     );
@@ -75,7 +76,7 @@ export default function NewsletterDetailsPage() {
 
   if (!newsletter) {
     return (
-      <div className="min-h-screen bg-[#0a0f2e] text-white flex items-center justify-center">
+      <div className="min-h-screen text-white flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold mb-4">Newsletter not found</h1>
           <button
@@ -90,7 +91,7 @@ export default function NewsletterDetailsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0f2e] text-white">
+    <div className="min-h-screen text-white">
       {/* Hero Section */}
       <div className="relative text-white -mt-16 pt-16 overflow-hidden">
         {newsletter.thumbnail ? (
@@ -101,7 +102,7 @@ export default function NewsletterDetailsPage() {
                 alt={newsletter.title}
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-r from-[#1a1f4d]/90 to-[#2a3f8f]/90" />
+              <div className="absolute inset-0 bg-gradient-to-r from-[#1a1f4d]/85 to-[#2a3f8f]/40" />
             </div>
           </>
         ) : (
@@ -127,10 +128,6 @@ export default function NewsletterDetailsPage() {
               {newsletter.title}
             </h1>
             <div className="flex items-center gap-4 text-gray-200">
-              <div className="flex items-center gap-2">
-                <Calendar size={18} />
-                <span>{new Date(newsletter.publishDate).toLocaleDateString()}</span>
-              </div>
               {newsletter.tags && (
                 <span className="px-3 py-1 bg-white/10 rounded-full text-sm">
                   {newsletter.tags}
@@ -143,7 +140,7 @@ export default function NewsletterDetailsPage() {
 
       {/* Main Content with Sidebar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="flex flex-col lg:flex-row gap-8">
+        <div className="flex flex-col lg:flex-row gap-15">
           {/* Main Content */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -151,13 +148,31 @@ export default function NewsletterDetailsPage() {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="flex-1 prose prose-invert max-w-none order-1 lg:order-1"
           >
-            <div className="text-lg text-gray-200 whitespace-pre-wrap">
+            {newsletter.thumbnail && (
+              <div className="py-5">
+                <img
+                  src={newsletter.thumbnail}
+                  alt={newsletter.title}
+                  className="w-[80%] h-[80%] rounded-xl"
+                />
+              </div>
+            )}           
+            <div className="flex items-center gap-2">
+                <Calendar size={18} />
+                <div className="flex items-center gap-4">
+                    <span>Published: {new Date(newsletter.publishDate).toLocaleDateString()}</span>
+                    {newsletter.updatedAt && (
+                      <span>Updated: {new Date(newsletter.updatedAt).toLocaleDateString()}</span>
+                    )}
+                </div>
+            </div>
+            <div className="text-lg text-gray-200 whitespace-pre-wrap pt-10">
               {newsletter.content}
             </div>
 
             {newsletter.attachments && newsletter.attachments.length > 0 && (
-              <div className="mt-12 border-t border-white/10 pt-8">
-                <h2 className="text-2xl font-bold mb-6">Attachments</h2>
+              <div className="mt-12 border-t border-white/10 pt-8 pb-10">
+                <h3 className="text-2xl font-bold mb-6">Attachments</h3>
                 <div className="grid gap-4">
                   {newsletter.attachments.map((attachment, index) => (
                     <a
@@ -186,9 +201,9 @@ export default function NewsletterDetailsPage() {
                         <p className="text-base font-medium text-white truncate group-hover:text-blue-400 transition-colors">
                           {attachment.split('/').pop()}
                         </p>
-                        <p className="text-sm text-gray-400">
+                        {/* <p className="text-sm text-gray-400">
                           Click to download
-                        </p>
+                        </p> */}
                       </div>
                       <div className="flex-shrink-0">
                         <svg
@@ -219,8 +234,8 @@ export default function NewsletterDetailsPage() {
             transition={{ delay: 0.2 }}
             className="w-full lg:w-80 flex-shrink-0 order-2 lg:order-2"
           >
-            <div className="sticky top-8">
-              <h2 className="text-xl font-bold mb-4">Latest News</h2>
+            <div className="sticky top-10">
+              <h2 className="text-xl font-bold mb-4">Read More</h2>
               <div className="space-y-4">
                 {latestNews.map((item) => (
                   <Card
@@ -229,8 +244,7 @@ export default function NewsletterDetailsPage() {
                     onClick={() => router.push(`/alumni/newsletters/${item._id}`)}
                   >
                     <div className="p-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="text-sm text-gray-300">{item.tags}</span>
+                      <div>
                         <span className="text-sm text-gray-400">
                           {new Date(item.publishDate).toLocaleDateString()}
                         </span>
@@ -239,8 +253,11 @@ export default function NewsletterDetailsPage() {
                         {item.title}
                       </h3>
                       <p className="text-sm text-gray-300 line-clamp-2">
-                        {item.content}
+                        {item.content.split(' ').slice(0, 5).join(' ')}...
                       </p>
+                      <div className="flex items-center pt-3">
+                        <span className="text-sm bg-white/15 px-2 py-1 rounded-full">{item.tags}</span>
+                      </div>
                     </div>
                   </Card>
                 ))}

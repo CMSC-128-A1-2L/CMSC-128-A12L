@@ -14,7 +14,7 @@ export async function GET(
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const { id } = params;
+        const { id } = await params;
         const repository = getNewsletterRepository();
         const newsletter = await repository.getNewsletterById(id);
 

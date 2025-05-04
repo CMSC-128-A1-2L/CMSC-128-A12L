@@ -1,36 +1,35 @@
 "use client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, ChevronLeft, ChevronRight, Search, LayoutList, LayoutGrid, Filter } from "lucide-react";
-import { motion } from "framer-motion";
+import { ArrowRight, ChevronLeft, ChevronRight, Search, LayoutList, LayoutGrid, Filter, Newspaper } from "lucide-react";
+import { motion, useInView } from "framer-motion";
 import { useState, useRef, useEffect } from "react";
 import { Newsletter } from "@/entities/newsletters";
 import { useRouter } from "next/navigation";
 import FilterSidebar from "@/app/components/filtersNewsletterListings";
 import ConstellationBackground from "@/app/components/constellationBackground";
+import { sortBy } from "lodash";
+import NewsletterCard from "@/app/components/newslettersContentCard";
+import NewsletterRow from "@/app/components/newslettersContentRow";
+import useIsMobile from "@/hooks/useIsMobile";
+import MobileNewslettersView from "@/app/components/MobileNewslettersView";
 
 export default function NewslettersPage() {
   const router = useRouter();
   const [newsletters, setNewsletters] = useState<Newsletter[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [isGridView, setIsGridView] = useState(true);
   const [filterSidebarOpen, setFilterSidebarOpen] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 12;
 
   const [activeFilters, setActiveFilters] = useState({
-    newsletterType: {
-      event: false,
-      program: false,
-      survey: false,
-      other: false
-    },
     sort: 'newest'
   });
 
   useEffect(() => {
     const fetchNewsletters = async () => {
       try {
+        setLoading(true);
         const response = await fetch("/api/alumni/newsletters", {
           method: 'GET',
           headers: {
@@ -53,6 +52,8 @@ export default function NewslettersPage() {
       } catch (error) {
         console.error("Error fetching newsletters:", error);
         setNewsletters([]);
+      }finally{
+        setLoading(false);
       }
     };
 
@@ -61,10 +62,9 @@ export default function NewslettersPage() {
 
   const toggleView = () => setIsGridView(!isGridView);
 
-  const handleFilterChange = (filters: any) => {
-    const newFilters = JSON.parse(JSON.stringify(filters));
-    setActiveFilters(newFilters);
-    setCurrentPage(1);
+  const handleFilterChange = (filters: {sort: string}) => {
+    setActiveFilters(filters);
+    setSearch("");
   };
 
   const filteredNewsletters = newsletters.filter((newsletter) => {
@@ -72,20 +72,7 @@ export default function NewslettersPage() {
       newsletter.title.toLowerCase().includes(search.toLowerCase()) ||
       newsletter.content.toLowerCase().includes(search.toLowerCase());
 
-    const typeFiltersActive =
-      activeFilters.newsletterType.event ||
-      activeFilters.newsletterType.program ||
-      activeFilters.newsletterType.survey ||
-      activeFilters.newsletterType.other;
-
-    const typeMatch =
-      !typeFiltersActive ||
-      (activeFilters.newsletterType.event && newsletter.tags?.toLowerCase().includes('event')) ||
-      (activeFilters.newsletterType.program && newsletter.tags?.toLowerCase().includes('program')) ||
-      (activeFilters.newsletterType.survey && newsletter.tags?.toLowerCase().includes('survey')) ||
-      (activeFilters.newsletterType.other && newsletter.tags?.toLowerCase().includes('other'));
-
-    return searchMatch && typeMatch;
+    return searchMatch;
   }).sort((a, b) => {
     switch (activeFilters.sort) {
       case 'newest':
@@ -101,49 +88,34 @@ export default function NewslettersPage() {
     }
   });
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = filterSidebarOpen ? 12 : 15;
+
+  const totalPages = Math.ceil(filteredNewsletters.length / itemsPerPage);
   const displayedNewsletters = filteredNewsletters.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
 
-  const [scrollPosition, setScrollPosition] = useState(0);
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterSidebarOpen]);
+
   const carouselRef = useRef<HTMLDivElement>(null);
 
   const handleScroll = (direction: 'left' | 'right') => {
     if (carouselRef.current) {
-      const container = carouselRef.current;
-      const isMobile = window.innerWidth < 768; // md breakpoint
-      const cardWidth = isMobile ? container.clientWidth - 64 : 520; // Account for padding
-      const containerWidth = container.clientWidth;
-      const scrollWidth = container.scrollWidth;
-      
-      let newPosition;
-      if (direction === 'left') {
-        const cardsScrolled = Math.round(scrollPosition / cardWidth);
-        if (cardsScrolled <= 0) {
-          newPosition = scrollWidth - containerWidth;
-        } else {
-          newPosition = (cardsScrolled - 1) * cardWidth;
-        }
-      } else {
-        const cardsScrolled = Math.round(scrollPosition / cardWidth);
-        const maxCards = Math.floor((scrollWidth - containerWidth) / cardWidth);
-        if (cardsScrolled >= maxCards) {
-          if (scrollPosition < scrollWidth - containerWidth) {
-            newPosition = scrollWidth - containerWidth;
-          } else {
-            newPosition = 0;
-          }
-        } else {
-          newPosition = (cardsScrolled + 1) * cardWidth;
-        }
+      if(direction==='left'){
+        carouselRef.current.scrollBy({
+          left: -carouselRef.current.offsetWidth,
+          behavior: "smooth"
+        });
+      }else{
+        carouselRef.current.scrollBy({
+          left: carouselRef.current.offsetWidth,
+          behavior: "smooth"
+        });
       }
-      
-      container.scrollTo({
-        left: newPosition,
-        behavior: 'smooth'
-      });
-      setScrollPosition(newPosition);
     }
   };
 
@@ -151,92 +123,25 @@ export default function NewslettersPage() {
     router.push(`/alumni/newsletters/${newsletter._id.toString()}`);
   };
 
-  const NewsletterCard = ({ newsletter }: { newsletter: any }) => (
-    <Card 
-      className="hover:shadow-lg transition-all duration-300 cursor-pointer bg-white/10 backdrop-blur-sm border-0 flex flex-col"
-      onClick={() => handleNewsletterDetails(newsletter)}
-    >
-      <div className="relative h-48 overflow-hidden">
-        {newsletter.thumbnail ? (
-          <>
-            <img
-              src={newsletter.thumbnail}
-              alt={newsletter.title}
-              className="w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-          </>
-        ) : (
-          <div className="relative h-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
-            <div className="text-center">
-              <h3 className="text-xl font-bold text-white/80 line-clamp-2">{newsletter.title}</h3>
-            </div>
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-          </div>
-        )}
-      </div>
-      <div className="p-6">
-        <div className="flex items-center justify-between mb-4">
-          <span className="text-sm text-gray-300">{newsletter.tags || 'News'}</span>
-        </div>
-        <h3 className="text-xl font-semibold text-white mb-2">
-          {newsletter.title}
-        </h3>
-        <div className="flex items-center justify-between">
-          <span className="text-sm text-gray-400">
-            {new Date(newsletter.publishDate).toLocaleDateString()}
-          </span>
-          <ArrowRight className="w-5 h-5 text-gray-400" />
-        </div>
-      </div>
-    </Card>
-  );
+  const isMobile = useIsMobile();
 
-  const NewsletterRow = ({ newsletter }: { newsletter: any }) => (
-    <Card 
-      className="hover:shadow-lg transition-all duration-300 cursor-pointer bg-white/10 backdrop-blur-sm border-0"
-      onClick={() => handleNewsletterDetails(newsletter)}
-    >
-      <div className="flex gap-6 p-6">
-        <div className="relative w-48 h-32 flex-shrink-0 overflow-hidden rounded-lg">
-          {newsletter.thumbnail ? (
-            <>
-              <img
-                src={newsletter.thumbnail}
-                alt={newsletter.title}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-            </>
-          ) : (
-            <div className="relative h-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
-              <div className="text-center">
-                <h3 className="text-sm font-bold text-white/80 line-clamp-2">{newsletter.title}</h3>
-              </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-            </div>
-          )}
-        </div>
-        <div className="flex-1">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-sm text-gray-300">{newsletter.tags || 'News'}</span>
-            <span className="text-sm text-gray-400">
-              {new Date(newsletter.publishDate).toLocaleDateString()}
-            </span>
-          </div>
-          <h3 className="text-xl font-semibold text-white mb-2">
-            {newsletter.title}
-          </h3>
-          <div className="flex justify-end">
-            <ArrowRight className="w-5 h-5 text-gray-400" />
-          </div>
-        </div>
-      </div>
-    </Card>
-  );
+  if (isMobile) {
+    return (
+      <MobileNewslettersView
+        newsletters={newsletters}
+        filteredNewsletters={filteredNewsletters}
+        loading={loading}
+        onNewsletterClick={handleNewsletterDetails}
+        carouselRef={carouselRef}
+        onFilter={handleFilterChange}
+        onSearch={(query) => setSearch(query)}
+        activeFilters
+      />
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-[#0a0f2e] text-white">
+    <div className="min-h-screen text-white">
       {/* Hero Section */}
       <div className="relative text-white -mt-16 pt-16 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-r from-[#1a1f4d]/90 to-[#2a3f8f]/90"></div>
@@ -276,7 +181,7 @@ export default function NewslettersPage() {
                       alt={newsletters[0].title}
                       className="w-full h-full object-cover"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#1a1f4d] via-[#1a1f4d]/80 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#1a1f4d] via-[#1a1f4d]/60 to-transparent" />
                   </>
                 ) : (
                   <div className="relative h-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
@@ -286,29 +191,34 @@ export default function NewslettersPage() {
                     <div className="absolute inset-0 bg-gradient-to-t from-[#1a1f4d] via-[#1a1f4d]/80 to-transparent" />
                   </div>
                 )}
-                <div className="absolute inset-0 p-8 flex flex-col justify-end">
-                  <div className="flex items-center justify-between mb-6">
-                    <span className="text-sm text-gray-300">
-                      {new Date(newsletters[0].publishDate).toLocaleDateString()}
-                    </span>
-                    <span className="text-sm bg-white/20 px-4 py-2 rounded-full">Latest News</span>
+                <div className="absolute inset-0 p-8 flex flex-row justify-end">
+                  <div className="p-1">
+                    <span className="text-sm font-bold bg-white/20 px-4 py-2 rounded-full">Latest News</span>
                   </div>
-                  <h2 className="text-3xl font-bold mb-4 text-white">
-                    {newsletters[0].title}
-                  </h2>
-                  <div className="flex items-start gap-6">
-                    <p className="text-lg text-gray-200 flex-1 line-clamp-3">
-                      {newsletters[0].content.split(' ').slice(0, 20).join(' ')}...
-                    </p>
-                    <Button 
-                      variant="secondary" 
-                      className="bg-white text-[#1a1f4d] hover:bg-gray-100 cursor-pointer flex-shrink-0"
-                      onClick={() => handleNewsletterDetails(newsletters[0])}
-                    >
-                      Learn More
-                    </Button>
+                  <div className="absolute inset-0 p-8 flex flex-col justify-end">
+                    <div className="flex items-center justify-between mb-6">
+                      <span className="text-sm text-gray-300">
+                        {new Date(newsletters[0].publishDate).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <h2 className="text-3xl font-bold mb-4 text-white">
+                      {newsletters[0].title}
+                    </h2>
+                    <div className="flex items-start gap-6">
+                      <p className="text-lg text-gray-200 flex-1 line-clamp-3">
+                        {newsletters[0].content.split(' ').slice(0, 20).join(' ')}...
+                      </p>
+                      <Button 
+                        variant="secondary" 
+                        className="bg-white text-[#1a1f4d] hover:bg-gray-300 cursor-pointer flex-shrink-0"
+                        onClick={() => handleNewsletterDetails(newsletters[0])}
+                      >
+                        Learn More
+                      </Button>
+                    </div>
                   </div>
                 </div>
+
               </div>
             </Card>
           )}
@@ -316,7 +226,7 @@ export default function NewslettersPage() {
       </div>
 
       {/* Carousel Section/Pinned News */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-white/5 rounded-2xl">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -324,43 +234,51 @@ export default function NewslettersPage() {
           className="relative"
         >
           <h2 className="text-2xl font-bold text-white mb-6">Pinned News</h2>
-          <div className="relative px-12">
+          <div className="relative px-12 rounded-xl">
             {newsletters.filter(newsletter => newsletter.isPinned).length > 0 ? (
               <>
                 <button
                   onClick={() => handleScroll('left')}
-                  className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/10 hover:bg-white/20 text-white p-2 rounded-full backdrop-blur-sm transition-all duration-300"
+                  className="absolute left-1 top-1/2 -translate-y-1/2 z-10 bg-white/10 hover:bg-white/20 text-white p-2 rounded-full backdrop-blur-sm transition-all duration-300 cursor-pointer"
                   aria-label="Scroll left"
                 >
                   <ChevronLeft className="w-6 h-6" />
                 </button>
                 <div 
                   ref={carouselRef}
-                  className="flex overflow-x-hidden pb-4 md:px-0 px-8 snap-x snap-mandatory"
+                  className="flex overflow-x-auto scroll-smooth space-x-4"
                 >
                   {newsletters.filter(newsletter => newsletter.isPinned).map((newsletter) => (
                     <motion.div
                       key={newsletter._id}
                       whileHover={{ y: -5 }}
                       transition={{ duration: 0.2 }}
-                      className="flex-none w-full md:w-[calc(50%-32px)] md:mx-0 mx-auto snap-center"
+                      className="flex-none snap-center"
+                      style={{ width: '520px' }}
                     >
-                      <div className="p-1 sm:p-2 md:p-4">
-                        <NewsletterCard newsletter={newsletter} />
+                      <div className="p-2 h-full">
+                        <NewsletterCard 
+                          _id={newsletter._id}
+                          thumbnail={newsletter.thumbnail}
+                          title={newsletter.title}
+                          tags={newsletter.tags}
+                          publishDate={newsletter.publishDate}
+                          handleNewsletterDetails={() => handleNewsletterDetails(newsletter)}
+                        />
                       </div>
                     </motion.div>
                   ))}
                 </div>
                 <button
                   onClick={() => handleScroll('right')}
-                  className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/10 hover:bg-white/20 text-white p-2 rounded-full backdrop-blur-sm transition-all duration-300"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 z-10 bg-white/10 hover:bg-white/20 text-white p-2 rounded-full backdrop-blur-sm transition-all duration-300 cursor-pointer"
                   aria-label="Scroll right"
                 >
                   <ChevronRight className="w-6 h-6" />
                 </button>
               </>
             ) : (
-              <div className="text-center py-12 bg-white/5 rounded-lg">
+              <div className="text-center py-10">
                 <p className="text-gray-400 text-lg">No pinned news at the moment</p>
               </div>
             )}
@@ -369,16 +287,19 @@ export default function NewslettersPage() {
       </div>
         
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <h1 className="text-3xl text-center font-bold text-white mb-6 pt-30">
+        See what's going on in the community!
+      </h1>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
         {/* Search and View Toggle */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="flex items-center gap-4 py-4 mb-8"
+          className="flex items-center gap-4 py-4"
         >
           {/* Search bar - center */}
-          <div className="flex-1 max-w-2xl mx-auto">
+          <div className="flex-1">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
               <input
@@ -413,119 +334,151 @@ export default function NewslettersPage() {
         </motion.div>
         
         {/* Content area */}
-        <div className="flex flex-col sm:flex-row gap-8">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="flex flex-wrap items-center gap-2 mb-4"
+        >
+          <div className="flex items-center gap-3">
+            {/* Filter button */}
+            <button
+              className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors border border-white/10 flex items-center gap-2 cursor-pointer"
+              onClick={() => setFilterSidebarOpen(!filterSidebarOpen)}
+            >
+              <Filter size={18} />
+              <span>Filter</span>
+            </button>
+          </div>
+          {/* Results count */}
+          {filteredNewsletters.length > 0 && (
+            <div className="ml-auto text-sm text-gray-400">
+              Showing {filteredNewsletters.length} results
+            </div>
+          )}
+        </motion.div>
+
+        <div className="flex gap-8">
           {/* Sidebar */}
           <motion.aside 
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.1 }}
-            className="w-64 flex-shrink-0"
+            className={`w-64 flex-shrink-0 ${filterSidebarOpen ? 'block' : 'hidden'}`}
           >
-            <div className="flex items-center gap-3 mb-4">
-              <button
-                className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors border border-white/10"
-                onClick={() => setFilterSidebarOpen(!filterSidebarOpen)}
-              >
-                <Filter size={18} />
-              </button>
-            </div>
             <div className={`${filterSidebarOpen ? 'block' : 'hidden'} lg:block`}>
               <FilterSidebar
                 isOpen={filterSidebarOpen}
                 setIsOpen={setFilterSidebarOpen}
                 onFilterChange={handleFilterChange}
-                showModal={() => {}}
                 activeFilters={activeFilters}
               />
             </div>
           </motion.aside>
 
-          {/* Main content */}
-          <div className="flex-1">
-            {/* Active filters */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="flex flex-wrap items-center gap-2 mb-4"
-            >
-              {Object.entries(activeFilters.newsletterType).map(([key, value]) =>
-                value ? (
-                  <div
-                    key={key}
-                    className="px-3 py-2 bg-white/5 rounded-lg text-white border border-white/10 flex items-center gap-2"
-                  >
-                    {key.charAt(0).toUpperCase() + key.slice(1)}
-                    <button
-                      className="opacity-60 hover:opacity-100 cursor-pointer"
-                      onClick={() => {
-                        const newFilters = { ...activeFilters };
-                        newFilters.newsletterType[key as keyof typeof newFilters.newsletterType] = false;
-                        handleFilterChange(newFilters);
-                      }}
-                    >
-                      ✕
-                    </button>
-                  </div>
-                ) : null
-              )}
+          <main className={`flex-1 transition-all duration-300 ${filterSidebarOpen ? '' : 'w-full'}`}>
+            {loading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="text-white/80">Loading newsletters...</div>
+              </div>
+            ) : (
+              <>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.3 }}
+                  className={`grid ${
+                    isGridView
+                      ? `grid-cols-1 min-[400px]:grid-cols-1 ${
+                          filterSidebarOpen 
+                            ? 'sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' 
+                            : 'sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'
+                        }`
+                      : 'grid-cols-1'
+                  } gap-4 xs:gap-4 md:gap-4`}
+                >
+                  {displayedNewsletters.length > 0 ? (
+                    displayedNewsletters.map((newsletter, index) => (
+                      <motion.div
+                        key={index}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.3, delay: index * 0.05 }}
+                        className="transition-colors"
+                      >
+                        {isGridView ? (
+                          <NewsletterCard 
+                            _id={newsletter._id}
+                            thumbnail={newsletter.thumbnail}
+                            title={newsletter.title}
+                            tags={newsletter.tags}
+                            publishDate={newsletter.publishDate}
+                            handleNewsletterDetails={() => handleNewsletterDetails(newsletter)}
+                          />
+                        ) : (
+                          <NewsletterRow
+                            _id={newsletter._id}
+                            thumbnail={newsletter.thumbnail}
+                            title={newsletter.title}
+                            content={newsletter.content}
+                            tags={newsletter.tags}
+                            publishDate={newsletter.publishDate}
+                            handleNewsletterDetails={() => handleNewsletterDetails(newsletter)}
+                          />
+                        )}
+                      </motion.div>
+                    ))
+                  ) : (
+                    <div className="col-span-full text-center py-8">
+                      <p className="text-gray-400">
+                        No newsletters found matching your filters.
+                      </p>
+                      {/* Clear filters button */}
+                      <button
+                        className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors mt-4 border border-white/10 cursor-pointer"
+                        onClick={() =>
+                          handleFilterChange({
+                            sort: 'newest'
+                          })
+                        }
+                      >
+                        Clear all filters
+                      </button>
+                    </div>
+                  )}
+                </motion.div>
 
-              {/* Results count */}
-              {filteredNewsletters.length > 0 && (
-                <div className="ml-auto text-sm text-gray-400">
-                  Showing {filteredNewsletters.length} results
-                </div>
-              )}
-            </motion.div>
-
-            {/* Grid/List View */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              className={`grid ${isGridView ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4' : 'grid-cols-1'} gap-4`}
-            >
-              {displayedNewsletters.length > 0 ? (
-                displayedNewsletters.map((newsletter, index) => (
-                  <motion.div
-                    key={newsletter._id}
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <motion.div 
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3, delay: index * 0.05 }}
-                    className="transition-colors"
+                    transition={{ delay: 0.4 }}
+                    className="flex justify-center items-center space-x-4 my-8"
                   >
-                    {isGridView ? (
-                      <NewsletterCard newsletter={newsletter} />
-                    ) : (
-                      <NewsletterRow newsletter={newsletter} />
-                    )}
+                    {/* Pagination buttons */}
+                    <button
+                      onClick={() => setCurrentPage(currentPage - 1)}
+                      disabled={currentPage === 1}
+                      className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors disabled:opacity-50 border border-white/10 cursor-pointer disabled:cursor-not-allowed"
+                    >
+                      <ChevronLeft />
+                    </button>
+                    <span className="text-gray-400">
+                      {currentPage} / {totalPages}
+                    </span>
+                    <button
+                      onClick={() => setCurrentPage(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors disabled:opacity-50 border border-white/10 cursor-pointer disabled:cursor-not-allowed"
+                    >
+                      <ChevronRight />
+                    </button>
                   </motion.div>
-                ))
-              ) : (
-                <div className="col-span-full text-center py-8">
-                  <p className="text-gray-400">
-                    No newsletters found matching your filters.
-                  </p>
-                  <button
-                    className="px-4 py-2 bg-white/5 hover:bg-white/10 text-white rounded-lg transition-colors mt-4 border border-white/10"
-                    onClick={() =>
-                      handleFilterChange({
-                        newsletterType: {
-                          event: false,
-                          program: false,
-                          survey: false,
-                          other: false
-                        },
-                        sort: 'newest'
-                      })
-                    }
-                  >
-                    Clear all filters
-                  </button>
-                </div>
-              )}
-            </motion.div>
-          </div>
+                )}
+              </>
+            )}
+          </main>
         </div>
       </div>
     </div>

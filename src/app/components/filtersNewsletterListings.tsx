@@ -1,39 +1,28 @@
 "use client";
 import { useState, useEffect } from "react";
-import { SlidersHorizontal, Plus } from "lucide-react";
 
 export default function FilterSidebar({
   isOpen,
   setIsOpen,
   onFilterChange,
-  showModal,
   activeFilters
 }: {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
   onFilterChange: (filters: any) => void;
-  showModal: () => void;
   activeFilters?: any;
 }) {
 
   const [filters, setFilters] = useState(activeFilters);
 
-  // Update local state when parent state changes
   useEffect(() => {
     if (activeFilters) {
       setFilters(activeFilters);
     }
   }, [activeFilters]);
 
-  // Clear all filters
   const clearFilters = () => {
     const clearedFilters = {
-      newsletterType: {
-        event: false,
-        program: false,
-        survey: false,
-        other: false
-      },
       sort: 'newest'
     };
     
@@ -41,10 +30,8 @@ export default function FilterSidebar({
     onFilterChange(clearedFilters);
   };
 
-  // Add sort change handler
   const handleSortChange = (value: string) => {
     const newFilters = {
-      ...filters,
       sort: value
     };
     setFilters(newFilters);
