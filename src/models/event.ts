@@ -12,6 +12,8 @@ export interface EventDto {
     imageUrl?: string;
     sponsorship?: {
         enabled: boolean;
+        goal?: number;
+        currentAmount?: number;
         sponsors: string[];
     };
     rsvp?: {
@@ -35,6 +37,8 @@ export const EventSchema = new Schema<EventDto>({
     sponsorship: {
         type: {
             enabled: { type: Boolean, default: false },
+            goal: { type: Number, default: 0 },
+            currentAmount: { type: Number, default: 0 },
             sponsors: [{ type: String }]
         },
         required: false
@@ -44,13 +48,12 @@ export const EventSchema = new Schema<EventDto>({
             enabled: { type: Boolean, default: false },
             options: [{
                 type: String,
-                enum: ['Yes', 'No', 'Maybe'],
-                default: ['Yes', 'No', 'Maybe']
+                enum: ['Yes', 'No', 'Maybe']
             }]
         },
         required: false
     },
-    wouldGo: [{ type: Types.ObjectId, ref: 'Users', required: true }],
-    wouldNotGo: [{ type: Types.ObjectId, ref: 'Users', required: true }],
-    wouldMaybeGo: [{ type: Types.ObjectId, ref: 'Users', required: true }]
-}); 
+    wouldGo: [{ type: String }],
+    wouldNotGo: [{ type: String }],
+    wouldMaybeGo: [{ type: String }]
+});

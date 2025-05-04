@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import { Event } from "@/entities/event";
-import { Calendar, MapPin, X, Handshake, Info, Users, Image as ImageIcon, ChevronDown } from "lucide-react";
+import { Calendar, MapPin, X, Handshake, Info, Users, Image as ImageIcon, ChevronDown, DollarSign } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface EditEventModalProps {
@@ -16,25 +16,30 @@ interface SponsorshipChip {
   name: string;
 }
 
+// Helper function to format date for display
+const formatDateForDisplay = (date: Date | string | undefined) => {
+  if (!date) return "";
+  const dateObj = date instanceof Date ? date : new Date(date);
+  return dateObj.toLocaleString('en-US', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true
+  });
+};
+
 // Helper to format date for datetime-local input
 const formatDateTimeLocal = (date: Date | string | undefined): string => {
   if (!date) return "";
   try {
     const d = new Date(date);
-    // Check if date is valid
-    if (isNaN(d.getTime())) {
-      return "";
-    }
-    // Format: YYYY-MM-DDTHH:mm
-    const year = d.getFullYear();
-    const month = (d.getMonth() + 1).toString().padStart(2, '0');
-    const day = d.getDate().toString().padStart(2, '0');
-    const hours = d.getHours().toString().padStart(2, '0');
-    const minutes = d.getMinutes().toString().padStart(2, '0');
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
+    if (isNaN(d.getTime())) return "";
+    return d.toISOString().slice(0, 16);
   } catch (error) {
     console.error("Error formatting date:", error);
-    return ""; // Return empty string on error
+    return "";
   }
 };
 
@@ -49,8 +54,10 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ isOpen, onClose, onSave
     location: event?.location || "",
     imageUrl: event?.imageUrl || "",
     sponsorship: {
-      enabled: false,
-      sponsors: []
+      enabled: event?.sponsorship?.enabled || false,
+      goal: event?.sponsorship?.goal || 0,
+      currentAmount: event?.sponsorship?.currentAmount || 0,
+      sponsors: event?.sponsorship?.sponsors || [],
     },
   });
   const [sponsorshipInput, setSponsorshipInput] = useState<string>("");
@@ -169,6 +176,8 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ isOpen, onClose, onSave
         ...prev,
         sponsorship: {
           enabled: false,
+          goal: 0,
+          currentAmount: 0,
           sponsors: []
         }
       }));
@@ -221,8 +230,13 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ isOpen, onClose, onSave
   if (!event) return null;
 
   return (
-    <dialog id="edit_event_modal" className="modal">
-      <div className="modal-box rounded-3xl max-w-3xl bg-white">
+    <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 text-gray-500">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.9 }}
+        className="bg-gray-50 rounded-lg p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-xl border border-gray-200"
+      >
         <form method="dialog">
           <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 text-gray-600 hover:bg-[#605dff] hover:text-white">
             ✕
@@ -354,11 +368,16 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ isOpen, onClose, onSave
                     name="startDate"
                     value={formatDateTimeLocal(formData.startDate)}
                     onChange={handleChange}
-                    className="input w-full pl-10 pr-10 bg-white border-black text-black appearance-none [&::-webkit-calendar-picker-indicator]:bg-white [&::-webkit-datetime-edit-fields-wrapper]:text-black"
+                    className="input w-full pl-10 bg-white border-black text-black [color-scheme:light]"
                     required
-                    style={{ colorScheme: 'light' }}
+                    onKeyDown={(e) => e.preventDefault()}
                   />
                 </div>
+                {formData.startDate && (
+                  <p className="text-sm text-gray-500 mt-1">
+                    {formatDateForDisplay(formData.startDate)}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -370,11 +389,16 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ isOpen, onClose, onSave
                     name="endDate"
                     value={formatDateTimeLocal(formData.endDate)}
                     onChange={handleChange}
-                    className="input w-full pl-10 pr-10 bg-white border-black text-black appearance-none [&::-webkit-calendar-picker-indicator]:bg-white [&::-webkit-datetime-edit-fields-wrapper]:text-black"
+                    className="input w-full pl-10 bg-white border-black text-black [color-scheme:light]"
                     required
-                    style={{ colorScheme: 'light' }}
+                    onKeyDown={(e) => e.preventDefault()}
                   />
                 </div>
+                {formData.endDate && (
+                  <p className="text-sm text-gray-500 mt-1">
+                    {formatDateForDisplay(formData.endDate)}
+                  </p>
+                )}
               </div>
 
               {/* Sponsorship Toggle & Input */}
@@ -389,28 +413,61 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ isOpen, onClose, onSave
                   <label className="font-bold text-left text-gray-800">Enable Sponsorship</label>
                 </div>
                 {sponsorshipEnabled && (
-                  <div className="space-y-2">
-                    <input
-                      type="text"
-                      value={sponsorshipInput}
-                      onChange={handleSponsorshipInput}
-                      onKeyDown={handleSponsorshipKeyDown}
-                      placeholder="Add sponsors (press Enter)"
-                      className="input w-full bg-white border-black text-black placeholder:text-gray-400"
-                    />
-                    <div className="flex flex-wrap gap-2">
-                      {sponsorshipChips.map(chip => (
-                        <div key={chip.id} className="badge gap-2 bg-[#242937] text-white border-none">
-                          {chip.name}
-                          <button
-                            type="button"
-                            onClick={() => removeSponsorshipChip(chip.id)}
-                            className="btn btn-xs btn-ghost btn-circle hover:bg-[#1b1f4e]"
-                          >
-                            <X size={14} />
-                          </button>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Sponsorship Goal (₱)
+                      </label>
+                      <div className="relative">
+                        <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                        <input
+                          type="number"
+                          value={formData.sponsorship?.goal || ''}
+                          onChange={(e) => setFormData(prev => ({
+                            ...prev,
+                            sponsorship: {
+                              ...prev.sponsorship,
+                              enabled: true,
+                              goal: parseFloat(e.target.value) || 0
+                            }
+                          }))}
+                          className="input input-bordered w-full pl-10 bg-white"
+                          placeholder="Enter sponsorship goal amount"
+                          min="1"
+                          step="any"
+                          required={sponsorshipEnabled}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Add Sponsorship Options
+                      </label>
+                      <div className="space-y-2">
+                        <input
+                          type="text"
+                          value={sponsorshipInput}
+                          onChange={handleSponsorshipInput}
+                          onKeyDown={handleSponsorshipKeyDown}
+                          placeholder="Add sponsors (press Enter)"
+                          className="input w-full bg-white border-black text-black placeholder:text-gray-400"
+                        />
+                        <div className="flex flex-wrap gap-2">
+                          {sponsorshipChips.map(chip => (
+                            <div key={chip.id} className="badge gap-2 bg-[#242937] text-white border-none">
+                              {chip.name}
+                              <button
+                                type="button"
+                                onClick={() => removeSponsorshipChip(chip.id)}
+                                className="btn btn-xs btn-ghost btn-circle hover:bg-[#1b1f4e]"
+                              >
+                                <X size={14} />
+                              </button>
+                            </div>
+                          ))}
                         </div>
-                      ))}
+                      </div>
                     </div>
                   </div>
                 )}
@@ -447,11 +504,8 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ isOpen, onClose, onSave
             </button>
           </div>
         </form>
-      </div>
-      <form method="dialog" className="modal-backdrop">
-        <button onClick={onClose}>close</button>
-      </form>
-    </dialog>
+      </motion.div>
+    </div>
   );
 };
 

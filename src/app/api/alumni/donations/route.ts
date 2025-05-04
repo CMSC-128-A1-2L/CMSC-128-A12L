@@ -13,7 +13,6 @@ export async function GET(req: NextRequest) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    
     const donationRepo = getEducationRepository();
 
     try {
@@ -24,7 +23,9 @@ export async function GET(req: NextRequest) {
                 ...donation,
                 paymentMethod: donation.description?.toLowerCase().includes('maya') 
                     ? 'maya' as PaymentMethod 
-                    : 'stripe' as PaymentMethod
+                    : 'stripe' as PaymentMethod,
+                createdAt: donation.receiveDate ? new Date(donation.receiveDate).toISOString() : new Date().toISOString(),
+                date: donation.receiveDate ? new Date(donation.receiveDate).toLocaleDateString() : 'N/A'
             }));
 
         return NextResponse.json(userDonations, { status: 200 });

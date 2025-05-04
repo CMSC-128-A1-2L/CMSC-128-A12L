@@ -12,7 +12,12 @@ export function mapEventToEventDto(event: Event): EventDto {
         startDate: event.startDate,
         endDate: event.endDate,
         imageUrl: event.imageUrl,
-        sponsorship: event.sponsorship,
+        sponsorship: event.sponsorship ? {
+            enabled: event.sponsorship.enabled,
+            goal: event.sponsorship.goal,
+            currentAmount: event.sponsorship.currentAmount,
+            sponsors: event.sponsorship.sponsors
+        } : undefined,
         rsvp: event.rsvp,
         wouldGo: event.wouldGo,
         wouldNotGo: event.wouldNotGo,
@@ -31,10 +36,15 @@ export function mapEventDtoToEvent(eventDto: EventDto): Event {
         startDate: eventDto.startDate,
         endDate: eventDto.endDate,
         imageUrl: eventDto.imageUrl,
-        sponsorship: eventDto.sponsorship,
+        sponsorship: eventDto.sponsorship ? {
+            enabled: eventDto.sponsorship.enabled,
+            goal: eventDto.sponsorship.goal || 0,
+            currentAmount: eventDto.sponsorship.currentAmount || 0,
+            sponsors: eventDto.sponsorship.sponsors || []
+        } : undefined,
         rsvp: eventDto.rsvp,
-        wouldGo: eventDto.wouldGo,
-        wouldNotGo: eventDto.wouldNotGo,
-        wouldMaybeGo: eventDto.wouldMaybeGo
+        wouldGo: eventDto.wouldGo || [],
+        wouldNotGo: eventDto.wouldNotGo || [],
+        wouldMaybeGo: eventDto.wouldMaybeGo || []
     };
-} 
+}
