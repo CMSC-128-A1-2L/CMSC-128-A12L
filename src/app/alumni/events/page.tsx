@@ -653,6 +653,7 @@ export default function EventListings() {
                     {/* Event Details Modal */}
                     {selectedEvent && (
                       <EventDetails
+                        name={selectedEvent.name}
                         _id={selectedEvent._id!}
                         title={selectedEvent.name}
                         eventStatus={timelineFilter}
@@ -672,16 +673,6 @@ export default function EventListings() {
                           }
                           // Then show RSVP options
                           setRsvpEvent(selectedEvent);
-                        }}
-                        onSponsorClick={() => {
-                          // Close the details modal first
-                          const modal = document.getElementById("event_details_modal") as HTMLDialogElement;
-                          if (modal) {
-                            modal.close();
-                            setShowDetailsModal(false);
-                          }
-                          // Then open sponsor modal
-                          setShowSponsorModal(true);
                         }}
                         imageUrl={selectedEvent.imageUrl}
                         type={selectedEvent.type}
