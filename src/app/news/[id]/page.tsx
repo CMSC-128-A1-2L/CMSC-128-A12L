@@ -4,28 +4,60 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { AnimatePresence, motion } from 'framer-motion';
-import { dummyNewsUpdates, NewsItem } from '@/data/dummy_newsupdates';
 import Footer from '@/app/components/footer';
 
+interface Newsletter {
+  _id: string;
+  title: string;
+  content: string;
+  thumbnail?: string;
+  authorId: string;
+  publishDate: string;
+  tags?: string;
+}
 
 export default function NewsDetailsPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
-  const [news, setNews] = useState<NewsItem | null>(null);
+  const [news, setNews] = useState<Newsletter | null>(null);
   const [loading, setLoading] = useState(true);
   const [showScrollIndicator, setShowScrollIndicator] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [latestNews, setLatestNews] = useState<Newsletter[]>([]);
 
   useEffect(() => {
-    const fetchNews = () => {
+    const fetchNews = async () => {
       if (!params?.id) return;
-      const foundNews = dummyNewsUpdates.find(item => item._id === params.id);
-      setNews(foundNews || null);
-      setLoading(false);
+      try {
+        setLoading(true);
+        const response = await fetch(`/api/newsletters/${params.id}`);
+        if (!response.ok) throw new Error('Failed to fetch newsletter');
+        const data = await response.json();
+        setNews(data);
+      } catch (error) {
+        console.error('Error fetching newsletter:', error);
+        setNews(null);
+      } finally {
+        setLoading(false);
+      }
     };
     fetchNews();
   }, [params?.id]);
+
+  useEffect(() => {
+    const fetchLatestNews = async () => {
+      try {
+        const response = await fetch('/api/newsletters');
+        if (!response.ok) throw new Error('Failed to fetch latest news');
+        const data = await response.json();
+        setLatestNews(data);
+      } catch (error) {
+        console.error('Error fetching latest news:', error);
+      }
+    };
+    fetchLatestNews();
+  }, []);
 
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
@@ -184,24 +216,26 @@ export default function NewsDetailsPage() {
             <div className="mb-8">
               <div className="relative h-96 w-full rounded-lg overflow-hidden mb-8">
                 <Image
-                  src={news.thumbnail}
+                  src={news.thumbnail || '/default-newsletter-image.jpg'}
                   alt={news.title}
                   fill
                   className="object-cover"
                 />
               </div>
-              <div className="flex flex-wrap gap-2 mb-4">
-                {news.tags.map((tag: string, index: number) => (
-                  <span
-                    key={index}
-                    className="px-3 py-1 bg-white/10 rounded-full text-sm"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
+              {news.tags && (
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {news.tags.split(',').map((tag: string, index: number) => (
+                    <span
+                      key={index}
+                      className="px-3 py-1 bg-white/10 rounded-full text-sm"
+                    >
+                      {tag.trim()}
+                    </span>
+                  ))}
+                </div>
+              )}
               <h1 className="text-4xl font-bold mb-4">{news.title}</h1>
-              <p className="text-gray-100 mb-4">
+              <p className="text-gray-100 mb-8">
                 Published on {new Date(news.publishDate).toLocaleDateString()}
               </p>
               <div className="prose prose-invert max-w-none">
@@ -215,33 +249,30 @@ export default function NewsDetailsPage() {
             <div className="mt-16">
               <h2 className="text-2xl font-bold mb-6">Latest News</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {dummyNewsUpdates
-                  .filter(item => item._id !== news._id)
-                  .slice(0, 3)
-                  .map((item: NewsItem) => (
-                    <motion.div
-                      key={item._id}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="bg-white/5 rounded-lg overflow-hidden cursor-pointer"
-                      onClick={() => router.push(`/news/${item._id}`)}
-                    >
-                      <div className="relative h-48">
-                        <Image
-                          src={item.thumbnail}
-                          alt={item.title}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                      <div className="p-4">
-                        <h3 className="text-lg font-semibold mb-2">{item.title}</h3>
-                        <p className="text-gray-300 text-sm">
-                          {item.content.substring(0, 100)}...
-                        </p>
-                      </div>
-                    </motion.div>
-                  ))}
+                {latestNews.map((item) => (
+                  <motion.div
+                    key={item._id}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="bg-white/5 rounded-lg overflow-hidden cursor-pointer"
+                    onClick={() => router.push(`/news/${item._id}`)}
+                  >
+                    <div className="relative h-48">
+                      <Image
+                        src={item.thumbnail || '/default-newsletter-image.jpg'}
+                        alt={item.title}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                    <div className="p-4">
+                      <h3 className="text-lg font-semibold mb-2">{item.title}</h3>
+                      <p className="text-gray-300 text-sm">
+                        {item.content.substring(0, 100)}...
+                      </p>
+                    </div>
+                  </motion.div>
+                ))}
               </div>
             </div>
           </motion.div>
