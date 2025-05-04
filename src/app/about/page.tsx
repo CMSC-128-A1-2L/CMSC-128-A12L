@@ -140,7 +140,7 @@ export default function AboutPage() {
           playsInline
           className="absolute inset-0 w-full h-full object-cover z-0"
         >
-          <source src="/video6.mp4" type="video/mp4" />
+          <source src="https://res.cloudinary.com/artms/video/upload/v1746339073/aegis_video.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
         {/* <div className="absolute inset-0 bg-black/40 z-10" /> */}
