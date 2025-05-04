@@ -129,10 +129,10 @@ export default function JobApplicationForm({
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 50 }}
-        className="modal-box max-w-2xl bg-white/10 backdrop-blur-md text-white border border-white/10 p-0 rounded-xl overflow-hidden"
+        className="modal-box max-w-2xl bg-white/10 backdrop-blur-md text-white border border-white/10 p-0 rounded-xl overflow-hidden flex flex-col max-h-[90vh]"
       >
         {/* Header */}
-        <div className="relative h-24 bg-gradient-to-r from-blue-500/20 to-purple-500/20 p-6">
+        <div className="relative h-24 bg-gradient-to-r from-blue-500/20 to-purple-500/20 p-6 flex-shrink-0">
           <button 
             onClick={onClose}
             className="absolute right-4 top-4 p-2 hover:bg-black/20 rounded-full transition-colors"
@@ -146,7 +146,7 @@ export default function JobApplicationForm({
         </div>
 
         {/* Application Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form id="job-application-form" onSubmit={handleSubmit} className="p-6 space-y-6 overflow-y-auto flex-1">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-white/80 mb-2">Full Name</label>
@@ -213,7 +213,7 @@ export default function JobApplicationForm({
             <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-white/10 border-dashed rounded-lg hover:border-white/20 transition-colors">
               <div className="space-y-1 text-center">
                 <Upload className="mx-auto h-12 w-12 text-white/30" />
-                <div className="flex text-sm text-white/60">
+                <div className="flex flex-wrap justify-center text-sm text-white/60">
                   <label htmlFor="resume-upload" className="relative cursor-pointer rounded-md font-medium text-blue-200 hover:text-blue-300 focus-within:outline-none focus-within:ring-2 focus-within:ring-blue-500/50 focus-within:ring-offset-2">
                     <span>Upload a file</span>
                     <input
@@ -238,34 +238,35 @@ export default function JobApplicationForm({
               </div>
             </div>
           </div>
-
-          <div className="flex justify-end space-x-4 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-6 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-200 rounded-lg transition-colors border border-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
-            >
-              {loading ? (
-                <>
-                  <span className="animate-spin">↻</span>
-                  <span>Submitting...</span>
-                </>
-              ) : (
-                <>
-                  <Briefcase size={18} />
-                  <span>Submit Application</span>
-                </>
-              )}
-            </button>
-          </div>
         </form>
+
+        <div className="flex justify-end space-x-4 p-6 border-t border-white/10 flex-shrink-0">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            form="job-application-form"
+            disabled={loading}
+            className="px-6 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-200 rounded-lg transition-colors border border-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+          >
+            {loading ? (
+              <>
+                <span className="animate-spin">↻</span>
+                <span>Submitting...</span>
+              </>
+            ) : (
+              <>
+                <Briefcase size={18} />
+                <span>Submit Application</span>
+              </>
+            )}
+          </button>
+        </div>
       </motion.div>
 
       <form method="dialog" className="modal-backdrop">

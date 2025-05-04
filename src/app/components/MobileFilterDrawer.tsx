@@ -33,6 +33,11 @@ export default function MobileFilterDrawer({
     onFilter(newFilters);
   };
 
+  const handleCreateJob = () => {
+    onClose();
+    onCreateJob();
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -63,10 +68,7 @@ export default function MobileFilterDrawer({
             <div className="flex-1 overflow-y-auto p-4">
               {/* Create Job Button */}
               <button
-                onClick={() => {
-                  onClose();
-                  onCreateJob();
-                }}
+                onClick={handleCreateJob}
                 className="w-full px-4 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors flex items-center justify-center gap-2 mb-6"
               >
                 <Plus size={18} />

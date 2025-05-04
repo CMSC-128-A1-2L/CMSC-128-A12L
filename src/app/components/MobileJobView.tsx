@@ -6,6 +6,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import JobCard from './jobContentCard';
 import JobDetails from './jobDetails';
 import MobileFilterDrawer from './MobileFilterDrawer';
+import CreateJL from './createJL';
+import JobApplicationForm from './JobApplicationForm';
 
 import { useSession } from "next-auth/react";
 import Footer from './footer';
@@ -44,6 +46,8 @@ export default function MobileJobView({
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedJob, setSelectedJob] = useState<any>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showApplicationModal, setShowApplicationModal] = useState(false);
   const itemsPerPage = 6;
 
   useEffect(() => {
@@ -58,6 +62,26 @@ export default function MobileJobView({
   const handleCloseModal = () => {
     setShowDetailsModal(false);
     setSelectedJob(null);
+  };
+
+  const handleCreateJob = () => {
+    setShowCreateModal(true);
+  };
+
+  const handleCloseCreateModal = () => {
+    setShowCreateModal(false);
+  };
+
+  const handleApplyJob = (jobTitle: string) => {
+    setShowApplicationModal(true);
+    onApply(jobTitle);
+  };
+
+  const handleApplicationSuccess = () => {
+    setShowApplicationModal(false);
+    setShowDetailsModal(false);
+    // Refresh job list if necessary
+    onJobViewChange(jobView);
   };
 
   const totalPages = Math.ceil(jobs.length / itemsPerPage);
@@ -218,7 +242,7 @@ export default function MobileJobView({
                     description={job.description}
                     imageUrl={job.imageUrl}
                     onDetailsClick={() => handleJobClick(job)}
-                    onApplyClick={() => onApply(job.title)}
+                    onApplyClick={() => handleApplyJob(job.title)}
                   />
                 </motion.div>
               ))}
@@ -288,11 +312,27 @@ export default function MobileJobView({
             tags={selectedJob.tags}
             isOpen={showDetailsModal}
             onClose={handleCloseModal}
-            onApplyClick={() => onApply(selectedJob.title)}
+            onApplyClick={() => handleApplyJob(selectedJob.title)}
             onEditClick={() => onEdit(selectedJob)}
             onDeleteClick={() => onDelete(selectedJob)}
             canEdit={selectedJob.userId === session?.user?.id}
+            jobId={selectedJob._id}
           />
+        )}
+
+        {/* Job Application Modal */}
+        {showApplicationModal && selectedJob && (
+          <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="w-full max-w-2xl max-h-[90vh] overflow-auto">
+              <JobApplicationForm
+                jobId={selectedJob._id}
+                jobTitle={selectedJob.title}
+                company={selectedJob.company}
+                onClose={() => setShowApplicationModal(false)}
+                onSuccess={handleApplicationSuccess}
+              />
+            </div>
+          </div>
         )}
       </div>
 
@@ -301,17 +341,34 @@ export default function MobileJobView({
         isOpen={filterDrawerOpen}
         onClose={() => setFilterDrawerOpen(false)}
         onFilter={onFilter}
-        onCreateJob={onCreateJob}
+        onCreateJob={handleCreateJob}
         activeFilters={activeFilters}
       />
 
       {/* Create Job FAB */}
       <button
-        onClick={onCreateJob}
-        className="fixed right-4 bottom-20 p-4 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg transition-colors"
+        onClick={handleCreateJob}
+        className="fixed right-4 bottom-20 p-4 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg transition-colors z-50"
       >
         <Plus size={24} />
       </button>
+
+      {/* Create Job Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-2xl">
+            <CreateJL 
+              onClose={handleCloseCreateModal} 
+              onSuccess={() => {
+                handleCloseCreateModal();
+                // Refresh the jobs list
+                onJobViewChange(jobView);
+              }} 
+            />
+          </div>
+        </div>
+      )}
+
       <div className="mt-auto">
         <Footer />
       </div>
