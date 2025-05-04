@@ -129,7 +129,7 @@ export default function AboutPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1 }}
-        className="relative h-screen w-full flex items-center justify-center text-center bg-[#1a237e] px-4 md:px-0"
+        className="relative h-screen w-full flex items-center justify-center text-center bg-[#1a237e] px-4 md:px-4"
       >
         {/* <ConstellationBackground /> */}
          {/* Video background */}
@@ -140,10 +140,10 @@ export default function AboutPage() {
           playsInline
           className="absolute inset-0 w-full h-full object-cover z-0"
         >
-          <source src="/video1.mp4" type="video/mp4" />
+          <source src="/video6.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
-        <div className="absolute inset-0 bg-black/40 z-10" />
+        {/* <div className="absolute inset-0 bg-black/40 z-10" /> */}
         <motion.div
           initial={{ y: 50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
