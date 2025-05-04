@@ -6,11 +6,14 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ConstellationBackground from './components/constellation_background';
 import ScrollIndicator from './components/ScrollIndicator';
 import Footer from './components/footer';
+import { useRouter } from 'next/navigation';
+import { dummyNewsUpdates, NewsItem } from '@/data/dummy_newsupdates';
 
 export default function LandingPage() {
   const [showScrollIndicator, setShowScrollIndicator] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -238,7 +241,6 @@ export default function LandingPage() {
           />
           <div className="absolute inset-0 bg-gradient-to-br from-[#1a237e]/70 to-[#0d47a1]/60 backdrop-blur-[2px]" />
         </motion.div>
-
         {/* Content */}
         <motion.div className="relative z-10">
           <motion.h2 
@@ -251,29 +253,85 @@ export default function LandingPage() {
             News and Updates
           </motion.h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
+            {/* Featured News */}
             <motion.div 
               whileHover={{ scale: 1.02 }}
-              className="h-80 bg-white/5 backdrop-blur-sm rounded-lg overflow-hidden shadow-lg border border-white/10"
+              whileTap={{ scale: 0.95 }}
+              className="h-80 bg-white/5 backdrop-blur-sm rounded-lg overflow-hidden shadow-lg border border-white/10 cursor-pointer"
+              onClick={() => router.push(`/news/${dummyNewsUpdates[0]._id}`)}
             >
-              <div className="w-full h-full bg-gradient-to-br from-white/5 to-white/10 animate-pulse" />
+              <div className="relative h-48">
+                <Image
+                  src={dummyNewsUpdates[0].thumbnail}
+                  alt={dummyNewsUpdates[0].title}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <div className="p-6">
+                <div className="flex items-center gap-2 mb-2">
+                  {dummyNewsUpdates[0].tags.map((tag: string, index: number) => (
+                    <span key={index} className="text-sm text-gray-300">
+                      {tag}
+                    </span>
+                  ))}
+                  <span className="text-sm text-gray-400">
+                    {new Date(dummyNewsUpdates[0].publishDate).toLocaleDateString()}
+                  </span>
+                </div>
+                <h3 className="text-xl font-semibold text-white mb-2 line-clamp-2">
+                  {dummyNewsUpdates[0].title}
+                </h3>
+                <p className="text-gray-300 line-clamp-2">
+                  {dummyNewsUpdates[0].content}
+                </p>
+              </div>
             </motion.div>
+            {/* Other News */}
             <div className="space-y-6">
-              {[1, 2, 3].map((i) => (
+              {dummyNewsUpdates.slice(1, 4).map((news: NewsItem) => (
                 <motion.div
-                  key={i}
+                  key={news._id}
                   initial={{ x: 50, opacity: 0 }}
                   whileInView={{ x: 0, opacity: 1 }}
-                  transition={{ duration: 0.8, delay: i * 0.2 }}
                   whileHover={{ scale: 1.02, backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
-                  className="h-24 bg-white/5 backdrop-blur-sm rounded-lg overflow-hidden shadow-lg border border-white/10 transition-colors duration-300"
+                  whileTap={{ scale: 0.95 }}
+                  className="h-24 bg-white/5 backdrop-blur-sm rounded-lg overflow-hidden shadow-lg border border-white/10 cursor-pointer"
+                  onClick={() => router.push(`/news/${news._id}`)}
                 >
-                  <div className="w-full h-full bg-gradient-to-br from-white/5 to-white/10 animate-pulse" />
+                  <div className="flex h-full">
+                    <div className="relative w-24 flex-shrink-0">
+                      <Image
+                        src={news.thumbnail}
+                        alt={news.title}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                    <div className="flex-1 p-4">
+                      <div className="flex items-center gap-2 mb-1">
+                        {news.tags.map((tag: string, index: number) => (
+                          <span key={index} className="text-xs text-gray-300">
+                            {tag}
+                          </span>
+                        ))}
+                        <span className="text-xs text-gray-400">
+                          {new Date(news.publishDate).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <h3 className="text-sm font-semibold text-white line-clamp-1">
+                        {news.title}
+                      </h3>
+                      <p className="text-xs text-gray-400 line-clamp-1">
+                        {news.content}
+                      </p>
+                    </div>
+                  </div>
                 </motion.div>
               ))}
             </div>
           </div>
         </motion.div>
-
         {/* Animated particles overlay */}
         <motion.div 
           className="absolute inset-0 z-[1]"
