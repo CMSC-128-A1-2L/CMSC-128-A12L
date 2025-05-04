@@ -30,7 +30,8 @@ export async function GET(req: NextRequest) {
         page.setDefaultNavigationTimeout(30000);
 
         await page.goto(`${process.env.NEXT_PUBLIC_APP_URL}/reports`, {
-            waitUntil: "networkidle0",
+            waitUntil: "networkidle2",
+            timeout: 80000,
         });
 
         // Wait for content to fully render
