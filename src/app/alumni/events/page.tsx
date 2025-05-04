@@ -693,18 +693,6 @@ export default function EventListings() {
                       />
                     )}
 
-                    {/* Edit Event Modal */}
-                    {selectedEvent && (
-                      <EditEventModal
-                        isOpen={showEditModal}
-                        onClose={handleCloseEditModal}
-                        onSave={(eventData) => {
-                          console.log("Save event", eventData);
-                          setShowEditModal(false);
-                        }}
-                        event={selectedEvent}
-                      />
-                    )}
 
                     {/* Pagination */}
                     {totalPages > 1 && (

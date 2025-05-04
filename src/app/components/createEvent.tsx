@@ -37,6 +37,29 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ isOpen, onClose, on
   const [imageFile, setImageFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Helper function to format date for display
+  const formatDate = (date: Date) => {
+    return date.toLocaleString('en-US', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+  };
+
+  // Handle date/time changes
+  const handleDateTimeChange = (e: React.ChangeEvent<HTMLInputElement>, field: 'startDate' | 'endDate') => {
+    const value = e.target.value;
+    if (value) {
+      setFormData(prev => ({
+        ...prev,
+        [field]: new Date(value)
+      }));
+    }
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     if (name === 'startDate' || name === 'endDate') {
@@ -243,26 +266,44 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ isOpen, onClose, on
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">Start Date & Time</label>
-                <input
-                  type="datetime-local"
-                  name="startDate"
-                  value={formData.startDate ? formData.startDate.toISOString().slice(0, 16) : ""}
-                  onChange={handleChange}
-                  className="input input-bordered w-full bg-white"
-                  required
-                />
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
+                  <input
+                    type="datetime-local"
+                    name="startDate"
+                    value={formData.startDate ? formData.startDate.toISOString().slice(0, 16) : ""}
+                    onChange={(e) => handleDateTimeChange(e, 'startDate')}
+                    className="input input-bordered w-full pl-10 bg-white [color-scheme:light]"
+                    required
+                    onKeyDown={(e) => e.preventDefault()}
+                  />
+                </div>
+                {formData.startDate && (
+                  <p className="text-sm text-gray-500 mt-1">
+                    {formatDate(formData.startDate)}
+                  </p>
+                )}
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700">End Date & Time</label>
-                <input
-                  type="datetime-local"
-                  name="endDate"
-                  value={formData.endDate ? formData.endDate.toISOString().slice(0, 16) : ""}
-                  onChange={handleChange}
-                  className="input input-bordered w-full bg-white"
-                  required
-                />
+                <div className="relative">
+                  <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
+                  <input
+                    type="datetime-local"
+                    name="endDate"
+                    value={formData.endDate ? formData.endDate.toISOString().slice(0, 16) : ""}
+                    onChange={(e) => handleDateTimeChange(e, 'endDate')}
+                    className="input input-bordered w-full pl-10 bg-white [color-scheme:light]"
+                    required
+                    onKeyDown={(e) => e.preventDefault()}
+                  />
+                </div>
+                {formData.endDate && (
+                  <p className="text-sm text-gray-500 mt-1">
+                    {formatDate(formData.endDate)}
+                  </p>
+                )}
               </div>
 
               {/* Sponsorship Settings */}

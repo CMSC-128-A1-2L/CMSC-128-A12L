@@ -16,25 +16,30 @@ interface SponsorshipChip {
   name: string;
 }
 
+// Helper function to format date for display
+const formatDateForDisplay = (date: Date | string | undefined) => {
+  if (!date) return "";
+  const dateObj = date instanceof Date ? date : new Date(date);
+  return dateObj.toLocaleString('en-US', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true
+  });
+};
+
 // Helper to format date for datetime-local input
 const formatDateTimeLocal = (date: Date | string | undefined): string => {
   if (!date) return "";
   try {
     const d = new Date(date);
-    // Check if date is valid
-    if (isNaN(d.getTime())) {
-      return "";
-    }
-    // Format: YYYY-MM-DDTHH:mm
-    const year = d.getFullYear();
-    const month = (d.getMonth() + 1).toString().padStart(2, '0');
-    const day = d.getDate().toString().padStart(2, '0');
-    const hours = d.getHours().toString().padStart(2, '0');
-    const minutes = d.getMinutes().toString().padStart(2, '0');
-    return `${year}-${month}-${day}T${hours}:${minutes}`;
+    if (isNaN(d.getTime())) return "";
+    return d.toISOString().slice(0, 16);
   } catch (error) {
     console.error("Error formatting date:", error);
-    return ""; // Return empty string on error
+    return "";
   }
 };
 
@@ -171,6 +176,8 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ isOpen, onClose, onSave
         ...prev,
         sponsorship: {
           enabled: false,
+          goal: 0,
+          currentAmount: 0,
           sponsors: []
         }
       }));
@@ -223,8 +230,13 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ isOpen, onClose, onSave
   if (!event) return null;
 
   return (
-    <dialog id="edit_event_modal" className="modal">
-      <div className="modal-box rounded-3xl max-w-3xl bg-white">
+    <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 text-gray-500">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.9 }}
+        className="bg-gray-50 rounded-lg p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-xl border border-gray-200"
+      >
         <form method="dialog">
           <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 text-gray-600 hover:bg-[#605dff] hover:text-white">
             ✕
@@ -356,11 +368,16 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ isOpen, onClose, onSave
                     name="startDate"
                     value={formatDateTimeLocal(formData.startDate)}
                     onChange={handleChange}
-                    className="input w-full pl-10 pr-10 bg-white border-black text-black appearance-none [&::-webkit-calendar-picker-indicator]:bg-white [&::-webkit-datetime-edit-fields-wrapper]:text-black"
+                    className="input w-full pl-10 bg-white border-black text-black [color-scheme:light]"
                     required
-                    style={{ colorScheme: 'light' }}
+                    onKeyDown={(e) => e.preventDefault()}
                   />
                 </div>
+                {formData.startDate && (
+                  <p className="text-sm text-gray-500 mt-1">
+                    {formatDateForDisplay(formData.startDate)}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -372,11 +389,16 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ isOpen, onClose, onSave
                     name="endDate"
                     value={formatDateTimeLocal(formData.endDate)}
                     onChange={handleChange}
-                    className="input w-full pl-10 pr-10 bg-white border-black text-black appearance-none [&::-webkit-calendar-picker-indicator]:bg-white [&::-webkit-datetime-edit-fields-wrapper]:text-black"
+                    className="input w-full pl-10 bg-white border-black text-black [color-scheme:light]"
                     required
-                    style={{ colorScheme: 'light' }}
+                    onKeyDown={(e) => e.preventDefault()}
                   />
                 </div>
+                {formData.endDate && (
+                  <p className="text-sm text-gray-500 mt-1">
+                    {formatDateForDisplay(formData.endDate)}
+                  </p>
+                )}
               </div>
 
               {/* Sponsorship Toggle & Input */}
@@ -482,11 +504,8 @@ const EditEventModal: React.FC<EditEventModalProps> = ({ isOpen, onClose, onSave
             </button>
           </div>
         </form>
-      </div>
-      <form method="dialog" className="modal-backdrop">
-        <button onClick={onClose}>close</button>
-      </form>
-    </dialog>
+      </motion.div>
+    </div>
   );
 };
 
