@@ -50,7 +50,7 @@ export default function CreateJL({ onClose, onSuccess }: { onClose: () => void, 
 
   return (
     <dialog id="create_job_modal" className="modal" open>
-      <div className="modal-box max-w-2xl bg-white/10 backdrop-blur-md text-white border border-white/10 p-0 rounded-xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="modal-box max-w-2xl bg-gradient-to-br from-[#1a1f4d]/90 to-[#2a3f8f]/90 text-white border border-white/10 p-0 rounded-xl overflow-hidden flex flex-col max-h-[90vh]">
         <div className="relative h-24 bg-gradient-to-r from-blue-500/20 to-purple-500/20 p-6 flex items-center justify-between flex-shrink-0">
           <h2 className="text-xl font-bold text-white">Create New Job Posting</h2>
           <button 
@@ -178,7 +178,7 @@ export default function CreateJL({ onClose, onSuccess }: { onClose: () => void, 
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-white/70 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+            className="px-4 py-2 text-white/70 hover:text-white hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
           >
             Cancel
           </button>
@@ -186,7 +186,7 @@ export default function CreateJL({ onClose, onSuccess }: { onClose: () => void, 
             type="submit"
             form="create-job-form"
             disabled={loading}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50"
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
           >
             {loading ? 'Creating...' : 'Create Job'}
           </button>

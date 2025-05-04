@@ -151,6 +151,8 @@ export default function JobListings() {
   const handleJobDetails = (job: any) => {
     setSelectedJob(job);
     setShowDetailsModal(true);
+    // Ensure application modal is closed
+    setShowApplicationModal(false);
   };
 
   const handleCloseDetailsModal = () => {
@@ -158,9 +160,18 @@ export default function JobListings() {
     setTimeout(() => setSelectedJob(null), 100); // Clear selected job after modal closes
   };
 
-  // Update handleApply function to show the application form
-  const handleApply = () => {
+  // Function to handle closing the application modal
+  const handleCloseApplicationModal = () => {
+    setShowApplicationModal(false);
+    // Don't immediately clear selectedJob as it might be needed by other modals
+  };
+
+  // Update handleApply function to show the application form and set selectedJob
+  const handleApply = (job: any) => {
+    setSelectedJob(job);
     setShowApplicationModal(true);
+    // Close details modal if it's open
+    setShowDetailsModal(false);
   };
 
   const handleApplicationSuccess = async () => {
@@ -229,14 +240,26 @@ export default function JobListings() {
   // Update edit submit handler
   const handleEdit = async (jobData: any) => {
     try {
-      const response = await fetch(`/api/alumni/opportunities/${selectedJob._id}`, {
+      // Make sure we have a valid selectedJob with _id
+      const jobId = jobData._id || selectedJob?._id;
+      
+      if (!jobId) {
+        throw new Error('No job ID found for update');
+      }
+      
+      const response = await fetch(`/api/alumni/opportunities/${jobId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          ...jobData,
-          tags: jobData.tags || selectedJob.tags || [],
+          title: jobData.title,
+          company: jobData.company,
+          location: jobData.location,
+          workMode: jobData.workMode,
+          description: jobData.description,
+          position: jobData.position || "",
+          tags: jobData.tags || [],
         }),
       });
 
@@ -248,9 +271,11 @@ export default function JobListings() {
       setShowEditModal(false);
       setSelectedJob(null);
       fetchJobs(jobView);
+      return true;
     } catch (error) {
       console.error('Error updating job:', error);
       toast.error('Failed to update job');
+      return false;
     }
   };
 
@@ -481,7 +506,7 @@ export default function JobListings() {
                             description={job.description}
                             imageUrl={job.imageUrl}
                             onDetailsClick={() => handleJobDetails(job)}
-                            onApplyClick={() => handleApply()}
+                            onApplyClick={() => handleApply(job)}
                             isOwnJob={job.userId === session?.user?.id}
                           />
                         ) : (
@@ -495,7 +520,7 @@ export default function JobListings() {
                             description={job.description}
                             imageUrl={job.imageUrl}
                             onDetailsClick={() => handleJobDetails(job)}
-                            onApplyClick={() => handleApply()}
+                            onApplyClick={() => handleApply(job)}
                             isOwnJob={job.userId === session?.user?.id}
                           />
                         )}
@@ -537,7 +562,7 @@ export default function JobListings() {
                     tags={selectedJob.tags}
                     isOpen={showDetailsModal}
                     onClose={handleCloseDetailsModal}
-                    onApplyClick={() => handleApply()}
+                    onApplyClick={() => handleApply(selectedJob)}
                     onEditClick={() => handleEditClick(selectedJob)}
                     onDeleteClick={() => handleDelete(selectedJob)}
                     canEdit={selectedJob.userId === session?.user?.id}
@@ -558,18 +583,19 @@ export default function JobListings() {
                       location: selectedJob.location,
                       workMode: selectedJob.workMode,
                       description: selectedJob.description,
+                      position: selectedJob.position || "",
                       tags: selectedJob.tags || [],
                     }}
                   />
                 )}
 
                 {/* Replace the simple application modal with the new form */}
-                {showApplicationModal && (
+                {showApplicationModal && selectedJob && (
                   <JobApplicationForm
                     jobId={selectedJob._id}
                     jobTitle={selectedJob.title}
                     company={selectedJob.company}
-                    onClose={() => setShowApplicationModal(false)}
+                    onClose={handleCloseApplicationModal}
                     onSuccess={handleApplicationSuccess}
                   />
                 )}

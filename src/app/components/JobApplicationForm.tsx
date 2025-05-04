@@ -129,7 +129,7 @@ export default function JobApplicationForm({
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 50 }}
-        className="modal-box max-w-2xl bg-white/10 backdrop-blur-md text-white border border-white/10 p-0 rounded-xl overflow-hidden flex flex-col max-h-[90vh]"
+        className="modal-box max-w-2xl bg-gradient-to-br from-[#1a1f4d]/90 to-[#2a3f8f]/90 text-white border border-white/10 p-0 rounded-xl overflow-hidden flex flex-col max-h-[90vh]"
       >
         {/* Header */}
         <div className="relative h-24 bg-gradient-to-r from-blue-500/20 to-purple-500/20 p-6 flex-shrink-0">
@@ -244,7 +244,7 @@ export default function JobApplicationForm({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+            className="px-4 py-2 text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
           >
             Cancel
           </button>
@@ -252,7 +252,7 @@ export default function JobApplicationForm({
             type="submit"
             form="job-application-form"
             disabled={loading}
-            className="px-6 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-200 rounded-lg transition-colors border border-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+            className="px-6 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-200 rounded-lg transition-colors border border-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2 cursor-pointer"
           >
             {loading ? (
               <>

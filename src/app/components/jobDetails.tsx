@@ -73,7 +73,7 @@ export default function JobDetails({
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 50 }}
-        className="modal-box max-w-3xl bg-white/10 backdrop-blur-md text-white border border-white/10 p-0 rounded-xl overflow-hidden"
+        className="modal-box max-w-3xl bg-gradient-to-br from-[#1a1f4d]/90 to-[#2a3f8f]/90 text-white border border-white/10 p-0 rounded-xl overflow-hidden"
       >
         {/* Header */}
         <div className="relative h-32 bg-gradient-to-r from-blue-500/20 to-purple-500/20 p-6">
@@ -160,7 +160,7 @@ export default function JobDetails({
         <div className="border-t border-white/10 p-6 flex flex-wrap gap-3 justify-end">
           <button
             onClick={handleClose}
-            className="px-4 py-2 text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+            className="px-4 py-2 text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
           >
             Close
           </button>
@@ -168,7 +168,7 @@ export default function JobDetails({
             <>
               <button 
                 onClick={onEditClick}
-                className="px-4 py-2 bg-white/5 hover:bg-white/10 text-blue-200 rounded-lg transition-colors border border-blue-500/20"
+                className="px-4 py-2 bg-white/5 hover:bg-white/10 text-blue-200 rounded-lg transition-colors border border-blue-500/20 cursor-pointer"
               >
                 <div className="flex items-center gap-2">
                   <Edit2 size={18} />
@@ -177,7 +177,7 @@ export default function JobDetails({
               </button>
               <button 
                 onClick={onDeleteClick}
-                className="px-4 py-2 bg-white/5 hover:bg-white/10 text-red-200 rounded-lg transition-colors border border-red-500/20"
+                className="px-4 py-2 bg-white/5 hover:bg-white/10 text-red-200 rounded-lg transition-colors border border-red-500/20 cursor-pointer"
               >
                 <div className="flex items-center gap-2">
                   <Trash2 size={18} />
@@ -189,7 +189,7 @@ export default function JobDetails({
           {!isOwnJob ? (
             <button
               onClick={onApplyClick}
-              className="px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-200 rounded-lg transition-colors border border-blue-500/20"
+              className="px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-200 rounded-lg transition-colors border border-blue-500/20 cursor-pointer"
             >
               Apply Now
             </button>

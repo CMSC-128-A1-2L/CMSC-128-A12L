@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import { Briefcase, Building2, MapPin, Tag, Clock, X } from "lucide-react";
 
 interface EditJobModalProps {
   initialJobData?: {
@@ -9,6 +10,7 @@ interface EditJobModalProps {
     workMode: string;
     description: string;
     tags?: string[];
+    position?: string;
   };
   isOpen: boolean;
   onClose: () => void;
@@ -20,9 +22,10 @@ const EditJobModal: React.FC<EditJobModalProps> = ({
     title: "",
     company: "",
     location: "",
-    workMode: "On-site",
+    workMode: "on-site",
     description: "",
     tags: [],
+    position: "",
   },
   isOpen,
   onClose,
@@ -30,6 +33,7 @@ const EditJobModal: React.FC<EditJobModalProps> = ({
 }) => {
   const [jobData, setJobData] = useState(initialJobData);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(false);
 
   // Add useEffect to handle modal visibility
   React.useEffect(() => {
@@ -40,6 +44,13 @@ const EditJobModal: React.FC<EditJobModalProps> = ({
       } else {
         modal.close();
       }
+    }
+  }, [isOpen]);
+
+  // Reset loading state when modal closes
+  React.useEffect(() => {
+    if (!isOpen) {
+      setLoading(false);
     }
   }, [isOpen]);
 
@@ -68,136 +79,187 @@ const EditJobModal: React.FC<EditJobModalProps> = ({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     if (validateForm()) {
-      onSave(jobData);
-      onClose();
+      try {
+        setLoading(true);
+        await onSave(jobData);
+        // The actual API call and success/error handling is done in the parent component
+      } catch (error) {
+        console.error('Error saving job:', error);
+        setLoading(false);
+      }
     }
   };
 
   const handleTagsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    if (value.endsWith(',')) {
-      // Remove the comma and update tags
-      const newTags = value
-        .slice(0, -1)
-        .split(',')
-        .map(tag => tag.trim())
-        .filter(Boolean);
-      setJobData(prev => ({
-        ...prev,
-        tags: [...new Set(newTags)] // Remove duplicates
-      }));
-    } else {
-      // Just update the input value
-      setJobData(prev => ({
-        ...prev,
-        tags: value.split(',').map(tag => tag.trim()).filter(Boolean)
-      }));
-    }
+    setJobData((prev) => ({
+      ...prev,
+      tags: value.split(',').map(tag => tag.trim()).filter(Boolean)
+    }));
   };
 
   return (
-    <dialog id="edit_job_modal" className="modal">
-      <div className="modal-box rounded-3xl bg-white">
-        <div className="relative">
+    <dialog id="edit_job_modal" className="modal modal-bottom sm:modal-middle">
+      <div className="modal-box max-w-2xl bg-gradient-to-br from-[#1a1f4d]/90 to-[#2a3f8f]/90 text-white border border-white/10 p-0 rounded-xl overflow-hidden flex flex-col max-h-[90vh] mx-auto w-full">
+        <div className="relative h-24 bg-gradient-to-r from-blue-500/20 to-purple-500/20 p-6 flex items-center justify-between flex-shrink-0">
+          <h2 className="text-xl font-bold text-white">Edit Job Posting</h2>
           <button 
             onClick={onClose}
-            className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2 text-gray-600 hover:bg-[#605dff] hover:text-white"
+            className="p-2 hover:bg-black/20 rounded-full transition-colors"
           >
-            ✕
+            <X size={20} />
           </button>
         </div>
 
-        <h3 className="font-bold text-xl text-gray-900 mt-4">Edit Job Post</h3>
-
-        {/* Form fields */}
-        <div className="pt-4 space-y-4">
+        <form id="edit-job-form" onSubmit={handleSubmit} className="space-y-4 p-6 overflow-y-auto flex-1">
           <div>
-            <p className="font-bold text-left text-gray-800">Job Title</p>
+            <label className="block text-sm font-medium text-white/80 mb-1">Job Title</label>
             <input
               type="text"
               name="title"
               value={jobData.title}
               onChange={handleChange}
-              className="w-full p-2 border rounded-md bg-white text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder:text-white/50 text-white"
+              placeholder="e.g. Senior Software Engineer"
+              required
             />
-            {errors.title && <p className="text-red-500 text-sm">{errors.title}</p>}
+            {errors.title && <p className="text-red-400 text-sm mt-1">{errors.title}</p>}
           </div>
 
           <div>
-            <p className="font-bold text-left text-gray-800">Company</p>
-            <input
-              type="text"
-              name="company"
-              value={jobData.company}
-              onChange={handleChange}
-              className="w-full p-2 border rounded-md bg-white text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-            />
-            {errors.company && <p className="text-red-500 text-sm">{errors.company}</p>}
+            <label className="block text-sm font-medium text-white/80 mb-1">Position</label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center">
+                <Briefcase className="h-5 w-5 text-white/50" />
+              </div>
+              <input
+                type="text"
+                name="position"
+                value={jobData.position || ""}
+                onChange={handleChange}
+                className="w-full pl-10 pr-3 py-2 bg-white/5 border border-white/10 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder:text-white/50 text-white"
+                placeholder="e.g. Software Engineer"
+                required
+              />
+            </div>
           </div>
 
           <div>
-            <p className="font-bold text-left text-gray-800">Location</p>
-            <input
-              type="text"
-              name="location"
-              value={jobData.location}
-              onChange={handleChange}
-              className="w-full p-2 border rounded-md bg-white text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-            />
-            {errors.location && <p className="text-red-500 text-sm">{errors.location}</p>}
+            <label className="block text-sm font-medium text-white/80 mb-1">Company</label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center">
+                <Building2 className="h-5 w-5 text-white/50" />
+              </div>
+              <input
+                type="text"
+                name="company"
+                value={jobData.company}
+                onChange={handleChange}
+                className="w-full pl-10 pr-3 py-2 bg-white/5 border border-white/10 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder:text-white/50 text-white"
+                placeholder="e.g. Tech Company Inc."
+                required
+              />
+            </div>
+            {errors.company && <p className="text-red-400 text-sm mt-1">{errors.company}</p>}
           </div>
 
           <div>
-            <p className="font-bold text-left text-gray-800">Work Mode</p>
-            <select
-              name="workMode"
-              value={jobData.workMode}
-              onChange={handleChange}
-              className="w-full p-2 border rounded-md bg-white text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-            >
-              <option value="on-site">On-site</option>
-              <option value="remote">Remote</option>
-              <option value="hybrid">Hybrid</option>
-            </select>
-            {errors.workMode && <p className="text-red-500 text-sm">{errors.workMode}</p>}
+            <label className="block text-sm font-medium text-white/80 mb-1">Location</label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center">
+                <MapPin className="h-5 w-5 text-white/50" />
+              </div>
+              <input
+                type="text"
+                name="location"
+                value={jobData.location}
+                onChange={handleChange}
+                className="w-full pl-10 pr-3 py-2 bg-white/5 border border-white/10 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder:text-white/50 text-white"
+                placeholder="e.g. Manila, Philippines"
+                required
+              />
+            </div>
+            {errors.location && <p className="text-red-400 text-sm mt-1">{errors.location}</p>}
           </div>
 
           <div>
-            <p className="font-bold text-left text-gray-800">Description</p>
+            <label className="block text-sm font-medium text-white/80 mb-1">Work Mode</label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center">
+                <Clock className="h-5 w-5 text-white/50" />
+              </div>
+              <select
+                name="workMode"
+                value={jobData.workMode}
+                onChange={handleChange}
+                className="w-full pl-10 pr-3 py-2 bg-white/5 border border-white/10 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-white"
+                required
+              >
+                <option value="" className="bg-[#1a1f4d]">Select work mode</option>
+                <option value="remote" className="bg-[#1a1f4d]">Remote</option>
+                <option value="hybrid" className="bg-[#1a1f4d]">Hybrid</option>
+                <option value="on-site" className="bg-[#1a1f4d]">On-site</option>
+              </select>
+            </div>
+            {errors.workMode && <p className="text-red-400 text-sm mt-1">{errors.workMode}</p>}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-white/80 mb-1">Tags (comma-separated)</label>
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center">
+                <Tag className="h-5 w-5 text-white/50" />
+              </div>
+              <input
+                type="text"
+                name="tags"
+                value={jobData.tags?.join(', ') || ''}
+                onChange={handleTagsChange}
+                className="w-full pl-10 pr-3 py-2 bg-white/5 border border-white/10 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder:text-white/50 text-white"
+                placeholder="e.g. React, Node.js, TypeScript"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-white/80 mb-1">Description</label>
             <textarea
               name="description"
               value={jobData.description}
               onChange={handleChange}
-              className="w-full p-2 border border-gray-300 rounded-md h-24 bg-white text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none"
+              className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 placeholder:text-white/50 text-white"
+              rows={4}
+              placeholder="Describe the job role and requirements..."
+              required
             ></textarea>
-            {errors.description && <p className="text-red-500 text-sm">{errors.description}</p>}
+            {errors.description && <p className="text-red-400 text-sm mt-1">{errors.description}</p>}
           </div>
+        </form>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Tags (comma-separated)</label>
-            <input
-              type="text"
-              name="tags"
-              value={jobData.tags?.join(', ')}
-              onChange={handleTagsChange}
-              className="w-full p-2 border rounded-md bg-white text-gray-800 focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-              placeholder="e.g. React, TypeScript, Node.js"
-            />
-          </div>
-
+        <div className="flex justify-end gap-3 p-6 border-t border-white/10 flex-shrink-0">
           <button
-            onClick={handleSubmit}
-            className="btn btn-primary btn-block mt-6"
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 text-white/70 hover:text-white hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
           >
-            Save Changes
+            Cancel
+          </button>
+          <button
+            type="submit"
+            form="edit-job-form"
+            disabled={loading}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
+          >
+            {loading ? 'Saving...' : 'Save Changes'}
           </button>
         </div>
       </div>
-      <div className="modal-backdrop" onClick={onClose}>
+      <form method="dialog" className="modal-backdrop">
         <button onClick={onClose}>close</button>
-      </div>
+      </form>
     </dialog>
   );
 };

@@ -109,6 +109,15 @@ const JobCard: React.FC<JobCardProps> = ({
           >
             Details
           </button>
+          
+          {!isOwnJob && (
+            <button
+              onClick={onApplyClick}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors cursor-pointer"
+            >
+              Apply Now
+            </button>
+          )}
         </div>
       </div>
     </motion.div>
