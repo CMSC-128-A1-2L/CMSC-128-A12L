@@ -13,7 +13,9 @@ import {
 import { motion } from "framer-motion";
 
 interface EventDetailsProps {
+  _id?: string;
   title: string;
+  name: string;
   organizer: string;
   location: string;
   date: Date;
@@ -22,7 +24,6 @@ interface EventDetailsProps {
   eventStatus: string;
   onClose: () => void;
   onRSVPClick: () => void;
-  onSponsorClick?: () => void;
   imageUrl?: string;
   type: string;
   endDate: Date;
@@ -37,7 +38,9 @@ interface EventDetailsProps {
 }
 
 const EventDetails: React.FC<EventDetailsProps> = ({
+  _id,
   title,
+  name,
   organizer,
   location,
   date,
@@ -47,7 +50,6 @@ const EventDetails: React.FC<EventDetailsProps> = ({
   isOpen,
   onClose,
   onRSVPClick,
-  onSponsorClick,
   imageUrl,
   type,
   wouldGo,
@@ -203,7 +205,20 @@ const EventDetails: React.FC<EventDetailsProps> = ({
             {sponsorship?.enabled && (
               <button
                 disabled={eventStatus === "finished"}
-                onClick={onSponsorClick}
+                onClick={() => {
+                  // Close the details modal first
+                  const modal = document.getElementById("event_details_modal") as HTMLDialogElement;
+                  if (modal) {
+                    modal.close();
+                  }
+                  // Redirect to main donations page with event context
+                  const params = new URLSearchParams({
+                    eventId: _id!,
+                    eventName: title,
+                    sponsorshipGoal: sponsorship.goal.toString()
+                  });
+                  window.location.href = `/alumni/donations?${params.toString()}`;
+                }}
                 className={`btn flex-1 rounded-lg border 
                   ${eventStatus === "finished" 
                     ? "bg-gray-400 text-gray-200 border-gray-300 cursor-not-allowed opacity-60 hover:bg-gray-400" 
@@ -211,7 +226,7 @@ const EventDetails: React.FC<EventDetailsProps> = ({
                 `}
               >
                 <DollarSign className="w-4 h-4" />
-                Sponsor
+                Sponsor Event
               </button>
             )}
           </div>

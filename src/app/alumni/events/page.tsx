@@ -653,6 +653,7 @@ export default function EventListings() {
                     {/* Event Details Modal */}
                     {selectedEvent && (
                       <EventDetails
+                        _id={selectedEvent._id!}
                         title={selectedEvent.name}
                         eventStatus={timelineFilter}
                         organizer={selectedEvent.organizer}

@@ -3,18 +3,23 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import Image from "next/image";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import ConstellationBackground from "@/app/components/constellationBackground";
 import { Card } from "@/components/ui/card";
 import { DonationDto } from "@/models/donation";
 
-
 export default function DonationsPage() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [donations, setDonations] = useState<DonationDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [showHistory, setShowHistory] = useState(false);
+
+  // Get event sponsorship details from URL parameters
+  const eventId = searchParams.get('eventId');
+  const eventName = searchParams.get('eventName');
+  const sponsorshipGoal = searchParams.get('sponsorshipGoal');
 
   useEffect(() => {
     const fetchDonations = async () => {
@@ -46,13 +51,13 @@ export default function DonationsPage() {
     {
       description: "Make donations using Maya, a popular digital payment solution in the Philippines.",
       icon: <Image src="/assets/Maya_logo.svg" alt="Maya Logo" width={100} height={30} className="h-8 w-auto" />,
-      path: `${pathname}/maya`,
+      path: eventId ? `${pathname}/maya?eventId=${eventId}&eventName=${encodeURIComponent(eventName || '')}&sponsorshipGoal=${sponsorshipGoal}` : `${pathname}/maya`,
       color: "from-green-500/20 to-green-600/20",
     },
     {
       description: "Secure international payments powered by Stripe's trusted payment infrastructure.",
       icon: <Image src="/assets/Stripe_logo.svg" alt="Stripe Logo" width={100} height={30} className="h-8 w-auto" />,
-      path: `${pathname}/stripe`,
+      path: eventId ? `${pathname}/stripe?eventId=${eventId}&eventName=${encodeURIComponent(eventName || '')}&sponsorshipGoal=${sponsorshipGoal}` : `${pathname}/stripe`,
       color: "from-purple-500/20 to-purple-600/20",
     },
   ];
@@ -70,8 +75,17 @@ export default function DonationsPage() {
             transition={{ duration: 0.5 }}
             className="text-center"
           >
-            <h1 className="text-4xl md:text-5xl font-bold mb-4">Donations</h1>
-            <p className="text-xl text-gray-200">Support our alumni community initiatives</p>
+            <h1 className="text-4xl md:text-5xl font-bold mb-4">
+              {eventId ? `Sponsor ${eventName || 'Event'}` : 'Donations'}
+            </h1>
+            <p className="text-xl text-gray-200">
+              {eventId ? 'Choose your preferred payment method' : 'Support our alumni community initiatives'}
+              {eventId && sponsorshipGoal && (
+                <span className="block mt-2 text-lg">
+                  Goal: ₱{parseInt(sponsorshipGoal).toLocaleString()}
+                </span>
+              )}
+            </p>
           </motion.div>
         </div>
       </div>
@@ -112,22 +126,24 @@ export default function DonationsPage() {
         </div>
 
         {/* View Donation History Card */}
-        <div className="grid md:grid-cols-1 gap-6 mt-12">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            onClick={() => setShowHistory(!showHistory)}
-          >
-            <Card className="p-4 bg-white/10 backdrop-blur-sm border-0 hover:bg-white/20 transition-all duration-300 cursor-pointer">
-              <h2 className="text-2xl text-white font-semibold">{showHistory ? "Hide Donation History" : "View Donation History"}</h2>
-              <p className="text-gray-200 text-sm">{showHistory ? "Click to hide your donation history" : "Click here to see your donation history"}</p>
-            </Card>
-          </motion.div>
-        </div>
+        {!eventId && (
+          <div className="grid md:grid-cols-1 gap-6 mt-12">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              onClick={() => setShowHistory(!showHistory)}
+            >
+              <Card className="p-4 bg-white/10 backdrop-blur-sm border-0 hover:bg-white/20 transition-all duration-300 cursor-pointer">
+                <h2 className="text-2xl text-white font-semibold">{showHistory ? "Hide Donation History" : "View Donation History"}</h2>
+                <p className="text-gray-200 text-sm">{showHistory ? "Click to hide your donation history" : "Click here to see your donation history"}</p>
+              </Card>
+            </motion.div>
+          </div>
+        )}
 
         {/* Donation History*/}
-        {showHistory && (
+        {showHistory && !eventId && (
           <div className="mt-12">
             {loading ? (
               <div className="text-center text-gray-400 py-12 text-lg">Loading donations...</div>
@@ -170,8 +186,6 @@ export default function DonationsPage() {
                   </tbody>
                 </table>
               </Card>
-
-
               </motion.div>
             )}
           </div>
