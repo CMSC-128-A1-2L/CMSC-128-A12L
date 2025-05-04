@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { UserRole } from "@/entities/user";
 import { getEventRepository } from "@/repositories/event_repository";
+import { getEducationRepository } from "@/repositories/donation_repository";
 
 // Get a specific event
 export async function GET(request: NextRequest, {params}: {params: {id: string}}){
@@ -39,8 +40,9 @@ export async function PUT(request: NextRequest, {params}:{params: {id: string}})
         }
 
         const eventRepository = getEventRepository();
-        
+        const donationRepository = getEducationRepository();
         const data = await request.json();
+        
         const requiredFields = ["name", "description", "type", "location", "startDate", "endDate"];
         for(const field of requiredFields){
             if(!data[field]){
@@ -58,7 +60,30 @@ export async function PUT(request: NextRequest, {params}:{params: {id: string}})
             return NextResponse.json({error: "Cannot edit event on/after start date."}, {status: 403});
         }
 
-        // Ensure dates are properly formatted
+        // Handle sponsorship changes
+        const sponsorshipEnabled = data.sponsorship?.enabled ?? existingEvent.sponsorship?.enabled ?? false;
+        const sponsorshipGoal = data.sponsorship?.goal ?? existingEvent.sponsorship?.goal ?? 0;
+
+        // Check if sponsorship status is changing
+        if (sponsorshipEnabled !== existingEvent.sponsorship?.enabled) {
+            if (sponsorshipEnabled) {
+                // Sponsorship is being enabled
+                const sponsorshipData = {
+                    donationName: `Event Sponsorship - ${data.name}`,
+                    description: "Event Sponsorship Record",
+                    type: "Cash" as const,
+                    monetaryValue: 0,
+                    donorID: [],
+                    sponsorshipGoal: sponsorshipGoal,
+                    currentAmount: 0,
+                    isEventSponsorship: true
+                };
+                await donationRepository.createEventSponsorship(eventId, sponsorshipData);
+            }
+            // If sponsorship is being disabled, the record remains but won't be active
+        }
+
+        // Update the event
         const updatedEvent = {
             ...existingEvent,
             ...data,
@@ -71,7 +96,12 @@ export async function PUT(request: NextRequest, {params}:{params: {id: string}})
             wouldMaybeGo: data.wouldMaybeGo || existingEvent.wouldMaybeGo || [],
             // Handle optional fields
             imageUrl: data.imageUrl || existingEvent.imageUrl,
-            sponsorship: data.sponsorship || existingEvent.sponsorship,
+            sponsorship: {
+                enabled: sponsorshipEnabled,
+                goal: sponsorshipGoal,
+                currentAmount: existingEvent.sponsorship?.currentAmount ?? 0,
+                sponsors: data.sponsorship?.sponsors ?? existingEvent.sponsorship?.sponsors ?? []
+            },
             rsvp: data.rsvp || existingEvent.rsvp
         };
 

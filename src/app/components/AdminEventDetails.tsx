@@ -4,15 +4,21 @@ import CustomModal from "./eventSponsorshipRequestDisplay";
 import { motion } from "framer-motion";
 import { Event } from "@/entities/event";
 
-interface EventDetailsProps extends Omit<Event, '_id'> {
+interface AdminEventDetailsProps extends Omit<Event, '_id'> {
   _id: string;
   isOpen: boolean;
   onClose: () => void;
   onEditClick: () => void;
   onDeleteClick: () => void;
+  sponsorship?: {
+    enabled: boolean;
+    goal: number;
+    currentAmount: number;
+    sponsors: string[];
+  };
 }
 
-const EventDetails: React.FC<EventDetailsProps> = ({
+export default function AdminEventDetails({
   _id,
   name,
   description,
@@ -28,13 +34,13 @@ const EventDetails: React.FC<EventDetailsProps> = ({
   onClose,
   onEditClick,
   onDeleteClick,
-}) => {
+  sponsorship
+}: AdminEventDetailsProps) {
   const [isSponsorModalOpen, setSponsorModalOpen] = useState(false);
 
   const handleCloseDetails = () => {
     onClose();
   };
-
 
   const handleSponsorClose = () => {
     setSponsorModalOpen(false);
@@ -122,6 +128,32 @@ const EventDetails: React.FC<EventDetailsProps> = ({
               </div>
             )}
 
+            {/* Sponsorship Information */}
+            <div className="mt-6">
+              <h3 className="text-lg font-semibold mb-2 text-gray-800">Sponsorship</h3>
+              {sponsorship?.enabled ? (
+                <div className="space-y-2">
+                  <p className="text-sm text-gray-600">
+                    <span className="font-medium ">Goal:</span> ₱{sponsorship.goal.toLocaleString()}
+                  </p>
+                  <p className="text-sm text-gray-600">
+                    <span className="font-medium">Current Amount:</span> ₱{sponsorship.currentAmount.toLocaleString()}
+                  </p>
+                  <div className="w-full bg-gray-200 rounded-full h-2.5">
+                    <div
+                      className="bg-primary h-2.5 rounded-full"
+                      style={{ width: `${Math.min((sponsorship.currentAmount / sponsorship.goal) * 100, 100)}%` }}
+                    ></div>
+                  </div>
+                  <p className="text-sm text-gray-600">
+                    {((sponsorship.currentAmount / sponsorship.goal) * 100).toFixed(1)}% of goal reached
+                  </p>
+                </div>
+              ) : (
+                <p className="text-sm text-gray-600">Sponsorship is not enabled for this event</p>
+              )}
+            </div>
+
             <div className="space-y-4">
               <div className="flex justify-end gap-2">
                 <button onClick={onEditClick} className="btn btn-primary gap-2 bg-blue-600 hover:bg-blue-700">
@@ -153,6 +185,4 @@ const EventDetails: React.FC<EventDetailsProps> = ({
       )}
     </>
   );
-};
-
-export default EventDetails;
+}

@@ -291,7 +291,7 @@ export default function EventListings() {
   const handleEventDetails = (event: Event) => {
     setSelectedEvent(event);
     const modal = document.getElementById(
-      "job_details_modal"
+      "event_details_modal"
     ) as HTMLDialogElement;
     if (modal) {
       modal.showModal();
@@ -305,6 +305,7 @@ export default function EventListings() {
 
   // Handle Sponsor Details button click
   const handleSponsor = (event: Event) => {
+    console.log("sponsor me")
     setSelectedEvent(event);
     const modal = document.getElementById(
       "sponsor_details_modal"
@@ -595,8 +596,8 @@ export default function EventListings() {
                                 imageUrl={event.imageUrl || ''}
                                 eventStatus={timelineFilter}
                                 onDetailsClick={() => handleEventDetails(event)}
-                                onSponsorClick={() => handleSponsor(event)}
                                 onApplyClick={() => setRsvpEvent(event)}
+                                eventId={event._id!}
                               />
                             ) : (
                               <EventRow
@@ -610,6 +611,7 @@ export default function EventListings() {
                                 onDetailsClick={() => handleEventDetails(event)}
                                 onSponsorClick={() => handleSponsor(event)}
                                 onApplyClick={() => setRsvpEvent(event)}
+                                eventId={event._id!}
                               />
                             )}
                           </motion.div>
@@ -651,6 +653,8 @@ export default function EventListings() {
                     {/* Event Details Modal */}
                     {selectedEvent && (
                       <EventDetails
+                        name={selectedEvent.name}
+                        _id={selectedEvent._id!}
                         title={selectedEvent.name}
                         eventStatus={timelineFilter}
                         organizer={selectedEvent.organizer}
@@ -662,7 +666,7 @@ export default function EventListings() {
                         onClose={handleCloseDetailsModal}
                         onRSVPClick={() => {
                           // Close the details modal first
-                          const modal = document.getElementById("job_details_modal") as HTMLDialogElement;
+                          const modal = document.getElementById("event_details_modal") as HTMLDialogElement;
                           if (modal) {
                             modal.close();
                             setShowDetailsModal(false);
@@ -675,28 +679,20 @@ export default function EventListings() {
                         wouldGo={selectedEvent.wouldGo}
                         wouldNotGo={selectedEvent.wouldNotGo}
                         wouldMaybeGo={selectedEvent.wouldMaybeGo}
+                        sponsorship={selectedEvent.sponsorship}
                       />
                     )}
 
                     {/* Sponsorship Details Modal */}
                     {selectedEvent && (
-                        <SponsorshipsModal
+                      <SponsorshipsModal
+                        eventName={selectedEvent.name}
                         onClose={handleCloseSponsorModal}
+                        eventId={selectedEvent._id!}
+                        isOpen={showSponsorModal}
                       />
                     )}
 
-                    {/* Edit Event Modal */}
-                    {selectedEvent && (
-                      <EditEventModal
-                        isOpen={showEditModal}
-                        onClose={handleCloseEditModal}
-                        onSave={(eventData) => {
-                          console.log("Save event", eventData);
-                          setShowEditModal(false);
-                        }}
-                        event={selectedEvent}
-                      />
-                    )}
 
                     {/* Pagination */}
                     {totalPages > 1 && (
