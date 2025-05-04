@@ -4,12 +4,18 @@ import { motion } from "framer-motion";
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import StripeDonate from "@/app/components/stripe_donate";
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import ConstellationBackground from "@/app/components/constellationBackground";
 
 export default function StripeDonation() {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const parentPath = pathname ? pathname.split('/').slice(0, -1).join('/') : '/alumni/donations';
+
+  // Get event details from URL parameters
+  const eventId = searchParams.get('eventId');
+  const eventName = searchParams.get('eventName');
+  const sponsorshipGoal = searchParams.get('sponsorshipGoal');
 
   return (
     <div className="min-h-screen">
@@ -25,10 +31,10 @@ export default function StripeDonation() {
             className="text-center"
           >
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              Stripe Donation
+              {eventId ? 'Event Sponsorship' : 'Stripe Donation'}
             </h1>
             <p className="text-xl text-gray-200">
-              Secure international payments
+              {eventId ? `Support ${eventName || 'this event'}` : 'Secure international payments'}
             </p>
           </motion.div>
         </div>
@@ -43,25 +49,35 @@ export default function StripeDonation() {
           className="bg-gradient-to-br from-purple-500/20 to-purple-600/20 p-8 rounded-xl border border-white/10 max-w-3xl mx-auto"
         >
           <div className="mb-6">
-            <Link href={parentPath} className="flex items-center text-white hover:text-gray-200">
+            <Link href={eventId ? `/alumni/events` : parentPath} className="flex items-center text-white hover:text-gray-200">
               <ArrowLeft className="mr-2" size={18} />
-              Back to Donation Options
+              {eventId ? 'Back to Events' : 'Back to Donation Options'}
             </Link>
           </div>
           
           <div className="mb-8">
-            <h2 className="text-2xl font-bold mb-6 text-white">Make a Donation</h2>
+            <h2 className="text-2xl font-bold mb-6 text-white">
+              {eventId ? `Sponsor ${eventName || 'Event'}` : 'Make a Donation'}
+            </h2>
             
             <div className="mb-8">
               <form action='/api/stripe-checkout' method="POST">
                 <input type="hidden" name="success_url" value={`${window.location.origin}/alumni/donations/stripe/success`} />
                 <input type="hidden" name="cancel_url" value={`${window.location.origin}/alumni/donations/stripe/failure`} />
+                {eventId && <input type="hidden" name="eventId" value={eventId} />}
+                {eventName && <input type="hidden" name="eventName" value={eventName} />}
+                {sponsorshipGoal && <input type="hidden" name="sponsorshipGoal" value={sponsorshipGoal} />}
+                {eventId && sponsorshipGoal && (
+                  <p className="mb-4 text-sm text-gray-300">
+                    Sponsorship goal: ₱{parseInt(sponsorshipGoal).toLocaleString()}
+                  </p>
+                )}
                 <button 
                   type="submit" 
                   role="link"
                   className="bg-purple-600 hover:bg-purple-700 text-white font-medium py-3 px-6 rounded transition-colors w-full"
                 >
-                  Donate with Stripe
+                  {eventId ? 'Sponsor with Stripe' : 'Donate with Stripe'}
                 </button>
               </form>
             </div>
@@ -78,4 +94,4 @@ export default function StripeDonation() {
       </div>
     </div>
   );
-} 
+}

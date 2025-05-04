@@ -3,7 +3,6 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* config options here */
   devIndicators: false,
-  /* this is typically not recommended, uncomment this if we want to build for deployment (this checks for unused imports, vars, etc.) */
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -11,7 +10,22 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    domains: ['lh3.googleusercontent.com'],
+    domains: [
+      'lh3.googleusercontent.com',
+      'm.media-amazon.com',
+      'dynamic-media-cdn.tripadvisor.com',
+      'media.istockphoto.com',
+      'images.unsplash.com',
+      'res.cloudinary.com'
+    ],
+  },
+  // Disable any experimental CSS features
+  experimental: {
+    optimizeCss: false,
+  },
+  // Configure webpack to handle CSS properly
+  webpack: (config) => {
+    return config;
   },
 };
 

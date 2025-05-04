@@ -1,6 +1,6 @@
 "use client";
-import React from "react";
-import { Calendar, MapPin, Users, Image as ImageIcon } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Calendar, MapPin, Users, Image as ImageIcon, DollarSign } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface EventCardProps {
@@ -12,8 +12,8 @@ interface EventCardProps {
   imageUrl: string;
   eventStatus: string;
   onDetailsClick: () => void;
-  onSponsorClick: () => void;
   onApplyClick: () => void;
+  eventId: string;
 }
 
 const DefaultEventBanner = ({ title }: { title: string }) => (
@@ -35,9 +35,33 @@ const EventCard: React.FC<EventCardProps> = ({
   imageUrl,
   eventStatus,
   onDetailsClick,
-  onSponsorClick,
   onApplyClick,
+  eventId,
 }) => {
+  const [sponsorshipStatus, setSponsorshipStatus] = useState<{
+    currentAmount: number;
+    goal: number;
+    isActive: boolean;
+  }>({ currentAmount: 0, goal: 0, isActive: false });
+
+  useEffect(() => {
+    const fetchSponsorshipStatus = async () => {
+      try {
+        const response = await fetch(`/api/events/${eventId}/sponsor`);
+        if (response.ok) {
+          const data = await response.json();
+          setSponsorshipStatus(data);
+        }
+      } catch (error) {
+        console.error('Error fetching sponsorship status:', error);
+      }
+    };
+
+    if (eventId) {
+      fetchSponsorshipStatus();
+    }
+  }, [eventId]);
+
   return (
     <motion.div
       whileHover={{ y: -5 }}
@@ -88,6 +112,29 @@ const EventCard: React.FC<EventCardProps> = ({
           </div>
         </div>
 
+        {/* Sponsorship Progress (if active) */}
+        {sponsorshipStatus.isActive && (
+          <div className="mb-4">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2 text-sm text-gray-300">
+                <DollarSign className="w-4 h-4" />
+                <span>Sponsorship Progress</span>
+              </div>
+              <span className="text-sm font-medium text-white">
+                ₱{sponsorshipStatus.currentAmount.toLocaleString()} / ₱{sponsorshipStatus.goal.toLocaleString()}
+              </span>
+            </div>
+            <div className="w-full bg-white/10 rounded-full h-1.5">
+              <div
+                className="bg-blue-500 h-1.5 rounded-full transition-all duration-300"
+                style={{
+                  width: `${(sponsorshipStatus.currentAmount / sponsorshipStatus.goal) * 100}%`
+                }}
+              />
+            </div>
+          </div>
+        )}
+
         {/* Description */}
         <p className="text-sm text-gray-300 line-clamp-3 mb-4 flex-grow">{description}</p>
 
@@ -100,11 +147,16 @@ const EventCard: React.FC<EventCardProps> = ({
             Details
           </button>
           <button
+            disabled={eventStatus === "finished"}
             onClick={(e) => {
               e.stopPropagation();
               onApplyClick();
             }}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors cursor-pointer"
+            className={`px-4 py-2 rounded-lg transition-colors border-none text-white 
+              ${eventStatus === "finished" 
+                ? "bg-gray-400 cursor-not-allowed opacity-60 hover:bg-gray-400" 
+                : "bg-green-600 hover:bg-green-700"}
+            `}
           >
             RSVP
           </button>

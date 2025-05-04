@@ -47,6 +47,12 @@ export default function EventsPage() {
     location: "",
     monetaryValue: 0,
     image: null as File | null,
+    sponsorship: {
+      enabled: false,
+      goal: 0,
+      currentAmount: 0,
+      sponsors: []
+    },
   });
 
   const fetchEvents = async () => {
@@ -139,6 +145,12 @@ export default function EventsPage() {
       location: "",
       monetaryValue: 0,
       image: null,
+      sponsorship: {
+        enabled: false,
+        goal: 0,
+        currentAmount: 0,
+        sponsors: []
+      },
     });
     setPreviewImage(null);
   };

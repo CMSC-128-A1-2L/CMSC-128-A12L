@@ -124,14 +124,6 @@ export default function FilterSidebar({
             Other
           </label>
         </fieldset>
-
-        {/* Add Event Button */}
-        <button
-          onClick={showModal}
-          className="btn btn-primary btn-sm rounded-lg w-[75%] mx-auto py-1 mt-4 text-sm bg-blue-600 hover:bg-blue-700 text-white border-none"
-        >
-          <Plus size={16} /> Add Event
-        </button>
       </div>
     </div>
   );

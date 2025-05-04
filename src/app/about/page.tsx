@@ -129,9 +129,21 @@ export default function AboutPage() {
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 1 }}
-        className="relative h-screen w-full flex items-center justify-center text-center bg-[#1a237e] px-4 md:px-0"
+        className="relative h-screen w-full flex items-center justify-center text-center bg-[#1a237e] px-4 md:px-4"
       >
-        <ConstellationBackground />
+        {/* <ConstellationBackground /> */}
+         {/* Video background */}
+         <video
+          autoPlay
+          loop
+          muted
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover z-0"
+        >
+          <source src="https://res.cloudinary.com/artms/video/upload/v1746339073/aegis_video.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+        {/* <div className="absolute inset-0 bg-black/40 z-10" /> */}
         <motion.div
           initial={{ y: 50, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}

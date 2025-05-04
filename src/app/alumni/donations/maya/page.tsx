@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from "framer-motion";
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useSearchParams } from 'next/navigation';
 import ConstellationBackground from "@/app/components/constellationBackground";
 
 export default function MayaDonationPage() {
@@ -13,7 +13,20 @@ export default function MayaDonationPage() {
   const [loading, setLoading] = useState(false);
   const [donationAmount, setDonationAmount] = useState<string>('1000');
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const parentPath = pathname ? pathname.split('/').slice(0, -1).join('/') : '/alumni/donations';
+
+  // Get event details from URL parameters
+  const eventId = searchParams.get('eventId');
+  const eventName = searchParams.get('eventName');
+  const sponsorshipGoal = searchParams.get('sponsorshipGoal');
+
+  useEffect(() => {
+    // If this is a sponsorship, set the initial amount to the goal
+    if (sponsorshipGoal) {
+      setDonationAmount(sponsorshipGoal);
+    }
+  }, [sponsorshipGoal]);
 
   const testMayaAPI = async () => {
     const amount = parseFloat(donationAmount);
@@ -30,13 +43,14 @@ export default function MayaDonationPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          "description": "Donation for Alumni Community",
+          "donationName": eventId ? `Sponsorship for ${eventName || 'Event'}` : "Donation for Alumni Community",
+          "description": eventId ? `Sponsorship for ${eventName || 'Event'} thru Maya` : "Donation for Alumni Community thru Maya",
           "totalAmount": { "value": amount, "currency": "PHP" },
           "invoiceNumber": `DON-${Date.now()}`,
           "type": "SINGLE",
           "items": [
             { 
-              "name": "Alumni Community Donation", 
+              "name": eventId ? `Event Sponsorship - ${eventName || 'Event'}` : "Alumni Community Donation", 
               "quantity": "1", 
               "amount": { "value": amount, "currency": "PHP" },
               "totalAmount": { "value": amount, "currency": "PHP" }
@@ -49,9 +63,11 @@ export default function MayaDonationPage() {
             "cancel": `${window.location.origin}/alumni/donations/maya/failure`
           },
           "metadata": {
-            "type": "donation",
-            "source": "alumni_portal"
-          }
+            "type": eventId ? "event_sponsorship" : "donation",
+            "source": "alumni_portal",
+            "eventId": eventId
+          },
+          "eventId": eventId // This will be used by our API but not sent to Maya
         })
       });
       const responseData = await res.json();
@@ -80,10 +96,10 @@ export default function MayaDonationPage() {
             className="text-center"
           >
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
-              Maya Payment
+              {eventId ? 'Event Sponsorship' : 'Maya Payment'}
             </h1>
             <p className="text-xl text-gray-200">
-              Secure local payments
+              {eventId ? `Support ${eventName || 'this event'}` : 'Secure local payments'}
             </p>
           </motion.div>
         </div>
@@ -98,14 +114,16 @@ export default function MayaDonationPage() {
           className="bg-gradient-to-br from-green-500/20 to-green-600/20 p-8 rounded-xl border border-white/10 max-w-3xl mx-auto"
         >
           <div className="mb-6">
-            <Link href={parentPath} className="flex items-center text-white hover:text-gray-200">
+            <Link href={eventId ? `/alumni/events` : parentPath} className="flex items-center text-white hover:text-gray-200">
               <ArrowLeft className="mr-2" size={18} />
-              Back to Donation Options
+              {eventId ? 'Back to Events' : 'Back to Donation Options'}
             </Link>
           </div>
           
           <div className="mb-8">
-            <h2 className="text-2xl font-bold mb-6 text-white">Make a Donation</h2>
+            <h2 className="text-2xl font-bold mb-6 text-white">
+              {eventId ? `Sponsor ${eventName || 'Event'}` : 'Make a Donation'}
+            </h2>
             
             <div className="mb-6">
               <label htmlFor="donationAmount" className="block text-white mb-2">
@@ -121,6 +139,11 @@ export default function MayaDonationPage() {
                 className="w-full px-4 py-2 rounded bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-green-500"
                 placeholder="Enter amount (in multiples of 50)"
               />
+              {eventId && sponsorshipGoal && (
+                <p className="mt-2 text-sm text-gray-300">
+                  Sponsorship goal: ₱{parseInt(sponsorshipGoal).toLocaleString()}
+                </p>
+              )}
             </div>
 
             <div className="mb-8">
@@ -129,7 +152,7 @@ export default function MayaDonationPage() {
                 disabled={loading}
                 className="bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded transition-colors w-full disabled:opacity-50"
               >
-                {loading ? 'Processing...' : 'Donate with Maya'}
+                {loading ? 'Processing...' : `${eventId ? 'Sponsor with Maya' : 'Donate with Maya'}`}
               </button>
             </div>
 
@@ -165,4 +188,4 @@ export default function MayaDonationPage() {
       </div>
     </div>
   );
-} 
+}

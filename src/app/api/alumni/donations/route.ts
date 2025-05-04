@@ -20,9 +20,7 @@ export async function GET(req: NextRequest) {
         const userDonations = allDonations
             .filter(donation => donation.donorID.includes(session.user.id))
             .map(donation => ({
-                id: donation._id,
-                amount: donation.monetaryValue,
-                description: donation.donationName || 'Unnamed Donation',
+                ...donation,
                 paymentMethod: donation.description?.toLowerCase().includes('maya') 
                     ? 'maya' as PaymentMethod 
                     : 'stripe' as PaymentMethod,

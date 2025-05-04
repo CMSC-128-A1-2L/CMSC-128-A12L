@@ -1,13 +1,23 @@
 import React, { useState } from "react";
 import { X } from "lucide-react";
 import { motion } from "framer-motion";
+import { toast } from "react-hot-toast";
+
+interface SponsorshipRequestFormData {
+  name: string;
+  contactNo: string;
+  email: string;
+  sponsorshipType: 'cash' | 'specificItems';
+  amount?: number;
+  specificItem?: string;
+}
 
 interface CustomModalProps {
   modalId: string;
   title: string;
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: () => void;
+  onSubmit: (data: SponsorshipRequestFormData) => void;
   eventName?: string;
 }
 
@@ -19,23 +29,41 @@ const CustomModal: React.FC<CustomModalProps> = ({
   onSubmit,
   eventName,
 }) => {
-  const [contactNo, setContactNo] = useState("");
-  const [email, setEmail] = useState("");
-  const [name, setName] = useState("");
-  const [sponsorshipType, setSponsorshipType] = useState<string>("cash");
-  const [specificItem, setSpecificItem] = useState("");
-  const [amount, setAmount] = useState("");
+  const [formData, setFormData] = useState<SponsorshipRequestFormData>({
+    name: "",
+    contactNo: "",
+    email: "",
+    sponsorshipType: "cash",
+  });
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log({ 
-      contactNo, 
-      email, 
-      sponsorshipType, 
-      specificItem,
-      amount: sponsorshipType === 'cash' ? amount : undefined 
-    });
-    onSubmit();
+    setLoading(true);
+
+    try {
+      if (formData.sponsorshipType === 'cash' && (!formData.amount || formData.amount <= 0)) {
+        throw new Error('Please enter a valid amount');
+      }
+
+      if (formData.sponsorshipType === 'specificItems' && !formData.specificItem) {
+        throw new Error('Please specify the items');
+      }
+
+      await onSubmit(formData);
+      setFormData({
+        name: "",
+        contactNo: "",
+        email: "",
+        sponsorshipType: "cash",
+      });
+      toast.success('Sponsorship request submitted successfully');
+      onClose();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to submit request');
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (!isOpen) return null;
@@ -64,22 +92,22 @@ const CustomModal: React.FC<CustomModalProps> = ({
             <X size={24} className="text-black" />
           </button>
         </div>
-        <div>
-            <label className="block text-sm font-semibold text-gray-700" htmlFor="email">
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-semibold text-gray-700" htmlFor="name">
               Name
             </label>
             <input
-              type="name"
+              type="text"
               id="name"
               className="input input-bordered w-full mt-2 bg-gray-50"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               required
             />
           </div>
 
-
-        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-semibold text-gray-700" htmlFor="contactNo">
               Contact No.
@@ -88,8 +116,8 @@ const CustomModal: React.FC<CustomModalProps> = ({
               type="text"
               id="contactNo"
               className="input input-bordered w-full mt-2 bg-gray-50"
-              value={contactNo}
-              onChange={(e) => setContactNo(e.target.value)}
+              value={formData.contactNo}
+              onChange={(e) => setFormData({ ...formData, contactNo: e.target.value })}
               required
             />
           </div>
@@ -102,8 +130,8 @@ const CustomModal: React.FC<CustomModalProps> = ({
               type="email"
               id="email"
               className="input input-bordered w-full mt-2 bg-gray-50"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
               required
             />
           </div>
@@ -117,48 +145,32 @@ const CustomModal: React.FC<CustomModalProps> = ({
                     type="radio"
                     name="sponsorshipType"
                     value="cash"
-                    checked={sponsorshipType === "cash"}
-                    onChange={() => {
-                      setSponsorshipType("cash");
-                      setSpecificItem("");
-                    }}
+                    checked={formData.sponsorshipType === "cash"}
+                    onChange={() => setFormData({
+                      ...formData,
+                      sponsorshipType: "cash",
+                      specificItem: undefined
+                    })}
                     className="radio radio-primary"
                   />
                   <span className="text-gray-700">Cash</span>
                 </label>
 
-                {sponsorshipType === "cash" && (
-                  <div className="flex-1 ml-4">
+                {formData.sponsorshipType === "cash" && (
+                  <div className="flex-1">
                     <input
                       type="number"
                       className="input input-bordered w-full bg-gray-50"
                       placeholder="Enter amount"
-                      value={amount}
-                      onChange={(e) => setAmount(e.target.value)}
+                      value={formData.amount || ''}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        amount: parseFloat(e.target.value)
+                      })}
+                      min="1"
+                      step="any"
                       required
                     />
-                    <div className="mt-2 flex items-center gap-4">
-                      <label className="flex items-center gap-2">
-                        <input
-                          type="radio"
-                          name="cashOption"
-                          value="gcash"
-                          onChange={() => setSpecificItem("gcash")}
-                          className="radio radio-primary"
-                        />
-                        <span className="text-gray-700">GCash</span>
-                      </label>
-                      <label className="flex items-center gap-2">
-                        <input
-                          type="radio"
-                          name="cashOption"
-                          value="bankTransfer"
-                          onChange={() => setSpecificItem("bankTransfer")}
-                          className="radio radio-primary"
-                        />
-                        <span className="text-gray-700">Bank Transfer</span>
-                      </label>
-                    </div>
                   </div>
                 )}
               </div>
@@ -169,25 +181,28 @@ const CustomModal: React.FC<CustomModalProps> = ({
                     type="radio"
                     name="sponsorshipType"
                     value="specificItems"
-                    checked={sponsorshipType === "specificItems"}
-                    onChange={() => {
-                      setSponsorshipType("specificItems");
-                      setAmount("");
-                      setSpecificItem("");
-                    }}
+                    checked={formData.sponsorshipType === "specificItems"}
+                    onChange={() => setFormData({
+                      ...formData,
+                      sponsorshipType: "specificItems",
+                      amount: undefined
+                    })}
                     className="radio radio-primary"
                   />
                   <span className="text-gray-700">Specific Items</span>
                 </label>
 
-                {sponsorshipType === "specificItems" && (
+                {formData.sponsorshipType === "specificItems" && (
                   <div className="flex-1">
                     <input
                       type="text"
                       className="input input-bordered w-full bg-gray-50"
                       placeholder="Enter specific item(s)"
-                      value={specificItem}
-                      onChange={(e) => setSpecificItem(e.target.value)}
+                      value={formData.specificItem || ''}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        specificItem: e.target.value
+                      })}
                       required
                     />
                   </div>
@@ -206,9 +221,10 @@ const CustomModal: React.FC<CustomModalProps> = ({
             </button>
             <button
               type="submit"
+              disabled={loading}
               className="btn btn-primary bg-blue-600 hover:bg-blue-700"
             >
-              Submit Request
+              {loading ? 'Submitting...' : 'Submit Request'}
             </button>
           </div>
         </form>

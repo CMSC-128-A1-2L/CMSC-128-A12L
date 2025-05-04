@@ -6,11 +6,25 @@ import { motion, AnimatePresence } from 'framer-motion';
 import ConstellationBackground from './components/constellation_background';
 import ScrollIndicator from './components/ScrollIndicator';
 import Footer from './components/footer';
+import { useRouter } from 'next/navigation';
+
+interface Newsletter {
+  _id: string;
+  title: string;
+  content: string;
+  thumbnail?: string;
+  authorId: string;
+  publishDate: string;
+  tags?: string;
+}
 
 export default function LandingPage() {
   const [showScrollIndicator, setShowScrollIndicator] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [newsletters, setNewsletters] = useState<Newsletter[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -40,6 +54,24 @@ export default function LandingPage() {
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
+
+  useEffect(() => {
+    const fetchNewsletters = async () => {
+      try {
+        const response = await fetch('/api/newsletters');
+        if (!response.ok) throw new Error('Failed to fetch newsletters');
+        const data = await response.json();
+        console.log("The fetched newsletters are: ", data);
+        setNewsletters(data);
+      } catch (error) {
+        console.error('Error fetching newsletters:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchNewsletters();
+  }, []);
 
   return (
     <div className="w-full min-h-screen overflow-auto font-sans">
@@ -238,7 +270,6 @@ export default function LandingPage() {
           />
           <div className="absolute inset-0 bg-gradient-to-br from-[#1a237e]/70 to-[#0d47a1]/60 backdrop-blur-[2px]" />
         </motion.div>
-
         {/* Content */}
         <motion.div className="relative z-10">
           <motion.h2 
@@ -251,29 +282,135 @@ export default function LandingPage() {
             News and Updates
           </motion.h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
-            <motion.div 
-              whileHover={{ scale: 1.02 }}
-              className="h-80 bg-white/5 backdrop-blur-sm rounded-lg overflow-hidden shadow-lg border border-white/10"
-            >
-              <div className="w-full h-full bg-gradient-to-br from-white/5 to-white/10 animate-pulse" />
-            </motion.div>
+            {/* Featured News */}
+            {isLoading ? (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="h-80 bg-white/5 backdrop-blur-sm rounded-lg overflow-hidden shadow-lg border border-white/10"
+              >
+                <div className="h-48 bg-white/10 animate-pulse" />
+                <div className="p-6">
+                  <div className="h-4 w-1/4 bg-white/10 rounded mb-2 animate-pulse" />
+                  <div className="h-6 w-3/4 bg-white/10 rounded mb-2 animate-pulse" />
+                  <div className="h-4 w-1/2 bg-white/10 rounded animate-pulse" />
+                </div>
+              </motion.div>
+            ) : newsletters.length > 0 ? (
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.95 }}
+                className="h-80 bg-white/5 backdrop-blur-sm rounded-lg overflow-hidden shadow-lg border border-white/10 cursor-pointer"
+                onClick={() => router.push(`/news/${newsletters[0]?._id}`)}
+              >
+                <div className="relative h-48">
+                  <Image
+                    src={newsletters[0]?.thumbnail || '/default-newsletter-image.jpg'}
+                    alt={newsletters[0]?.title}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <div className="p-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    {newsletters[0]?.tags && (
+                      <div className="flex flex-wrap gap-2">
+                        {newsletters[0].tags.split(',').map((tag: string, index: number) => (
+                          <span key={index} className="text-xs text-gray-300">
+                            {tag.trim()}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                    <span className="text-xs text-gray-400">
+                      {newsletters[0] ? new Date(newsletters[0].publishDate).toLocaleDateString() : ''}
+                    </span>
+                  </div>
+                  <h3 className="text-xl font-semibold text-white mb-2 line-clamp-2">
+                    {newsletters[0]?.title}
+                  </h3>
+                  <p className="text-gray-300 line-clamp-2">
+                    {newsletters[0]?.content}
+                  </p>
+                </div>
+              </motion.div>
+            ) : (
+              <div className="h-80 bg-white/5 backdrop-blur-sm rounded-lg overflow-hidden shadow-lg border border-white/10 flex items-center justify-center">
+                <p className="text-gray-400">No featured newsletter available.</p>
+              </div>
+            )}
+            {/* Other News */}
             <div className="space-y-6">
-              {[1, 2, 3].map((i) => (
-                <motion.div
-                  key={i}
-                  initial={{ x: 50, opacity: 0 }}
-                  whileInView={{ x: 0, opacity: 1 }}
-                  transition={{ duration: 0.8, delay: i * 0.2 }}
-                  whileHover={{ scale: 1.02, backgroundColor: 'rgba(255, 255, 255, 0.1)' }}
-                  className="h-24 bg-white/5 backdrop-blur-sm rounded-lg overflow-hidden shadow-lg border border-white/10 transition-colors duration-300"
-                >
-                  <div className="w-full h-full bg-gradient-to-br from-white/5 to-white/10 animate-pulse" />
-                </motion.div>
-              ))}
+              {isLoading ? (
+                // Loading skeleton
+                [...Array(3)].map((_, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="h-24 bg-white/5 backdrop-blur-sm rounded-lg overflow-hidden shadow-lg border border-white/10"
+                  >
+                    <div className="flex h-full">
+                      <div className="relative w-24 bg-white/10 animate-pulse" />
+                      <div className="flex-1 p-4">
+                        <div className="h-4 w-1/4 bg-white/10 rounded mb-2 animate-pulse" />
+                        <div className="h-4 w-3/4 bg-white/10 rounded mb-2 animate-pulse" />
+                        <div className="h-4 w-1/2 bg-white/10 rounded animate-pulse" />
+                      </div>
+                    </div>
+                  </motion.div>
+                ))
+              ) : newsletters.length > 0 ? (
+                newsletters.slice(1, 4).map((newsletter) => (
+                  <motion.div
+                    key={newsletter._id}
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.95 }}
+                    className="bg-white/5 backdrop-blur-sm rounded-lg overflow-hidden shadow-lg border border-white/10 cursor-pointer"
+                    onClick={() => router.push(`/news/${newsletter._id}`)}
+                  >
+                    <div className="flex h-full">
+                      <div className="relative w-24 flex-shrink-0">
+                        <Image
+                          src={newsletter.thumbnail || '/default-newsletter-image.jpg'}
+                          alt={newsletter.title}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="flex-1 p-4">
+                        <div className="flex items-center gap-2 mb-1">
+                          {newsletter.tags && (
+                            <div className="flex flex-wrap gap-2">
+                              {newsletter.tags.split(',').map((tag: string, index: number) => (
+                                <span key={index} className="text-xs text-gray-300">
+                                  {tag.trim()}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                          <span className="text-xs text-gray-400">
+                            {new Date(newsletter.publishDate).toLocaleDateString()}
+                          </span>
+                        </div>
+                        <h3 className="text-sm font-semibold text-white line-clamp-1">
+                          {newsletter.title}
+                        </h3>
+                        <p className="text-xs text-gray-400 line-clamp-1">
+                          {newsletter.content}
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))
+              ) : (
+                <div className="text-center text-gray-400 py-8">
+                  No newsletters available at the moment.
+                </div>
+              )}
             </div>
           </div>
         </motion.div>
-
         {/* Animated particles overlay */}
         <motion.div 
           className="absolute inset-0 z-[1]"

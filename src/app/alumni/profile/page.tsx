@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import {
   Edit2,
   Camera,
@@ -89,12 +90,9 @@ const constellationStyles = `
 `;
 
 export default function AlumniProfile() {
+  const router = useRouter();
   const { data: session } = useSession() as { data: Session | null };
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [showPasswordFields, setShowPasswordFields] = useState(false);
-  const [isFirstNameEditable, setIsFirstNameEditable] = useState(false);
-  const [isLastNameEditable, setIsLastNameEditable] = useState(false);
-  const [isMiddleInitialEditable, setIsMiddleInitialEditable] = useState(false);
   const [selectedOption, setSelectedOption] = useState('personal');
   const [isEditMode, setIsEditMode] = useState(false);
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
@@ -104,7 +102,7 @@ export default function AlumniProfile() {
     graduationYear: undefined,
     department: "",
     bio: "",
-    imageUrl: session?.user?.image || "", // Changed from profilePicture to imageUrl
+    imageUrl: session?.user?.image || "",
     phoneNumber: "",
     currentLocation: "",
     currentCompany: "",
@@ -842,7 +840,7 @@ export default function AlumniProfile() {
                           <span className="pt-2 text-sm sm:text-base">
                             {profileData.linkedIn ? (
                               <a href={profileData.linkedIn} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300">
-                                {profileData.linkedIn}
+                                LinkedIn Profile
                               </a>
                             ) : (
                               'No LinkedIn profile added'
@@ -1053,42 +1051,92 @@ export default function AlumniProfile() {
                     transition={{ duration: 0.3, ease: "easeInOut" }}
                     className="space-y-6 max-w-md"
                   >
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-medium text-white">Change Password</h3>
-                      <div className="space-y-4">
-                        <div>
-                          <label className="block text-sm font-medium text-white/90 mb-1">Current Password</label>
-                          <input
-                            type="password"
-                            className="bg-white/10 text-white rounded-lg p-2 w-full"
-                            placeholder="Enter current password"
-                          />
+                    <div className="space-y-6">
+                      <div className="bg-white/5 rounded-xl p-6 backdrop-blur-sm">
+                        <div className="flex items-start gap-4">
+                          <div className="p-3 rounded-lg bg-indigo-500/10">
+                            <svg
+                              className="w-6 h-6 text-indigo-500"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8V7a4 4 0 00-8 0v4h8z"
+                              />
+                            </svg>
+                          </div>
+                          <div className="flex-1">
+                            <h3 className="text-lg font-medium text-white mb-2">Password Management</h3>
+                            <p className="text-white/60 text-sm mb-4">
+                              Manage your password and security settings in the settings page. Keep your account secure by regularly updating your password.
+                            </p>
+                            <button 
+                              onClick={() => router.push('/alumni/settings')}
+                              className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-blue-600 text-white rounded-lg hover:from-indigo-600 hover:to-blue-700 transition-all duration-200 text-sm font-medium"
+                            >
+                              <span>Go to Settings</span>
+                              <svg
+                                className="w-4 h-4"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth="2"
+                                  d="M13 7l5 5m0 0l-5 5m5-5H6"
+                                />
+                              </svg>
+                            </button>
+                          </div>
                         </div>
-                        <div>
-                          <label className="block text-sm font-medium text-white/90 mb-1">New Password</label>
-                          <input
-                            type="password"
-                            className="bg-white/10 text-white rounded-lg p-2 w-full"
-                            placeholder="Enter new password"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-white/90 mb-1">Confirm New Password</label>
-                          <input
-                            type="password"
-                            className="bg-white/10 text-white rounded-lg p-2 w-full"
-                            placeholder="Confirm new password"
-                          />
-                        </div>
-                        <button 
-                          className="mt-4 px-6 py-2.5 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-indigo-500/30 transition-all duration-300 flex items-center gap-2 text-sm font-medium cursor-pointer"
-                        >
-                          Update Password
-                        </button>
                       </div>
-                      <p className="text-sm text-white/60 mt-4">
-                        Make sure your new password is at least 8 characters long and includes a mix of letters, numbers, and special characters.
-                      </p>
+
+                      <div className="bg-white/5 rounded-xl p-6 backdrop-blur-sm">
+                        <div className="flex items-start gap-4">
+                          <div className="p-3 rounded-lg bg-blue-500/10">
+                            <svg
+                              className="w-6 h-6 text-blue-500"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                              />
+                            </svg>
+                          </div>
+                          <div>
+                            <h3 className="text-lg font-medium text-white mb-2">Security Tips</h3>
+                            <ul className="space-y-2 text-white/60 text-sm">
+                              <li className="flex items-center gap-2">
+                                <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
+                                Use a strong password with at least 8 characters
+                              </li>
+                              <li className="flex items-center gap-2">
+                                <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
+                                Include numbers and special characters
+                              </li>
+                              <li className="flex items-center gap-2">
+                                <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
+                                Change your password regularly
+                              </li>
+                              <li className="flex items-center gap-2">
+                                <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>
+                                Never share your password with others
+                              </li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </motion.div>
                 )}

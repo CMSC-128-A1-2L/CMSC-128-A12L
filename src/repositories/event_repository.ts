@@ -106,7 +106,13 @@ export interface EventRepository {
      */
     deleteFromEventWMaybeGo(eId: string, uId: string): Promise<void>
 
-
+    /**
+     * Updates the sponsorship contribution for an event
+     * @param eventId The ID of the event to update
+     * @param contributionAmount The amount to add to current sponsorship
+     * @returns A promise that resolves when the contribution is updated
+     */
+    updateSponsorshipContribution(eventId: string, contributionAmount: number): Promise<void>;
 
     /*
      * Gets the attendees of an event based on RSVP type.
@@ -177,6 +183,23 @@ class MongoDBEventRepository implements EventRepository {
         await this.model.findByIdAndUpdate(eId, { $pull: {wouldMaybeGo: uId}});
     }
 
+    async updateSponsorshipContribution(eventId: string, contributionAmount: number): Promise<void> {
+        const event = await this.model.findById(eventId);
+        if (!event) {
+            throw new Error('Event not found');
+        }
+
+        if (!event.sponsorship?.enabled) {
+            throw new Error('Sponsorship is not enabled for this event');
+        }
+
+        // Update the current amount
+        const currentAmount = event.sponsorship.currentAmount || 0;
+        await this.model.findByIdAndUpdate(eventId, {
+            'sponsorship.currentAmount': currentAmount + contributionAmount
+        });
+    }
+
     async getEventAttendees(eventId: string, rsvpType: RSVPType, userId?: string | null): Promise<User[]> {
         // Find the event and populate the specified RSVP field with user details
         const query = { _id: eventId };
@@ -217,4 +240,4 @@ export function getEventRepository(): EventRepository {
     const connection = connectDB();
     eventRepository = new MongoDBEventRepository(connection);
     return eventRepository;
-} 
+}
