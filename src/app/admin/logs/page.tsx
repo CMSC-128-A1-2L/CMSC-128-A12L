@@ -98,6 +98,10 @@ export default function AdminLogs() {
     }
   };
 
+  const handleLastPage = () => {
+    setCurrentPage(totalPages);
+  };
+
   // Generate page numbers for pagination
   const getPageNumbers = () => {
     const pageNumbers = [];
@@ -307,6 +311,13 @@ export default function AdminLogs() {
               className="px-3 py-1 text-sm rounded-md bg-gray-100 text-gray-700 disabled:opacity-50"
             >
               Next
+            </button>
+            <button
+              onClick={handleLastPage}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1 text-sm rounded-md bg-gray-100 text-gray-700 disabled:opacity-50"
+            >
+              Last
             </button>
           </div>
           <div className="text-sm text-gray-500 order-1 sm:order-2">
