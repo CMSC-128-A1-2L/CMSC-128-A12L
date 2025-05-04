@@ -21,6 +21,7 @@ import {
   ChevronLeft,
   Plus,
   Filter,
+  X,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Popover } from '@headlessui/react';
@@ -182,14 +183,22 @@ export default function EventListings() {
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
         exit={{ opacity: 0, scale: 0.9 }}
-        className="bg-white/10 backdrop-blur-md rounded-xl shadow-xl border border-white/20 p-4 w-72"
+        className="bg-gradient-to-br from-[#1a1f4d]/90 to-[#2a3f8f]/90 rounded-xl shadow-xl border border-white/10 p-0 w-[90%] sm:w-80 max-w-md overflow-hidden"
       >
-        <div className="text-center mb-4">
-          <h3 className="text-lg font-semibold text-white mb-1">RSVP to Event</h3>
-          <p className="text-sm text-gray-300">{event.name}</p>
+        <div className="relative h-20 sm:h-24 bg-gradient-to-r from-blue-500/20 to-purple-500/20 p-4 sm:p-6 flex items-center justify-between">
+          <div className="overflow-hidden pr-2">
+            <h3 className="text-base sm:text-lg font-bold text-white truncate">RSVP to Event</h3>
+            <p className="text-xs sm:text-sm text-gray-300 truncate">{event.name}</p>
+          </div>
+          <button 
+            onClick={() => setRsvpEvent(null)}
+            className="p-2 hover:bg-black/20 rounded-full transition-colors flex-shrink-0"
+          >
+            <X size={18} className="text-white" />
+          </button>
         </div>
         
-        <div className="space-y-2">
+        <div className="p-4 sm:p-6 space-y-3">
           <button
             className={`w-full p-3 rounded-lg transition-all duration-200 flex items-center justify-between group
               ${isGoing 
@@ -197,11 +206,11 @@ export default function EventListings() {
                 : 'bg-white/5 border border-white/10 hover:bg-white/10'}`}
             onClick={() => handleRespond(event, 'go')}
           >
-            <div className="flex items-center gap-3">
-              <ThumbsUp className={`h-5 w-5 ${isGoing ? 'text-blue-400' : 'text-gray-400'}`} />
+            <div className="flex items-center gap-2 sm:gap-3">
+              <ThumbsUp className={`h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 ${isGoing ? 'text-blue-400' : 'text-gray-400'}`} />
               <span className={`text-sm font-medium ${isGoing ? 'text-blue-400' : 'text-gray-300'}`}>Going</span>
             </div>
-            {isGoing && <Check className="h-4 w-4 text-blue-400" />}
+            {isGoing && <Check className="h-4 w-4 text-blue-400 flex-shrink-0" />}
           </button>
 
           <button
@@ -211,11 +220,11 @@ export default function EventListings() {
                 : 'bg-white/5 border border-white/10 hover:bg-white/10'}`}
             onClick={() => handleRespond(event, 'maybeGo')}
           >
-            <div className="flex items-center gap-3">
-              <HelpCircle className={`h-5 w-5 ${isMaybeGoing ? 'text-yellow-400' : 'text-gray-400'}`} />
+            <div className="flex items-center gap-2 sm:gap-3">
+              <HelpCircle className={`h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 ${isMaybeGoing ? 'text-yellow-400' : 'text-gray-400'}`} />
               <span className={`text-sm font-medium ${isMaybeGoing ? 'text-yellow-400' : 'text-gray-300'}`}>Maybe</span>
             </div>
-            {isMaybeGoing && <Check className="h-4 w-4 text-yellow-400" />}
+            {isMaybeGoing && <Check className="h-4 w-4 text-yellow-400 flex-shrink-0" />}
           </button>
 
           <button
@@ -225,11 +234,11 @@ export default function EventListings() {
                 : 'bg-white/5 border border-white/10 hover:bg-white/10'}`}
             onClick={() => handleRespond(event, 'notGo')}
           >
-            <div className="flex items-center gap-3">
-              <ThumbsDown className={`h-5 w-5 ${isNotGoing ? 'text-red-400' : 'text-gray-400'}`} />
+            <div className="flex items-center gap-2 sm:gap-3">
+              <ThumbsDown className={`h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 ${isNotGoing ? 'text-red-400' : 'text-gray-400'}`} />
               <span className={`text-sm font-medium ${isNotGoing ? 'text-red-400' : 'text-gray-300'}`}>Not Going</span>
             </div>
-            {isNotGoing && <Check className="h-4 w-4 text-red-400" />}
+            {isNotGoing && <Check className="h-4 w-4 text-red-400 flex-shrink-0" />}
           </button>
         </div>
       </motion.div>
@@ -366,20 +375,36 @@ export default function EventListings() {
   return (
     <>
       {isMobile ? (
-        <MobileEventView
-          events={filteredEvents}
-          loading={loading}
-          onEventClick={handleEventDetails}
-          onFilter={handleFilterChange}
-          onSearch={setSearch}
-          onCreateEvent={handleAddEvent}
-          onRSVP={(event) => handleRespond(event, 'go')}
-          onEdit={handleEdit}
-          onDelete={(event) => event._id ? handleDelete(event._id) : null}
-          activeFilters={activeFilters}
-          timelineFilter={timelineFilter}
-          onTimelineChange={setTimelineFilter}
-        />
+        <>
+          <MobileEventView
+            events={filteredEvents}
+            loading={loading}
+            onEventClick={handleEventDetails}
+            onFilter={handleFilterChange}
+            onSearch={setSearch}
+            onCreateEvent={handleAddEvent}
+            onRSVP={(event) => setRsvpEvent(event)}
+            onEdit={handleEdit}
+            onDelete={(event) => event._id ? handleDelete(event._id) : null}
+            activeFilters={activeFilters}
+            timelineFilter={timelineFilter}
+            onTimelineChange={setTimelineFilter}
+          />
+          
+          {/* Make RSVP modal accessible in mobile view */}
+          {rsvpEvent && (
+            <div 
+              className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4"
+              onClick={(e) => {
+                if (e.target === e.currentTarget) setRsvpEvent(null);
+              }}
+            >
+              <div className="w-full flex justify-center items-center">
+                <RSVPOptions event={rsvpEvent} />
+              </div>
+            </div>
+          )}
+        </>
       ) : (
         <div className="min-h-screen">
           {/* Hero Section */}
@@ -642,14 +667,17 @@ export default function EventListings() {
                     
                     {rsvpEvent && (
                       <div 
-                        className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+                        className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4"
                         onClick={(e) => {
                           if (e.target === e.currentTarget) setRsvpEvent(null);
                         }}
                       >
-                        <RSVPOptions event={rsvpEvent} />
+                        <div className="w-full flex justify-center items-center">
+                          <RSVPOptions event={rsvpEvent} />
+                        </div>
                       </div>
-                )}
+                    )}
+
                     {/* Event Details Modal */}
                     {selectedEvent && (
                       <EventDetails

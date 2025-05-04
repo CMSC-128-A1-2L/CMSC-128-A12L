@@ -218,8 +218,8 @@ export default function MobileEventView({
                     imageUrl={event.imageUrl || ''}
                     eventStatus={timelineFilter}
                     onDetailsClick={() => handleEventClick(event)}
-                    onSponsorClick={() => {}}
                     onApplyClick={() => onRSVP(event)}
+                    eventId={event._id!}
                   />
                 </motion.div>
               ))}
@@ -279,6 +279,8 @@ export default function MobileEventView({
         {selectedEvent && (
           <EventDetails
             title={selectedEvent.name}
+            name={selectedEvent.name}
+            _id={selectedEvent._id!}
             eventStatus={timelineFilter}
             organizer={selectedEvent.organizer}
             location={selectedEvent.location}
@@ -296,6 +298,7 @@ export default function MobileEventView({
             wouldGo={selectedEvent.wouldGo}
             wouldNotGo={selectedEvent.wouldNotGo}
             wouldMaybeGo={selectedEvent.wouldMaybeGo}
+            sponsorship={selectedEvent.sponsorship}
           />
         )}
       </div>

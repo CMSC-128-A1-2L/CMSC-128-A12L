@@ -6,6 +6,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import JobCard from './jobContentCard';
 import JobDetails from './jobDetails';
 import MobileFilterDrawer from './MobileFilterDrawer';
+import CreateJL from './createJL';
+import JobApplicationForm from './JobApplicationForm';
+import EditJobListComponent from './editJobList';
 
 import { useSession } from "next-auth/react";
 import Footer from './footer';
@@ -44,6 +47,9 @@ export default function MobileJobView({
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedJob, setSelectedJob] = useState<any>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showApplicationModal, setShowApplicationModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const itemsPerPage = 6;
 
   useEffect(() => {
@@ -58,6 +64,62 @@ export default function MobileJobView({
   const handleCloseModal = () => {
     setShowDetailsModal(false);
     setSelectedJob(null);
+  };
+
+  const handleCreateJob = () => {
+    setShowCreateModal(true);
+  };
+
+  const handleCloseCreateModal = () => {
+    setShowCreateModal(false);
+  };
+
+  const handleApplyJob = (job: any) => {
+    // Prevent applying to your own job
+    if (job.userId === session?.user?.id) {
+      return;
+    }
+    
+    setSelectedJob(job);
+    setShowApplicationModal(true);
+    onApply(job.title);
+  };
+
+  const handleApplicationSuccess = () => {
+    setShowApplicationModal(false);
+    setShowDetailsModal(false);
+    // Refresh job list if necessary
+    onJobViewChange(jobView);
+  };
+
+  const handleEditJob = (job: any) => {
+    setSelectedJob(job);
+    setShowDetailsModal(false);
+    setShowEditModal(true);
+  };
+
+  const handleCloseEditModal = () => {
+    setShowEditModal(false);
+    setSelectedJob(null);
+  };
+
+  const handleEditSuccess = async (updatedJobData: any) => {
+    try {
+      // Call the parent component's edit handler with the updated job data and original job ID
+      await onEdit({
+        ...selectedJob,
+        ...updatedJobData
+      });
+      
+      // Close modals and reset state
+      setShowEditModal(false);
+      setSelectedJob(null);
+      
+      // Refresh job list
+      onJobViewChange(jobView);
+    } catch (error) {
+      console.error('Error updating job:', error);
+    }
   };
 
   const totalPages = Math.ceil(jobs.length / itemsPerPage);
@@ -218,7 +280,8 @@ export default function MobileJobView({
                     description={job.description}
                     imageUrl={job.imageUrl}
                     onDetailsClick={() => handleJobClick(job)}
-                    onApplyClick={() => onApply(job.title)}
+                    onApplyClick={() => handleApplyJob(job)}
+                    isOwnJob={job.userId === session?.user?.id}
                   />
                 </motion.div>
               ))}
@@ -288,11 +351,50 @@ export default function MobileJobView({
             tags={selectedJob.tags}
             isOpen={showDetailsModal}
             onClose={handleCloseModal}
-            onApplyClick={() => onApply(selectedJob.title)}
-            onEditClick={() => onEdit(selectedJob)}
+            onApplyClick={() => handleApplyJob(selectedJob)}
+            onEditClick={() => handleEditJob(selectedJob)}
             onDeleteClick={() => onDelete(selectedJob)}
             canEdit={selectedJob.userId === session?.user?.id}
+            isOwnJob={selectedJob.userId === session?.user?.id}
+            jobId={selectedJob._id}
           />
+        )}
+
+        {/* Job Application Modal */}
+        {showApplicationModal && selectedJob && (
+          <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="w-full max-w-2xl max-h-[90vh] overflow-auto">
+              <JobApplicationForm
+                jobId={selectedJob._id}
+                jobTitle={selectedJob.title}
+                company={selectedJob.company}
+                onClose={() => setShowApplicationModal(false)}
+                onSuccess={handleApplicationSuccess}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Edit Job Modal */}
+        {showEditModal && selectedJob && (
+          <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="w-full max-w-2xl max-h-[90vh] overflow-auto">
+              <EditJobListComponent
+                isOpen={showEditModal}
+                onClose={handleCloseEditModal}
+                onSave={handleEditSuccess}
+                initialJobData={{
+                  title: selectedJob.title,
+                  company: selectedJob.company,
+                  location: selectedJob.location,
+                  workMode: selectedJob.workMode,
+                  description: selectedJob.description,
+                  position: selectedJob.position || "",
+                  tags: selectedJob.tags || [],
+                }}
+              />
+            </div>
+          </div>
         )}
       </div>
 
@@ -301,17 +403,34 @@ export default function MobileJobView({
         isOpen={filterDrawerOpen}
         onClose={() => setFilterDrawerOpen(false)}
         onFilter={onFilter}
-        onCreateJob={onCreateJob}
+        onCreateJob={handleCreateJob}
         activeFilters={activeFilters}
       />
 
       {/* Create Job FAB */}
       <button
-        onClick={onCreateJob}
-        className="fixed right-4 bottom-20 p-4 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg transition-colors"
+        onClick={handleCreateJob}
+        className="fixed right-4 bottom-20 p-4 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-lg transition-colors z-50"
       >
         <Plus size={24} />
       </button>
+
+      {/* Create Job Modal */}
+      {showCreateModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="w-full max-w-2xl">
+            <CreateJL 
+              onClose={handleCloseCreateModal} 
+              onSuccess={() => {
+                handleCloseCreateModal();
+                // Refresh the jobs list
+                onJobViewChange(jobView);
+              }} 
+            />
+          </div>
+        </div>
+      )}
+
       <div className="mt-auto">
         <Footer />
       </div>

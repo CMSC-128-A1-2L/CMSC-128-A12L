@@ -73,10 +73,10 @@ export default function JobDetails({
         initial={{ opacity: 0, y: 50 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 50 }}
-        className="modal-box max-w-3xl bg-white/10 backdrop-blur-md text-white border border-white/10 p-0 rounded-xl overflow-hidden"
+        className="modal-box max-w-3xl bg-gradient-to-br from-[#1a1f4d]/90 to-[#2a3f8f]/90 text-white border border-white/10 p-0 rounded-xl overflow-hidden flex flex-col"
       >
         {/* Header */}
-        <div className="relative h-32 bg-gradient-to-r from-blue-500/20 to-purple-500/20 p-6">
+        <div className="relative h-32 bg-gradient-to-r from-blue-500/20 to-purple-500/20 p-6 flex-shrink-0">
           <button 
             onClick={handleClose}
             className="absolute right-4 top-4 p-2 hover:bg-black/20 rounded-full transition-colors"
@@ -89,78 +89,80 @@ export default function JobDetails({
           </div>
         </div>
 
-        {/* Content */}
-        <div className="p-6 space-y-6">
-          {/* Key Details */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="flex items-center gap-3 text-white/80">
-              <Building2 size={20} />
-              <div>
-                <p className="text-sm font-medium text-white">Company</p>
-                <p>{company}</p>
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto" style={{ maxHeight: "calc(80vh - 13rem)" }}>
+          <div className="p-6 space-y-6">
+            {/* Key Details */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex items-center gap-3 text-white/80">
+                <Building2 size={20} className="flex-shrink-0" />
+                <div className="overflow-hidden">
+                  <p className="text-sm font-medium text-white">Company</p>
+                  <p className="truncate">{company}</p>
+                </div>
               </div>
-            </div>
-            
-            <div className="flex items-center gap-3 text-white/80">
-              <MapPin size={20} />
-              <div>
-                <p className="text-sm font-medium text-white">Location</p>
-                <p>{location}</p>
+              
+              <div className="flex items-center gap-3 text-white/80">
+                <MapPin size={20} className="flex-shrink-0" />
+                <div className="overflow-hidden">
+                  <p className="text-sm font-medium text-white">Location</p>
+                  <p className="truncate">{location}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 text-white/80">
+                <User2 size={20} className="flex-shrink-0" />
+                <div className="overflow-hidden">
+                  <p className="text-sm font-medium text-white">Position</p>
+                  <p className="truncate">{position}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 text-white/80">
+                <Clock size={20} className="flex-shrink-0" />
+                <div className="overflow-hidden">
+                  <p className="text-sm font-medium text-white">Work Mode</p>
+                  <p className="truncate">{workMode}</p>
+                </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 text-white/80">
-              <User2 size={20} />
-              <div>
-                <p className="text-sm font-medium text-white">Position</p>
-                <p>{position}</p>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 text-white/80">
-              <Clock size={20} />
-              <div>
-                <p className="text-sm font-medium text-white">Work Mode</p>
-                <p>{workMode}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Description */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <FileText size={20} />
-              <h3 className="text-lg font-medium">Description</h3>
-            </div>
-            <p className="text-white/80 whitespace-pre-wrap">{description}</p>
-          </div>
-
-          {/* Tags */}
-          {tags && tags.length > 0 && (
+            {/* Description */}
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <Tags size={20} />
-                <h3 className="text-lg font-medium">Tags</h3>
+                <FileText size={20} className="flex-shrink-0" />
+                <h3 className="text-lg font-medium">Description</h3>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {tags.map((tag, index) => (
-                  <span 
-                    key={index}
-                    className="px-3 py-1 bg-white/5 rounded-full text-sm text-white/80"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
+              <p className="text-white/80 whitespace-pre-wrap text-sm sm:text-base">{description}</p>
             </div>
-          )}
+
+            {/* Tags */}
+            {tags && tags.length > 0 && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <Tags size={20} className="flex-shrink-0" />
+                  <h3 className="text-lg font-medium">Tags</h3>
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {tags.map((tag, index) => (
+                    <span 
+                      key={index}
+                      className="px-3 py-1 bg-white/5 rounded-full text-sm text-white/80"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Actions */}
-        <div className="border-t border-white/10 p-6 flex flex-wrap gap-3 justify-end">
+        <div className="border-t border-white/10 p-4 sm:p-6 flex flex-col sm:flex-row flex-wrap gap-3 justify-end bg-[#1a1f4d]/80 backdrop-blur-sm flex-shrink-0">
           <button
             onClick={handleClose}
-            className="px-4 py-2 text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+            className="px-4 py-2 text-white/80 hover:text-white hover:bg-white/5 rounded-lg transition-colors cursor-pointer"
           >
             Close
           </button>
@@ -168,7 +170,7 @@ export default function JobDetails({
             <>
               <button 
                 onClick={onEditClick}
-                className="px-4 py-2 bg-white/5 hover:bg-white/10 text-blue-200 rounded-lg transition-colors border border-blue-500/20"
+                className="px-4 py-2 bg-white/5 hover:bg-white/10 text-blue-200 rounded-lg transition-colors border border-blue-500/20 cursor-pointer"
               >
                 <div className="flex items-center gap-2">
                   <Edit2 size={18} />
@@ -177,7 +179,7 @@ export default function JobDetails({
               </button>
               <button 
                 onClick={onDeleteClick}
-                className="px-4 py-2 bg-white/5 hover:bg-white/10 text-red-200 rounded-lg transition-colors border border-red-500/20"
+                className="px-4 py-2 bg-white/5 hover:bg-white/10 text-red-200 rounded-lg transition-colors border border-red-500/20 cursor-pointer"
               >
                 <div className="flex items-center gap-2">
                   <Trash2 size={18} />
@@ -189,7 +191,7 @@ export default function JobDetails({
           {!isOwnJob ? (
             <button
               onClick={onApplyClick}
-              className="px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-200 rounded-lg transition-colors border border-blue-500/20"
+              className="px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-200 rounded-lg transition-colors border border-blue-500/20 cursor-pointer"
             >
               Apply Now
             </button>
