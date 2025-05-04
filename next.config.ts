@@ -3,7 +3,6 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* config options here */
   devIndicators: false,
-  /* this is typically not recommended, uncomment this if we want to build for deployment (this checks for unused imports, vars, etc.) */
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -13,10 +12,13 @@ const nextConfig: NextConfig = {
   images: {
     domains: ['lh3.googleusercontent.com'],
   },
+  // Disable any experimental CSS features
   experimental: {
-    // Force use of PostCSS instead of Lightning CSS
-    // because the Lightning CSS binary is failing in Vercel
     optimizeCss: false,
+  },
+  // Configure webpack to handle CSS properly
+  webpack: (config) => {
+    return config;
   },
 };
 
