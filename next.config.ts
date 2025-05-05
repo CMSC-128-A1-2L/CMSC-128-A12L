@@ -10,13 +10,15 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    domains: [
-      'lh3.googleusercontent.com',
-      'm.media-amazon.com',
-      'dynamic-media-cdn.tripadvisor.com',
-      'media.istockphoto.com',
-      'images.unsplash.com',
-      'res.cloudinary.com'
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+      {
+        protocol: 'http',
+        hostname: '**',
+      }
     ],
   },
   // Disable any experimental CSS features
