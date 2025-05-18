@@ -54,6 +54,14 @@ export interface OpportunityRepository {
      * @returns A promise that resolves when the opportunity is deleted successfully.
      */
     deleteOpportunity(id: string): Promise<void>;
+
+    /**
+     * Deletes all opportunities created by a specific user.
+     * 
+     * @param userId The ID of the user whose opportunities to delete.
+     * @returns A promise that resolves when all opportunities are deleted successfully.
+     */
+    deleteOpportunitiesByUserId(userId: string): Promise<void>;
 }
 
 class MongoDBOpportunityRepository implements OpportunityRepository {
@@ -90,6 +98,10 @@ class MongoDBOpportunityRepository implements OpportunityRepository {
         await this.model.findByIdAndDelete(id);
     }
 
+    async deleteOpportunitiesByUserId(userId: string): Promise<void> {
+        await this.model.deleteMany({ userId: userId });
+    }
+
     constructor(connection: Connection) {
         this.connection = connection;
         this.model = connection.models["Opportunity"] ?? connection.model("Opportunity", OpportunitySchema, "opportunities");
@@ -106,4 +118,4 @@ export function getOpportunityRepository(): OpportunityRepository {
     const connection = connectDB();
     opportunityRepository = new MongoDBOpportunityRepository(connection);
     return opportunityRepository;
-} 
+}

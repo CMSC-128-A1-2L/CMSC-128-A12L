@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUserRepository } from "@/repositories/user_repository";
+import { getOpportunityRepository } from "@/repositories/opportunity_repository";
 import { User } from "@/entities/user";
+
+
 
 // Get user with specified id
 export async function GET(req: NextRequest,  { params }: { params: { id: string } }) {
@@ -49,12 +52,22 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   console.log("Delete user endpoint has been triggered.");
 
-  let {id} = await params;
+  const { id } = await params;
   console.log(id);
 
   const userRepository = getUserRepository();
+  const opportunityRepository = getOpportunityRepository();
 
-  return await userRepository.deleteUser(id)
-    .then(() => new NextResponse(null, { status: 204 }))
-    .catch(() => new NextResponse("Failed to delete user", { status: 500 }));
+  try {
+    // Delete the user
+    await userRepository.deleteUser(id);
+
+    // Delete all opportunities associated with the user
+    await opportunityRepository.deleteOpportunitiesByUserId(id);
+
+    return new NextResponse(null, { status: 204 });
+  } catch (error) {
+    console.error("Failed to delete user or their opportunities:", error);
+    return new NextResponse("Failed to delete user or their opportunities", { status: 500 });
+  }
 }
