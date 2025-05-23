@@ -3,10 +3,6 @@ import mongoose, { Connection } from "mongoose";
 
 dotenv.config();
 
-declare global {
-  var mongoConnection: Connection | undefined;
-}
-
 let cachedConnection: Connection | undefined;
 
 export function connectDB(): Connection {
@@ -14,9 +10,13 @@ export function connectDB(): Connection {
     return cachedConnection;
   }
 
+  const globalWithMongoConnection = global as typeof globalThis & {
+    mongoConnection: Connection | undefined;
+  };
+
   // Check if we have a connection cached in the global namespace
-  if (global.mongoConnection) {
-    return global.mongoConnection;
+  if (globalWithMongoConnection.mongoConnection) {
+    return globalWithMongoConnection.mongoConnection;
   }
 
   const mongoDbUri = process.env.MONGODB_URI;
@@ -27,26 +27,16 @@ export function connectDB(): Connection {
 
   // Create new connection
   const connection = mongoose.createConnection(mongoDbUri, {
-    dbName: "DEV_ARTMS",
+    dbName: process.env.NODE_ENV === 'development' ? "DEV_ARTMS" : "ARTMS",
     bufferCommands: true,
-    maxPoolSize: 10
+    maxPoolSize: process.env.NODE_ENV === 'development' ? 10 : undefined
   });
 
-
-  // Cache the connection
+  // Cache the connection in the global namespace for hot-reloading in development
   if (process.env.NODE_ENV === 'development') {
-    global.mongoConnection = connection;
+    globalWithMongoConnection.mongoConnection = connection;
   }
   cachedConnection = connection;
-
-  // Handle connection events
-  connection.on('connected', () => {
-    console.log('MongoDB connected successfully');
-  });
-
-  connection.on('error', (err) => {
-    console.error('MongoDB connection error:', err);
-  });
 
   return connection;
 }
