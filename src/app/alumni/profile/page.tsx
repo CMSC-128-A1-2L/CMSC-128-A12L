@@ -36,11 +36,21 @@ const validateGraduationYear = (year: number) => {
 };
 
 const validateUrl = (url: string) => {
+  if (!url) return true;
   try {
     new URL(url);
     return true;
   } catch {
     return false;
+  }
+};
+
+const getHostname = (url: string) => {
+  if (!url) return '';
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return url;
   }
 };
 
@@ -115,13 +125,14 @@ export default function AlumniProfile() {
     {}
   );
   const [backupData, setBackupData] = useState<ProfileData | null>(null);
+  const [websiteHostname, setWebsiteHostname] = useState<string>('');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const navRefs = useRef<{ [key: string]: HTMLButtonElement }>({});
   const observerRef = useRef<IntersectionObserver | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const isScrollingRef = useRef(false);
-  const scrollTimeoutRef = useRef<number>();
+  const isScrollingRef = useRef<boolean>(false);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | undefined>(undefined);
 
   // Add constellation elements
   const constellationElements = useMemo(() => {
@@ -194,7 +205,7 @@ export default function AlumniProfile() {
       clearTimeout(scrollTimeoutRef.current);
     }
 
-    scrollTimeoutRef.current = window.setTimeout(() => {
+    scrollTimeoutRef.current = setTimeout(() => {
       isScrollingRef.current = false;
       // Only apply auto-centering on mobile
       if (window.innerWidth < 640) {
@@ -311,6 +322,20 @@ export default function AlumniProfile() {
       fetchProfileData();
     }
   }, [session]);
+
+  // Add this useEffect to handle URL parsing
+  useEffect(() => {
+    if (profileData.website) {
+      try {
+        const url = new URL(profileData.website);
+        setWebsiteHostname(url.hostname);
+      } catch {
+        setWebsiteHostname(profileData.website);
+      }
+    } else {
+      setWebsiteHostname('');
+    }
+  }, [profileData.website]);
 
   // Add validation handler
   const handleValidation = debounce((field: string, value: any) => {
@@ -615,13 +640,13 @@ export default function AlumniProfile() {
                 {profileData.website && (
                   <div className="flex items-center gap-2 text-white/70 text-sm sm:text-base">
                     <Globe className="h-4 w-4" />
-                    <a
-                      href={profileData.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
+                    <a 
+                      href={profileData.website} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
                       className="hover:text-white transition-colors"
                     >
-                      {new URL(profileData.website).hostname}
+                      {getHostname(profileData.website)}
                     </a>
                   </div>
                 )}
@@ -924,13 +949,13 @@ export default function AlumniProfile() {
                             </label>
                             <input
                               type="url"
-                              value={profileData.website || ""}
-                              onChange={(e) =>
-                                setProfileData((prev) => ({
-                                  ...prev,
-                                  website: e.target.value,
-                                }))
-                              }
+                              value={profileData.website || ''}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                setProfileData(prev => ({ ...prev, website: value }));
+                                handleValidation('website', value);
+                              }}
+
                               className="bg-white/10 text-white rounded-lg p-2 w-full max-w-md text-sm sm:text-base"
                               placeholder="Enter website URL"
                             />
@@ -943,13 +968,14 @@ export default function AlumniProfile() {
                         ) : (
                           <span className="pt-2 text-sm sm:text-base">
                             {profileData.website ? (
-                              <a
+                              <a 
                                 href={profileData.website}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-blue-400 hover:text-blue-300"
                               >
-                                {profileData.website}
+                                {getHostname(profileData.website)}
+
                               </a>
                             ) : (
                               "No website added"
@@ -1219,29 +1245,34 @@ export default function AlumniProfile() {
                             </label>
                             <input
                               type="url"
-                              value={profileData.website || ""}
-                              onChange={(e) =>
-                                setProfileData((prev) => ({
-                                  ...prev,
-                                  website: e.target.value,
-                                }))
-                              }
+                              value={profileData.website || ''}
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                setProfileData(prev => ({ ...prev, website: value }));
+                                handleValidation('website', value);
+                              }}
+
                               className="bg-white/10 text-white rounded-lg p-2 w-full max-w-md"
                               placeholder="Enter website URL"
                             />
+                            {validationErrors.website && (
+                              <p className="text-[10px] sm:text-xs text-red-400 mt-1">{validationErrors.website}</p>
+                            )}
                           </div>
                         ) : (
                           <span className="pt-2">
-                            <a
-                              href={profileData.website}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="hover:text-white transition-colors"
-                            >
-                              {profileData.website
-                                ? new URL(profileData.website).hostname
-                                : "No website added"}
-                            </a>
+                            {profileData.website ? (
+                              <a 
+                                href={profileData.website}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="hover:text-white transition-colors"
+                              >
+                                {getHostname(profileData.website)}
+                              </a>
+                            ) : (
+                              'No website added'
+                            )}
                           </span>
                         )}
                       </div>
