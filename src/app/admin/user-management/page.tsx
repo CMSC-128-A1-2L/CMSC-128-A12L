@@ -13,46 +13,6 @@ import ScrollIndicator from "../../components/ScrollIndicator";
 import { createNotification } from "@/services/notification.service";
 import { UserRole } from "@/entities/user";
 
-interface PendingVerification {
-    name: string;
-    email: string;
-    document: string;
-}
-
-const sampleUserData = [
-    {
-        name: "John Doe",
-        email: "john.doe@example.com",
-        document: "alumni_verification.pdf"
-    },
-    {
-        name: "Jane Smith",
-        email: "jane.smith@example.com",
-        document: "graduation_cert.pdf"
-    },
-    {
-        name: "Mike Johnson",
-        email: "mike.j@example.com",
-        document: "diploma.pdf"
-    },
-    {
-        name: "Sarah Williams",
-        email: "sarah.w@example.com",
-        document: "transcript.pdf"
-    },
-    {
-        name: "David Brown",
-        email: "david.b@example.com",
-        document: "certificate.pdf"
-    },
-    {
-        name: "Emily Davis",
-        email: "emily.d@example.com",
-        document: "diploma_verification.pdf"
-    }
-]
-
-
 export default function UsersManagement(){
     const { data: session } = useSession();
     const [tempQuery, setTempQuery] = useState("");
