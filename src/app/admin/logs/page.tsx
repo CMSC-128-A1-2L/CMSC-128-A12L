@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion } from 'framer-motion';
 import { Search, Download, Calendar, User, Activity, Clock } from 'lucide-react';
 import { LogSkeleton } from "./components/LogSkeleton";
+import { LogsDto } from "@/models/logs";
 
 import {
   ChevronLeftIcon,
@@ -11,10 +12,6 @@ import {
   DoubleArrowLeftIcon,
   DoubleArrowRightIcon,
 } from "@radix-ui/react-icons";
-
-interface LogsDto {
-  // ...existing interface...
-}
 
 const tabs = ['ALL', 'INFO', 'WARNING', 'ERROR'];
 const dateRanges = [
@@ -27,8 +24,7 @@ export default function AdminLogs() {
   const { data: session } = useSession();
   const [activeTab, setActiveTab] = useState('ALL');
   const [searchQuery, setSearchQuery] = useState('');
-  const [dateRange, setDateRange] = useState('last7days');
-  const [logs, setLogs] = useState<LogsDto[]>([]);
+  const [dateRange, setDateRange] = useState('all');  const [logs, setLogs] = useState<LogsDto[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [filteredLogs, setFilteredLogs] = useState<LogsDto[]>([]);
@@ -82,8 +78,9 @@ export default function AdminLogs() {
     last30Days.setDate(last30Days.getDate() - 30);
 
     filtered = filtered.filter(log => {
-      const logDate = new Date(log.timestamp);
-      switch (dateRange) {
+      const logDate = new Date(log.timestamp);      switch (dateRange) {
+        case 'all':
+          return true;
         case 'today':
           return logDate >= today;
         case 'yesterday':
@@ -125,6 +122,43 @@ export default function AdminLogs() {
 
   const handleLastPage = () => {
     setCurrentPage(totalPages);
+  };
+
+  const handleExportLogs = () => {
+    // Convert logs to CSV format
+    const headers = ['Name', 'Action', 'Status', 'Timestamp', 'IP Address'];
+    const csvContent = [
+      headers.join(','),
+      ...filteredLogs.map(log => {
+        const timestamp = log.timestamp instanceof Date 
+          ? log.timestamp 
+          : new Date(log.timestamp);
+        
+        return [
+          String(log.name || '').replace(/,/g, ';'),
+          String(log.action || '').replace(/,/g, ';'),
+          String(log.status || '').replace(/,/g, ';'),
+          timestamp.toLocaleString().replace(/,/g, ';'),
+          String(log.ipAddress || '').replace(/,/g, ';')
+        ].join(',');
+      })
+    ].join('\n');
+
+    // Create blob and download
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    // Set the filename with current date
+    const date = new Date().toISOString().split('T')[0];
+    link.setAttribute('href', url);
+    link.setAttribute('download', `system_logs_${date}.csv`);
+    link.style.visibility = 'hidden';
+    
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   // Generate page numbers for pagination
@@ -175,7 +209,8 @@ export default function AdminLogs() {
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center w-full md:w-auto"
+              onClick={handleExportLogs}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center w-full md:w-auto cursor-pointer"
             >
               <Download className="w-4 h-4 mr-2" />
               Export
@@ -221,12 +256,11 @@ export default function AdminLogs() {
                 value={dateRange}
                 onChange={(e) => setDateRange(e.target.value)}
                 className="w-full sm:w-auto pl-10 pr-4 py-2 rounded-lg bg-gray-100 text-gray-800 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none text-sm sm:text-base"
-              >
+              >                <option value="all" className="bg-white text-gray-800">All Logs</option>
                 <option value="today" className="bg-white text-gray-800">Today</option>
                 <option value="yesterday" className="bg-white text-gray-800">Yesterday</option>
                 <option value="last7days" className="bg-white text-gray-800">Last 7 Days</option>
                 <option value="last30days" className="bg-white text-gray-800">Last 30 Days</option>
-                <option value="custom" className="bg-white text-gray-800">Custom Range</option>
               </select>
             </div>
           </div>
