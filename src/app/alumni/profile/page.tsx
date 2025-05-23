@@ -21,11 +21,11 @@ import {
   BriefcaseBusiness,
   FileText,
   Linkedin,
-  CheckCircle2
+  CheckCircle2,
 } from "lucide-react";
 import EditProfileModal from "@/app/components/EditProfileModal";
-import debounce from 'lodash/debounce';
-import { COUNTRIES, validatePhoneNumber } from '@/lib/countries';
+import debounce from "lodash/debounce";
+import { COUNTRIES, validatePhoneNumber } from "@/lib/countries";
 
 // Add validation functions at the top level
 const CURRENT_YEAR = new Date().getFullYear();
@@ -103,7 +103,7 @@ export default function AlumniProfile() {
   const router = useRouter();
   const { data: session } = useSession() as { data: Session | null };
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [selectedOption, setSelectedOption] = useState('personal');
+  const [selectedOption, setSelectedOption] = useState("personal");
   const [isEditMode, setIsEditMode] = useState(false);
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
   const [profileData, setProfileData] = useState<ProfileData>({
@@ -118,10 +118,12 @@ export default function AlumniProfile() {
     currentCompany: "",
     currentPosition: "",
     linkedIn: "",
-    website: ""
+    website: "",
   });
-  const [phoneFormat, setPhoneFormat] = useState('PH');
-  const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
+  const [phoneFormat, setPhoneFormat] = useState("PH");
+  const [validationErrors, setValidationErrors] = useState<ValidationErrors>(
+    {}
+  );
   const [backupData, setBackupData] = useState<ProfileData | null>(null);
   const [websiteHostname, setWebsiteHostname] = useState<string>('');
 
@@ -141,7 +143,7 @@ export default function AlumniProfile() {
       left: Math.random() * 100,
       top: Math.random() * 100,
       duration: Math.random() * 5 + 3,
-      delay: Math.random() * 5
+      delay: Math.random() * 5,
     }));
 
     const lines = Array.from({ length: 20 }).map((_, i) => ({
@@ -150,7 +152,7 @@ export default function AlumniProfile() {
       left: Math.random() * 100,
       top: Math.random() * 100,
       rotation: Math.random() * 360,
-      opacity: Math.random() * 0.5
+      opacity: Math.random() * 0.5,
     }));
 
     return { stars, lines };
@@ -161,13 +163,13 @@ export default function AlumniProfile() {
     const container = containerRef.current;
     if (!container) return null;
 
-    const containerCenter = container.offsetLeft + (container.offsetWidth / 2);
+    const containerCenter = container.offsetLeft + container.offsetWidth / 2;
     let closestOption = null;
     let minDistance = Infinity;
 
     Object.entries(navRefs.current).forEach(([option, element]) => {
       const rect = element.getBoundingClientRect();
-      const elementCenter = rect.left + (rect.width / 2);
+      const elementCenter = rect.left + rect.width / 2;
       const distance = Math.abs(elementCenter - containerCenter);
 
       if (distance < minDistance) {
@@ -187,9 +189,9 @@ export default function AlumniProfile() {
     // Only apply scroll behavior on mobile
     if (window.innerWidth < 640) {
       element.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center',
-        inline: 'center'
+        behavior: "smooth",
+        block: "center",
+        inline: "center",
       });
     }
 
@@ -211,9 +213,9 @@ export default function AlumniProfile() {
         if (centeredOption) {
           setSelectedOption(centeredOption);
           navRefs.current[centeredOption]?.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center',
-            inline: 'center'
+            behavior: "smooth",
+            block: "center",
+            inline: "center",
           });
         }
       }
@@ -233,9 +235,9 @@ export default function AlumniProfile() {
       }
     };
 
-    container.addEventListener('scroll', handleScroll, { passive: true });
+    container.addEventListener("scroll", handleScroll, { passive: true });
     return () => {
-      container.removeEventListener('scroll', handleScroll);
+      container.removeEventListener("scroll", handleScroll);
       if (scrollTimeoutRef.current) {
         clearTimeout(scrollTimeoutRef.current);
       }
@@ -253,48 +255,51 @@ export default function AlumniProfile() {
     }
 
     // Check file type
-    if (!file.type.startsWith('image/')) {
+    if (!file.type.startsWith("image/")) {
       return;
     }
 
     try {
       // First upload to Cloudinary
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append("file", file);
 
-      const uploadResponse = await fetch('/api/cloudinary/upload_profile_image', {
-        method: 'POST',
-        body: formData,
-      });
+      const uploadResponse = await fetch(
+        "/api/cloudinary/upload_profile_image",
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
 
       if (!uploadResponse.ok) {
-        throw new Error('Failed to upload image');
+        throw new Error("Failed to upload image");
       }
 
       const { url, public_id } = await uploadResponse.json();
 
       // Then update the user profile with the new image URL
-      const updateResponse = await fetch('/api/users/profile', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+      const updateResponse = await fetch("/api/users/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...profileData,
           imageUrl: url, // Changed from profilePicture to imageUrl
-          cloudinaryPublicId: public_id // Store this if you need to manage/delete images later
+          cloudinaryPublicId: public_id, // Store this if you need to manage/delete images later
         }),
       });
 
       if (!updateResponse.ok) {
-        throw new Error('Failed to update profile');
+        throw new Error("Failed to update profile");
       }
 
       // Update local state
-      setProfileData(prev => ({
+      setProfileData((prev) => ({
         ...prev,
-        imageUrl: url // Changed from profilePicture to imageUrl
+        imageUrl: url, // Changed from profilePicture to imageUrl
       }));
     } catch (error) {
-      console.error('Error:', error);
+      console.error("Error:", error);
     }
   };
 
@@ -304,7 +309,7 @@ export default function AlumniProfile() {
         const response = await fetch("/api/users/profile");
         if (!response.ok) throw new Error("Failed to fetch profile data");
         const data = await response.json();
-        setProfileData(prev => ({
+        setProfileData((prev) => ({
           ...prev,
           ...data,
         }));
@@ -337,7 +342,7 @@ export default function AlumniProfile() {
     const errors = { ...validationErrors };
 
     switch (field) {
-      case 'graduationYear':
+      case "graduationYear":
         if (value && !validateGraduationYear(value)) {
           errors.graduationYear = `Year must be between ${FOUNDING_YEAR} and ${CURRENT_YEAR}`;
         } else {
@@ -345,57 +350,58 @@ export default function AlumniProfile() {
         }
         break;
 
-      case 'phoneNumber':
+      case "phoneNumber":
         if (value && !validatePhoneNumber(value, phoneFormat)) {
-          errors.phoneNumber = 'Invalid phone number format';
+          errors.phoneNumber = "Invalid phone number format";
         } else {
           delete errors.phoneNumber;
         }
         break;
 
-      case 'currentLocation':
+      case "currentLocation":
         if (value?.length > 100) {
-          errors.currentLocation = 'Location must be less than 100 characters';
+          errors.currentLocation = "Location must be less than 100 characters";
         } else {
           delete errors.currentLocation;
         }
         break;
 
-      case 'department':
+      case "department":
         if (value?.length > 100) {
-          errors.department = 'Department must be less than 100 characters';
+          errors.department = "Department must be less than 100 characters";
         } else {
           delete errors.department;
         }
         break;
 
-      case 'bio':
+      case "bio":
         if (value?.length > 500) {
-          errors.bio = 'Bio must be less than 500 characters';
+          errors.bio = "Bio must be less than 500 characters";
         } else {
           delete errors.bio;
         }
         break;
 
-      case 'linkedIn':
+      case "linkedIn":
         if (value && (!LINKEDIN_REGEX.test(value) || value.length > 100)) {
-          errors.linkedIn = 'Must be a valid LinkedIn URL (e.g. https://linkedin.com/in/username) and less than 100 characters';
+          errors.linkedIn =
+            "Must be a valid LinkedIn URL (e.g. https://linkedin.com/in/username) and less than 100 characters";
         } else {
           delete errors.linkedIn;
         }
         break;
 
-      case 'website':
+      case "website":
         if (value) {
           try {
             new URL(value);
             if (value.length > 100) {
-              errors.website = 'Website must be less than 100 characters';
+              errors.website = "Website must be less than 100 characters";
             } else {
               delete errors.website;
             }
           } catch {
-            errors.website = 'Must be a valid URL (e.g. https://example.com)';
+            errors.website = "Must be a valid URL (e.g. https://example.com)";
           }
         } else {
           delete errors.website;
@@ -409,7 +415,7 @@ export default function AlumniProfile() {
   // Modify handleSaveProfile to show success alert
   const handleSaveProfile = async () => {
     // Check if there are any validation errors
-    console.log(profileData)
+    console.log(profileData);
 
     if (Object.keys(validationErrors).length > 0) {
       return;
@@ -426,7 +432,7 @@ export default function AlumniProfile() {
       setBackupData(null); // Clear backup after successful save
       setIsEditMode(false);
       setShowSuccessAlert(true);
-      
+
       // Hide alert after 3 seconds
       setTimeout(() => {
         setShowSuccessAlert(false);
@@ -460,7 +466,10 @@ export default function AlumniProfile() {
       {/* Success Alert - Moved outside main container */}
       <AnimatePresence>
         {showSuccessAlert && (
-          <div className="fixed top-6 left-0 right-0 flex justify-center" style={{ zIndex: 99999 }}>
+          <div
+            className="fixed top-6 left-0 right-0 flex justify-center"
+            style={{ zIndex: 99999 }}
+          >
             <motion.div
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -474,9 +483,11 @@ export default function AlumniProfile() {
           </div>
         )}
       </AnimatePresence>
-      
+
       <div className="min-h-screen inset-0 overflow-hidden bg-[#0f172a]">
-        <style jsx global>{constellationStyles}</style>
+        <style jsx global>
+          {constellationStyles}
+        </style>
         <style jsx global>{`
           /* Hide scrollbar for Chrome, Safari and Opera */
           .no-scrollbar::-webkit-scrollbar {
@@ -485,8 +496,8 @@ export default function AlumniProfile() {
 
           /* Hide scrollbar for IE, Edge and Firefox */
           .no-scrollbar {
-            -ms-overflow-style: none;  /* IE and Edge */
-            scrollbar-width: none;  /* Firefox */
+            -ms-overflow-style: none; /* IE and Edge */
+            scrollbar-width: none; /* Firefox */
           }
         `}</style>
         {/* Background Elements */}
@@ -496,7 +507,7 @@ export default function AlumniProfile() {
           {/* Gradient only in the top portion */}
           <div className="absolute inset-x-0 top-0 h-[40vh] bg-gradient-to-br from-transparent from-0% via-transparent via-5% via-[#1a1f4d]/10 via-15% via-[#1a1f4d]/20 via-25% via-[#1a237e]/25 via-35% via-[#1a237e]/30 via-45% via-[#0d47a1]/35 via-55% via-[#0d47a1]/40 via-65% via-[#0d47a1]/45 via-70% via-[#0f172a]/45 via-75% via-[#0f172a]/50 via-80% via-[#0f172a]/55 via-85% via-[#0f172a]/60 via-90% via-[#0f172a]/70 via-95% to-[#0f172a]/80 to-100%" />
         </div>
-        
+
         {/* Cover Photo Section with constellation and gradients */}
         <div className="h-[40vh] relative overflow-hidden">
           {/* Constellation Animation */}
@@ -505,7 +516,13 @@ export default function AlumniProfile() {
             <div className="absolute inset-0 bg-[url('/noise-pattern.png')] opacity-5" />
             <div className="absolute inset-0">
               <div className="absolute inset-0 bg-gradient-to-br from-[#1a1f4d]/80 via-[#1a237e]/60 to-[#0d47a1]/40" />
-              <div className="h-full w-full" style={{ background: 'radial-gradient(circle at center, rgba(255,255,255,0.1) 0%, transparent 60%)' }} />
+              <div
+                className="h-full w-full"
+                style={{
+                  background:
+                    "radial-gradient(circle at center, rgba(255,255,255,0.1) 0%, transparent 60%)",
+                }}
+              />
             </div>
             <div className="constellation absolute inset-0">
               <div className="stars absolute inset-0">
@@ -514,11 +531,11 @@ export default function AlumniProfile() {
                     key={star.id}
                     className="star absolute rounded-full bg-white"
                     style={{
-                      width: star.width + 'px',
-                      height: star.height + 'px',
-                      left: star.left + '%',
-                      top: star.top + '%',
-                      animation: `twinkle ${star.duration}s infinite ${star.delay}s`
+                      width: star.width + "px",
+                      height: star.height + "px",
+                      left: star.left + "%",
+                      top: star.top + "%",
+                      animation: `twinkle ${star.duration}s infinite ${star.delay}s`,
                     }}
                   />
                 ))}
@@ -529,12 +546,12 @@ export default function AlumniProfile() {
                     key={line.id}
                     className="line absolute bg-white/10"
                     style={{
-                      width: line.width + 'px',
-                      height: '1px',
-                      left: line.left + '%',
-                      top: line.top + '%',
+                      width: line.width + "px",
+                      height: "1px",
+                      left: line.left + "%",
+                      top: line.top + "%",
                       transform: `rotate(${line.rotation}deg)`,
-                      opacity: line.opacity
+                      opacity: line.opacity,
                     }}
                   />
                 ))}
@@ -564,7 +581,7 @@ export default function AlumniProfile() {
                   </div>
                 )}
                 {isEditMode && (
-                  <div 
+                  <div
                     className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                     onClick={() => fileInputRef.current?.click()}
                   >
@@ -583,12 +600,18 @@ export default function AlumniProfile() {
 
             {/* Profile Info */}
             <div className="mt-6 text-center">
-              <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2 sm:mb-4">{profileData.name}</h1>
+              <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2 sm:mb-4">
+                {profileData.name}
+              </h1>
               <p className="text-base sm:text-lg text-white/80">
-                {profileData.currentPosition} {profileData.currentCompany && `at ${profileData.currentCompany}`}
+                {profileData.currentPosition}{" "}
+                {profileData.currentCompany &&
+                  `at ${profileData.currentCompany}`}
               </p>
-              <p className="text-sm sm:text-base text-white/60 mb-6 sm:mb-8">{profileData.email}</p>
-              
+              <p className="text-sm sm:text-base text-white/60 mb-6 sm:mb-8">
+                {profileData.email}
+              </p>
+
               <div className="flex flex-col items-center gap-2 sm:gap-3">
                 {profileData.currentLocation && (
                   <div className="flex items-center gap-2 text-white/70 text-sm sm:text-base">
@@ -630,7 +653,12 @@ export default function AlumniProfile() {
                 {profileData.linkedIn && (
                   <div className="flex items-center gap-2 text-white/70 text-sm sm:text-base">
                     <Linkedin className="h-4 w-4" />
-                    <a href={profileData.linkedIn} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors">
+                    <a
+                      href={profileData.linkedIn}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-white transition-colors"
+                    >
                       LinkedIn Profile
                     </a>
                   </div>
@@ -638,19 +666,39 @@ export default function AlumniProfile() {
               </div>
 
               {/* Edit Profile Button */}
-              <div className="mt-2 sm:mt-8 mb-6 sm:mb-32">
+              <div className="mt-2 sm:mt-8 mb-6 sm:mb-32 flex gap-4 justify-center">
+                {isEditMode && (
+                  <button
+                    onClick={() => handleEditMode(false)}
+                    className="px-6 sm:px-6 py-3 sm:py-2.5 rounded-full transition-all duration-300 flex items-center gap-3 sm:gap-3 cursor-pointer font-medium text-sm sm:text-sm bg-gray-500 hover:bg-gray-600 text-white shadow-lg hover:shadow-gray-500/30"
+                  >
+                    Cancel
+                  </button>
+                )}
                 <button
-                  onClick={() => isEditMode ? handleSaveProfile() : setIsEditMode(true)}
-                  className={`px-6 sm:px-6 py-3 sm:py-2.5 rounded-full transition-all duration-300 flex items-center gap-3 sm:gap-3 mx-auto cursor-pointer font-medium text-sm sm:text-sm ${
-                    isEditMode 
-                    ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-lg hover:shadow-emerald-500/30' 
-                    : 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-indigo-500/30'
+                  onClick={() =>
+                    isEditMode ? handleSaveProfile() : setIsEditMode(true)
+                  }
+                  className={`px-6 sm:px-6 py-3 sm:py-2.5 rounded-full transition-all duration-300 flex items-center gap-3 sm:gap-3 cursor-pointer font-medium text-sm sm:text-sm ${
+                    isEditMode
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-lg hover:shadow-emerald-500/30"
+                      : "bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-indigo-500/30"
                   }`}
                 >
                   {isEditMode ? (
                     <>
-                      <svg className="w-4 h-4 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                      <svg
+                        className="w-4 h-4 sm:w-4 sm:h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M5 13l4 4L19 7"
+                        />
                       </svg>
                       <span>Save Profile</span>
                     </>
@@ -671,18 +719,24 @@ export default function AlumniProfile() {
             <div className="relative mb-2 sm:mb-12">
               {/* Mobile fade overlay (left) */}
               <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-[#0f172a] to-transparent pointer-events-none sm:hidden z-10" />
-              
+
               {/* Mobile fade overlay (right) */}
               <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-[#0f172a] to-transparent pointer-events-none sm:hidden z-10" />
-              
+
               {/* Navigation container */}
-              <div 
+              <div
                 ref={containerRef}
                 className="flex overflow-x-auto no-scrollbar sm:overflow-visible sm:space-x-8 snap-x snap-mandatory pb-2 relative"
               >
                 <div className="flex space-x-8 px-[calc(50%-60px)] sm:px-0">
-                  {['personal', 'educational', 'professional', 'biographical', 'security'].map((option) => (
-                    <button 
+                  {[
+                    "personal",
+                    "educational",
+                    "professional",
+                    "biographical",
+                    "security",
+                  ].map((option) => (
+                    <button
                       key={option}
                       ref={(el) => {
                         if (el) navRefs.current[option] = el;
@@ -692,19 +746,26 @@ export default function AlumniProfile() {
                         scrollToOption(option);
                       }}
                       className={`relative pb-2 cursor-pointer snap-center min-w-[120px] sm:min-w-0 transition-transform duration-200 ${
-                        selectedOption === option ? 'scale-105' : 'scale-100'
+                        selectedOption === option ? "scale-105" : "scale-100"
                       }`}
                     >
-                      <span className={`text-sm sm:text-base font-semibold uppercase whitespace-nowrap ${
-                        selectedOption === option ? 'text-white' : 'text-gray-400 hover:text-white'
-                      } transition-colors duration-200`}>
+                      <span
+                        className={`text-sm sm:text-base font-semibold uppercase whitespace-nowrap ${
+                          selectedOption === option
+                            ? "text-white"
+                            : "text-gray-400 hover:text-white"
+                        } transition-colors duration-200`}
+                      >
                         {option}
                       </span>
-                      <div 
+                      <div
                         className="absolute bottom-0 left-0 w-full h-0.5 bg-white/0 transition-all duration-300"
                         style={{
-                          backgroundColor: selectedOption === option ? 'rgb(255 255 255)' : 'transparent',
-                          width: selectedOption === option ? '100%' : '0%'
+                          backgroundColor:
+                            selectedOption === option
+                              ? "rgb(255 255 255)"
+                              : "transparent",
+                          width: selectedOption === option ? "100%" : "0%",
                         }}
                       />
                     </button>
@@ -716,7 +777,7 @@ export default function AlumniProfile() {
             {/* Content Sections */}
             <div className="pr-0 sm:pr-8 min-h-[calc(100vh-32rem)] sm:min-h-[calc(100vh-36rem)] mt-6 sm:mt-0">
               <AnimatePresence mode="wait">
-                {selectedOption === 'personal' && (
+                {selectedOption === "personal" && (
                   <motion.div
                     key="personal"
                     initial={{ opacity: 0, x: 20 }}
@@ -731,33 +792,56 @@ export default function AlumniProfile() {
                         <span>{profileData.email}</span>
                       </div>
                       <div className="flex items-start gap-4 text-white/80">
-                        <User className={`h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 ${isEditMode ? 'mt-[33px]' : 'mt-[10px]'}`} />
+                        <User
+                          className={`h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 ${
+                            isEditMode ? "mt-[33px]" : "mt-[10px]"
+                          }`}
+                        />
                         {isEditMode ? (
                           <div className="flex-1">
-                            <label className="block text-xs sm:text-sm font-medium text-white/90 mb-1">Full Name</label>
+                            <label className="block text-xs sm:text-sm font-medium text-white/90 mb-1">
+                              Full Name
+                            </label>
                             <input
                               type="text"
-                              value={profileData.name || ''}
+                              value={profileData.name || ""}
                               onChange={(e) => {
                                 const value = e.target.value;
-                                if (value === '' || /^[a-zA-Z\s.-]+$/.test(value)) {
-                                  setProfileData(prev => ({ ...prev, name: value }));
+                                if (
+                                  value === "" ||
+                                  /^[a-zA-Z\s.-]+$/.test(value)
+                                ) {
+                                  setProfileData((prev) => ({
+                                    ...prev,
+                                    name: value,
+                                  }));
                                 }
                               }}
                               className="bg-white/10 text-white rounded-lg p-2 w-full max-w-md text-sm sm:text-base"
                               placeholder="Enter full name"
                             />
-                            <p className="text-[10px] sm:text-xs text-white/60 mt-1">Only letters, spaces, dots, and hyphens are allowed</p>
+                            <p className="text-[10px] sm:text-xs text-white/60 mt-1">
+                              Only letters, spaces, dots, and hyphens are
+                              allowed
+                            </p>
                           </div>
                         ) : (
-                          <span className="pt-2 text-sm sm:text-base">{profileData.name || 'No name added'}</span>
+                          <span className="pt-2 text-sm sm:text-base">
+                            {profileData.name || "No name added"}
+                          </span>
                         )}
                       </div>
                       <div className="flex items-start gap-4 text-white/80">
-                        <Phone className={`h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 ${isEditMode ? 'mt-[33px]' : 'mt-[10px]'}`} />
+                        <Phone
+                          className={`h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 ${
+                            isEditMode ? "mt-[33px]" : "mt-[10px]"
+                          }`}
+                        />
                         {isEditMode ? (
                           <div className="flex-1">
-                            <label className="block text-xs sm:text-sm font-medium text-white/90 mb-1">Mobile Number</label>
+                            <label className="block text-xs sm:text-sm font-medium text-white/90 mb-1">
+                              Mobile Number
+                            </label>
                             <div className="flex gap-2 max-w-md">
                               <select
                                 value={phoneFormat}
@@ -765,32 +849,45 @@ export default function AlumniProfile() {
                                 className="bg-white/10 text-white rounded-lg p-2 w-14 sm:w-20 text-sm sm:text-base appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 style={{
                                   backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23ffffff' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
-                                  backgroundPosition: 'right 0.25rem center',
-                                  backgroundRepeat: 'no-repeat',
-                                  backgroundSize: '1.25em 1.25em',
-                                  paddingRight: '1.75rem'
+                                  backgroundPosition: "right 0.25rem center",
+                                  backgroundRepeat: "no-repeat",
+                                  backgroundSize: "1.25em 1.25em",
+                                  paddingRight: "1.75rem",
                                 }}
                               >
-                                {COUNTRIES.map(country => (
-                                  <option key={country.code} value={country.code} className="bg-[#1a1f4d] text-white">
+                                {COUNTRIES.map((country) => (
+                                  <option
+                                    key={country.code}
+                                    value={country.code}
+                                    className="bg-[#1a1f4d] text-white"
+                                  >
                                     {country.code}
                                   </option>
                                 ))}
                               </select>
                               <input
                                 type="tel"
-                                value={profileData.phoneNumber || ''}
+                                value={profileData.phoneNumber || ""}
                                 onChange={(e) => {
-                                  const value = e.target.value.replace(/\D/g, ''); // Remove all non-digits
+                                  const value = e.target.value.replace(
+                                    /\D/g,
+                                    ""
+                                  ); // Remove all non-digits
                                   if (value.length <= 10) {
-                                    setProfileData(prev => ({ ...prev, phoneNumber: value }));
+                                    setProfileData((prev) => ({
+                                      ...prev,
+                                      phoneNumber: value,
+                                    }));
                                   }
                                 }}
                                 onBlur={(e) => {
                                   const value = e.target.value;
                                   // Clear the value if it's not exactly 10 digits when leaving the field
                                   if (value.length > 0 && value.length !== 10) {
-                                    setProfileData(prev => ({ ...prev, phoneNumber: '' }));
+                                    setProfileData((prev) => ({
+                                      ...prev,
+                                      phoneNumber: "",
+                                    }));
                                   }
                                 }}
                                 maxLength={10}
@@ -799,34 +896,57 @@ export default function AlumniProfile() {
                                 placeholder="Enter mobile number (10 digits)"
                               />
                             </div>
-                            <p className="text-[10px] sm:text-xs text-white/60 mt-1">Enter exactly 10 digits</p>
+                            <p className="text-[10px] sm:text-xs text-white/60 mt-1">
+                              Enter exactly 10 digits
+                            </p>
                           </div>
                         ) : (
-                          <span className="pt-2 text-sm sm:text-base">{profileData.phoneNumber || 'No phone number added'}</span>
+                          <span className="pt-2 text-sm sm:text-base">
+                            {profileData.phoneNumber || "No phone number added"}
+                          </span>
                         )}
                       </div>
                       <div className="flex items-start gap-4 text-white/80">
-                        <MapPin className={`h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 ${isEditMode ? 'mt-[33px]' : 'mt-[10px]'}`} />
+                        <MapPin
+                          className={`h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 ${
+                            isEditMode ? "mt-[33px]" : "mt-[10px]"
+                          }`}
+                        />
                         {isEditMode ? (
                           <div className="flex-1">
-                            <label className="block text-xs sm:text-sm font-medium text-white/90 mb-1">Current Location</label>
+                            <label className="block text-xs sm:text-sm font-medium text-white/90 mb-1">
+                              Current Location
+                            </label>
                             <input
                               type="text"
-                              value={profileData.currentLocation || ''}
-                              onChange={(e) => setProfileData(prev => ({ ...prev, currentLocation: e.target.value }))}
+                              value={profileData.currentLocation || ""}
+                              onChange={(e) =>
+                                setProfileData((prev) => ({
+                                  ...prev,
+                                  currentLocation: e.target.value,
+                                }))
+                              }
                               className="bg-white/10 text-white rounded-lg p-2 w-full max-w-md text-sm sm:text-base"
                               placeholder="Enter current location"
                             />
                           </div>
                         ) : (
-                          <span className="pt-2 text-sm sm:text-base">{profileData.currentLocation || 'No location added'}</span>
+                          <span className="pt-2 text-sm sm:text-base">
+                            {profileData.currentLocation || "No location added"}
+                          </span>
                         )}
                       </div>
                       <div className="flex items-start gap-4 text-white/80">
-                        <Globe className={`h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 ${isEditMode ? 'mt-[33px]' : 'mt-[10px]'}`} />
+                        <Globe
+                          className={`h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 ${
+                            isEditMode ? "mt-[33px]" : "mt-[10px]"
+                          }`}
+                        />
                         {isEditMode ? (
                           <div className="flex-1">
-                            <label className="block text-xs sm:text-sm font-medium text-white/90 mb-1">Website</label>
+                            <label className="block text-xs sm:text-sm font-medium text-white/90 mb-1">
+                              Website
+                            </label>
                             <input
                               type="url"
                               value={profileData.website || ''}
@@ -835,11 +955,14 @@ export default function AlumniProfile() {
                                 setProfileData(prev => ({ ...prev, website: value }));
                                 handleValidation('website', value);
                               }}
+
                               className="bg-white/10 text-white rounded-lg p-2 w-full max-w-md text-sm sm:text-base"
                               placeholder="Enter website URL"
                             />
                             {validationErrors.website && (
-                              <p className="text-[10px] sm:text-xs text-red-400 mt-1">{validationErrors.website}</p>
+                              <p className="text-[10px] sm:text-xs text-red-400 mt-1">
+                                {validationErrors.website}
+                              </p>
                             )}
                           </div>
                         ) : (
@@ -852,33 +975,47 @@ export default function AlumniProfile() {
                                 className="text-blue-400 hover:text-blue-300"
                               >
                                 {getHostname(profileData.website)}
+
                               </a>
                             ) : (
-                              'No website added'
+                              "No website added"
                             )}
                           </span>
                         )}
                       </div>
                       <div className="flex items-start gap-4 text-white/80">
-                        <Linkedin className={`h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 ${isEditMode ? 'mt-[33px]' : 'mt-[10px]'}`} />
+                        <Linkedin
+                          className={`h-4 w-4 sm:h-5 sm:w-5 flex-shrink-0 ${
+                            isEditMode ? "mt-[33px]" : "mt-[10px]"
+                          }`}
+                        />
                         {isEditMode ? (
                           <div className="flex-1">
-                            <label className="block text-xs sm:text-sm font-medium text-white/90 mb-1">LinkedIn Profile</label>
+                            <label className="block text-xs sm:text-sm font-medium text-white/90 mb-1">
+                              LinkedIn Profile
+                            </label>
                             <input
                               type="url"
-                              value={profileData.linkedIn || ''}
-                              onChange={(e) => setProfileData(prev => ({ ...prev, linkedIn: e.target.value }))}
+                              value={profileData.linkedIn || ""}
+                              onChange={(e) =>
+                                setProfileData((prev) => ({
+                                  ...prev,
+                                  linkedIn: e.target.value,
+                                }))
+                              }
                               className="bg-white/10 text-white rounded-lg p-2 w-full max-w-md text-sm sm:text-base"
                               placeholder="Enter LinkedIn profile URL"
                             />
                             {validationErrors.linkedIn && (
-                              <p className="text-[10px] sm:text-xs text-red-400 mt-1">{validationErrors.linkedIn}</p>
+                              <p className="text-[10px] sm:text-xs text-red-400 mt-1">
+                                {validationErrors.linkedIn}
+                              </p>
                             )}
                           </div>
                         ) : (
                           <span className="pt-2 text-sm sm:text-base">
                             {profileData.linkedIn ? (
-                              <a 
+                              <a
                                 href={profileData.linkedIn}
                                 target="_blank"
                                 rel="noopener noreferrer"
@@ -887,7 +1024,7 @@ export default function AlumniProfile() {
                                 LinkedIn Profile
                               </a>
                             ) : (
-                              'No LinkedIn profile added'
+                              "No LinkedIn profile added"
                             )}
                           </span>
                         )}
@@ -896,7 +1033,7 @@ export default function AlumniProfile() {
                   </motion.div>
                 )}
 
-                {selectedOption === 'educational' && (
+                {selectedOption === "educational" && (
                   <motion.div
                     key="educational"
                     initial={{ opacity: 0, x: 20 }}
@@ -907,52 +1044,88 @@ export default function AlumniProfile() {
                   >
                     <div className="space-y-4">
                       <div className="flex items-start gap-4 text-white/80">
-                        <GraduationCap className={`h-5 w-5 flex-shrink-0 ${isEditMode ? 'mt-[33px]' : 'mt-[10px]'}`} />
+                        <GraduationCap
+                          className={`h-5 w-5 flex-shrink-0 ${
+                            isEditMode ? "mt-[33px]" : "mt-[10px]"
+                          }`}
+                        />
                         {isEditMode ? (
                           <div className="flex-1">
-                            <label className="block text-sm font-medium text-white/90 mb-1">Graduation Year</label>
+                            <label className="block text-sm font-medium text-white/90 mb-1">
+                              Graduation Year
+                            </label>
                             <input
-                              type="number"
-                              min={FOUNDING_YEAR}
-                              max={CURRENT_YEAR}
-                              value={profileData.graduationYear || ''}
+                              type="text"
+                              value={profileData.graduationYear || ""}
                               onChange={(e) => {
-                                const value = parseInt(e.target.value);
-                                if (!value || (value >= FOUNDING_YEAR && value <= CURRENT_YEAR)) {
-                                  setProfileData(prev => ({ ...prev, graduationYear: value || undefined }));
-                                  handleValidation('graduationYear', value);
+                                const value = e.target.value;
+                                // Allow empty value or numbers between FOUNDING_YEAR and CURRENT_YEAR
+                                if (value === "" || /^\d{4}$/.test(value)) {
+                                  const year = parseInt(value);
+                                  if (
+                                    !year ||
+                                    (year >= FOUNDING_YEAR &&
+                                      year <= CURRENT_YEAR)
+                                  ) {
+                                    setProfileData((prev) => ({
+                                      ...prev,
+                                      graduationYear: year || undefined,
+                                    }));
+                                    handleValidation("graduationYear", year);
+                                  }
                                 }
                               }}
                               className="bg-white/10 text-white rounded-lg p-2 w-full max-w-md"
                               placeholder={`Enter graduation year (${FOUNDING_YEAR}-${CURRENT_YEAR})`}
                             />
+                            {validationErrors.graduationYear && (
+                              <p className="text-[10px] sm:text-xs text-red-400 mt-1">
+                                {validationErrors.graduationYear}
+                              </p>
+                            )}
                           </div>
                         ) : (
-                          <span className="pt-2">Class of {profileData.graduationYear || 'Not specified'}</span>
+                          <span className="pt-2">
+                            Class of{" "}
+                            {profileData.graduationYear || "Not specified"}
+                          </span>
                         )}
                       </div>
                       <div className="flex items-start gap-4 text-white/80">
-                        <Building2 className={`h-5 w-5 flex-shrink-0 ${isEditMode ? 'mt-[33px]' : 'mt-[10px]'}`} />
+                        <Building2
+                          className={`h-5 w-5 flex-shrink-0 ${
+                            isEditMode ? "mt-[33px]" : "mt-[10px]"
+                          }`}
+                        />
                         {isEditMode ? (
                           <div className="flex-1">
-                            <label className="block text-sm font-medium text-white/90 mb-1">Department</label>
+                            <label className="block text-sm font-medium text-white/90 mb-1">
+                              Department
+                            </label>
                             <input
                               type="text"
-                              value={profileData.department || ''}
-                              onChange={(e) => setProfileData(prev => ({ ...prev, department: e.target.value }))}
+                              value={profileData.department || ""}
+                              onChange={(e) =>
+                                setProfileData((prev) => ({
+                                  ...prev,
+                                  department: e.target.value,
+                                }))
+                              }
                               className="bg-white/10 text-white rounded-lg p-2 w-full max-w-md"
                               placeholder="Enter department"
                             />
                           </div>
                         ) : (
-                          <span className="pt-2">{profileData.department || 'No department added'}</span>
+                          <span className="pt-2">
+                            {profileData.department || "No department added"}
+                          </span>
                         )}
                       </div>
                     </div>
                   </motion.div>
                 )}
 
-                {selectedOption === 'professional' && (
+                {selectedOption === "professional" && (
                   <motion.div
                     key="professional"
                     initial={{ opacity: 0, x: 20 }}
@@ -963,55 +1136,92 @@ export default function AlumniProfile() {
                   >
                     <div className="space-y-4">
                       <div className="flex items-start gap-4 text-white/80">
-                        <Briefcase className={`h-5 w-5 flex-shrink-0 ${isEditMode ? 'mt-[33px]' : 'mt-[10px]'}`} />
+                        <Briefcase
+                          className={`h-5 w-5 flex-shrink-0 ${
+                            isEditMode ? "mt-[33px]" : "mt-[10px]"
+                          }`}
+                        />
                         {isEditMode ? (
                           <div className="flex-1">
-                            <label className="block text-sm font-medium text-white/90 mb-1">Current Position</label>
+                            <label className="block text-sm font-medium text-white/90 mb-1">
+                              Current Position
+                            </label>
                             <input
                               type="text"
-                              value={profileData.currentPosition || ''}
-                              onChange={(e) => setProfileData(prev => ({ ...prev, currentPosition: e.target.value }))}
+                              value={profileData.currentPosition || ""}
+                              onChange={(e) =>
+                                setProfileData((prev) => ({
+                                  ...prev,
+                                  currentPosition: e.target.value,
+                                }))
+                              }
                               className="bg-white/10 text-white rounded-lg p-2 w-full max-w-md"
                               placeholder="Enter current position"
                             />
                           </div>
                         ) : (
-                          <span className="pt-2">{profileData.currentPosition || 'No position added'}</span>
+                          <span className="pt-2">
+                            {profileData.currentPosition || "No position added"}
+                          </span>
                         )}
                       </div>
                       <div className="flex items-start gap-4 text-white/80">
-                        <Building2 className={`h-5 w-5 flex-shrink-0 ${isEditMode ? 'mt-[33px]' : 'mt-[10px]'}`} />
+                        <Building2
+                          className={`h-5 w-5 flex-shrink-0 ${
+                            isEditMode ? "mt-[33px]" : "mt-[10px]"
+                          }`}
+                        />
                         {isEditMode ? (
                           <div className="flex-1">
-                            <label className="block text-sm font-medium text-white/90 mb-1">Current Company</label>
+                            <label className="block text-sm font-medium text-white/90 mb-1">
+                              Current Company
+                            </label>
                             <input
                               type="text"
-                              value={profileData.currentCompany || ''}
-                              onChange={(e) => setProfileData(prev => ({ ...prev, currentCompany: e.target.value }))}
+                              value={profileData.currentCompany || ""}
+                              onChange={(e) =>
+                                setProfileData((prev) => ({
+                                  ...prev,
+                                  currentCompany: e.target.value,
+                                }))
+                              }
                               className="bg-white/10 text-white rounded-lg p-2 w-full max-w-md"
                               placeholder="Enter current company"
                             />
                           </div>
                         ) : (
-                          <span className="pt-2">{profileData.currentCompany || 'No company added'}</span>
+                          <span className="pt-2">
+                            {profileData.currentCompany || "No company added"}
+                          </span>
                         )}
                       </div>
                       <div className="flex items-start gap-4 text-white/80">
-                        <Linkedin className={`h-5 w-5 flex-shrink-0 ${isEditMode ? 'mt-[33px]' : 'mt-[10px]'}`} />
+                        <Linkedin
+                          className={`h-5 w-5 flex-shrink-0 ${
+                            isEditMode ? "mt-[33px]" : "mt-[10px]"
+                          }`}
+                        />
                         {isEditMode ? (
                           <div className="flex-1">
-                            <label className="block text-sm font-medium text-white/90 mb-1">LinkedIn Profile</label>
+                            <label className="block text-sm font-medium text-white/90 mb-1">
+                              LinkedIn Profile
+                            </label>
                             <input
                               type="url"
-                              value={profileData.linkedIn || ''}
-                              onChange={(e) => setProfileData(prev => ({ ...prev, linkedIn: e.target.value }))}
+                              value={profileData.linkedIn || ""}
+                              onChange={(e) =>
+                                setProfileData((prev) => ({
+                                  ...prev,
+                                  linkedIn: e.target.value,
+                                }))
+                              }
                               className="bg-white/10 text-white rounded-lg p-2 w-full max-w-md"
                               placeholder="Enter LinkedIn profile URL"
                             />
                           </div>
                         ) : (
                           <span className="pt-2">
-                            <a 
+                            <a
                               href={profileData.linkedIn}
                               target="_blank"
                               rel="noopener noreferrer"
@@ -1023,10 +1233,16 @@ export default function AlumniProfile() {
                         )}
                       </div>
                       <div className="flex items-start gap-4 text-white/80">
-                        <Globe className={`h-5 w-5 flex-shrink-0 ${isEditMode ? 'mt-[33px]' : 'mt-[10px]'}`} />
+                        <Globe
+                          className={`h-5 w-5 flex-shrink-0 ${
+                            isEditMode ? "mt-[33px]" : "mt-[10px]"
+                          }`}
+                        />
                         {isEditMode ? (
                           <div className="flex-1">
-                            <label className="block text-sm font-medium text-white/90 mb-1">Website</label>
+                            <label className="block text-sm font-medium text-white/90 mb-1">
+                              Website
+                            </label>
                             <input
                               type="url"
                               value={profileData.website || ''}
@@ -1035,6 +1251,7 @@ export default function AlumniProfile() {
                                 setProfileData(prev => ({ ...prev, website: value }));
                                 handleValidation('website', value);
                               }}
+
                               className="bg-white/10 text-white rounded-lg p-2 w-full max-w-md"
                               placeholder="Enter website URL"
                             />
@@ -1063,7 +1280,7 @@ export default function AlumniProfile() {
                   </motion.div>
                 )}
 
-                {selectedOption === 'biographical' && (
+                {selectedOption === "biographical" && (
                   <motion.div
                     key="biographical"
                     initial={{ opacity: 0, x: 20 }}
@@ -1075,20 +1292,31 @@ export default function AlumniProfile() {
                     <div className="space-y-4">
                       <div className="space-y-4">
                         <div className="flex items-start gap-4 text-white/80">
-                          <User className={`h-5 w-5 flex-shrink-0 ${isEditMode ? 'mt-[33px]' : 'mt-[10px]'}`} />
+                          <User
+                            className={`h-5 w-5 flex-shrink-0 ${
+                              isEditMode ? "mt-[33px]" : "mt-[10px]"
+                            }`}
+                          />
                           {isEditMode ? (
                             <div className="flex-1">
-                              <label className="block text-sm font-medium text-white/90 mb-1">Bio</label>
+                              <label className="block text-sm font-medium text-white/90 mb-1">
+                                Bio
+                              </label>
                               <textarea
-                                value={profileData.bio || ''}
-                                onChange={(e) => setProfileData(prev => ({ ...prev, bio: e.target.value }))}
+                                value={profileData.bio || ""}
+                                onChange={(e) =>
+                                  setProfileData((prev) => ({
+                                    ...prev,
+                                    bio: e.target.value,
+                                  }))
+                                }
                                 className="w-full h-32 bg-white/10 text-white rounded-lg p-3 resize-none"
                                 placeholder="Write something about yourself..."
                               />
                             </div>
                           ) : (
                             <p className="text-white/80 whitespace-pre-wrap">
-                              {profileData.bio || 'No bio available'}
+                              {profileData.bio || "No bio available"}
                             </p>
                           )}
                         </div>
@@ -1097,7 +1325,7 @@ export default function AlumniProfile() {
                   </motion.div>
                 )}
 
-                {selectedOption === 'security' && (
+                {selectedOption === "security" && (
                   <motion.div
                     key="security"
                     initial={{ opacity: 0, x: 20 }}
@@ -1125,12 +1353,16 @@ export default function AlumniProfile() {
                             </svg>
                           </div>
                           <div className="flex-1">
-                            <h3 className="text-lg font-medium text-white mb-2">Password Management</h3>
+                            <h3 className="text-lg font-medium text-white mb-2">
+                              Password Management
+                            </h3>
                             <p className="text-white/60 text-sm mb-4">
-                              Manage your password and security settings in the settings page. Keep your account secure by regularly updating your password.
+                              Manage your password and security settings in the
+                              settings page. Keep your account secure by
+                              regularly updating your password.
                             </p>
-                            <button 
-                              onClick={() => router.push('/alumni/settings')}
+                            <button
+                              onClick={() => router.push("/alumni/settings")}
                               className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-blue-600 text-white rounded-lg hover:from-indigo-600 hover:to-blue-700 transition-all duration-200 text-sm font-medium"
                             >
                               <span>Go to Settings</span>
@@ -1170,7 +1402,9 @@ export default function AlumniProfile() {
                             </svg>
                           </div>
                           <div>
-                            <h3 className="text-lg font-medium text-white mb-2">Security Tips</h3>
+                            <h3 className="text-lg font-medium text-white mb-2">
+                              Security Tips
+                            </h3>
                             <ul className="space-y-2 text-white/60 text-sm">
                               <li className="flex items-center gap-2">
                                 <span className="w-1.5 h-1.5 bg-blue-500 rounded-full"></span>

@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
 
         // Set viewport to desktop width
         await page.setViewport({ width: 1920, height: 1080 });
-        page.setDefaultNavigationTimeout(30000);
+        page.setDefaultNavigationTimeout(300000);
 
         await page.goto(`${process.env.NEXT_PUBLIC_APP_URL}/reports`, {
             waitUntil: "networkidle2",
