@@ -20,7 +20,9 @@ export default function EventsReports({ className }: EventsReportsProps) {
   const [events, setEvents] = useState<{ id: string; name: string }[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<string>("");
   const [eventsPerMonthData, setEventsPerMonthData] = useState<any>(null);
-  const [rsvpDataByEvent, setRsvpDataByEvent] = useState<Record<string, any>>({});
+  const [rsvpDataByEvent, setRsvpDataByEvent] = useState<Record<string, any>>(
+    {}
+  );
 
   useEffect(() => {
     async function fetchData() {
@@ -29,10 +31,12 @@ export default function EventsReports({ className }: EventsReportsProps) {
         const data = await res.json();
 
         // Build events list from rsvpStats
-        const fetchedEvents = data.rsvpStats.map((event: any, index: number) => ({
-          id: index.toString(),  // generate id based on index
-          name: event.name,
-        }));
+        const fetchedEvents = data.rsvpStats.map(
+          (event: any, index: number) => ({
+            id: index.toString(), // generate id based on index
+            name: event.name,
+          })
+        );
         setEvents(fetchedEvents);
 
         // Default select the first event
@@ -41,7 +45,20 @@ export default function EventsReports({ className }: EventsReportsProps) {
         }
 
         // Prepare bar chart data
-        const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const months = [
+          "Jan",
+          "Feb",
+          "Mar",
+          "Apr",
+          "May",
+          "Jun",
+          "Jul",
+          "Aug",
+          "Sep",
+          "Oct",
+          "Nov",
+          "Dec",
+        ];
         const eventsPerMonth = {
           labels: data.monthlyStats.map((item: any) => months[item.month - 1]),
           datasets: [
@@ -72,7 +89,6 @@ export default function EventsReports({ className }: EventsReportsProps) {
           };
         });
         setRsvpDataByEvent(rsvpByEvent);
-
       } catch (error) {
         console.error("Failed to fetch event reports:", error);
       }
@@ -103,11 +119,18 @@ export default function EventsReports({ className }: EventsReportsProps) {
             <div className="mt-2 text-black">
               <Select value={selectedEvent} onValueChange={setSelectedEvent}>
                 <SelectTrigger className="w-[220px] text-black bg-white">
-                  <SelectValue placeholder="Select Event" className="text-black bg-white" />
+                  <SelectValue
+                    placeholder="Select Event"
+                    className="text-black bg-white"
+                  />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="w-[220px] max-h-60 overflow-y-auto bg-white text-black border border-gray-200 shadow-lg">
                   {events.map((event) => (
-                    <SelectItem key={event.id} value={event.id} className="text-black bg-white">
+                    <SelectItem
+                      key={event.id}
+                      value={event.id}
+                      className="text-black bg-white hover:bg-gray-100"
+                    >
                       {event.name}
                     </SelectItem>
                   ))}
