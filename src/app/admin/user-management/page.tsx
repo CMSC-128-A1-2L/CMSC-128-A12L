@@ -4,7 +4,7 @@ import userData from "@/dummy_data/user.json";
 import PromoteUser from "../../components/promoteUser";
 import DeleteUser from "../../components/deleteUser";
 import { useSession } from "next-auth/react";
-import { Search, ChevronLeft, ChevronRight, Download, User, Mail, Shield, Users, FileCheck, ChevronDown } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, Download, User, Mail, Shield, Users, FileCheck, ChevronDown, Check } from "lucide-react";
 import { useState, useEffect } from "react";
 import FilterModal from "../../components/filterModal";
 import { motion } from 'framer-motion';
@@ -26,18 +26,17 @@ export default function UsersManagement(){
     const [isExporting, setIsExporting] = useState(false);
 
 
-      const getRole = (role: any) => {
-        if(role.includes(UserRole.ADMIN) && role.includes(UserRole.ALUMNI)){
-          return "Alumni Admin"
-        }
-        else if (role.includes(UserRole.ADMIN)){
-          return "Admin"
-        }
-        else if (role.includes(UserRole.ALUMNI)){
-          return "Alumni"
-        }
-        else{
-          return "Pending Verification"
+      const getRole = (role: UserRole[] | UserRole) => {
+        const roleArray = Array.isArray(role) ? role : [role];
+        
+        if (roleArray.includes(UserRole.ADMIN) && roleArray.includes(UserRole.ALUMNI)) {
+          return "Alumni Admin";
+        } else if (roleArray.includes(UserRole.ADMIN)) {
+          return "Admin";
+        } else if (roleArray.includes(UserRole.ALUMNI)) {
+          return "Alumni";
+        } else {
+          return "Pending Verification";
         }
     }
     const handleAccept = async (userId: string) => {
@@ -76,28 +75,24 @@ export default function UsersManagement(){
         }
     }
 
-    const handleDocumentDownload = async (url: string, fileName: string) => {
+    const handleDocumentDownload = async (url: string | undefined, fileName: string) => {
+        if (!url) {
+            console.error('Document URL is undefined');
+            return;
+        }
         try {
-            // Show loading state if needed
             const response = await fetch(url);
             if (!response.ok) throw new Error('Network response was not ok');
             
-            // Get the blob from the response
             const blob = await response.blob();
-            
-            // Create a blob URL
             const blobUrl = window.URL.createObjectURL(blob);
             
-            // Create a temporary link element
             const link = document.createElement('a');
             link.href = blobUrl;
-            link.download = `${fileName}.pdf`; // Force .pdf extension
-            
-            // Append to body, click, and remove
+            link.download = `${fileName}.pdf`;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            
             window.URL.revokeObjectURL(blobUrl);
         } catch (error) {
             console.error('Error downloading document:', error);
@@ -284,6 +279,9 @@ export default function UsersManagement(){
         }
     };
 
+    const isAdmin = (user: UserDto) => user.role === UserRole.ADMIN || (Array.isArray(user.role) && user.role.includes(UserRole.ADMIN));
+const isAlumni = (user: UserDto) => user.role === UserRole.ALUMNI || (Array.isArray(user.role) && user.role.includes(UserRole.ALUMNI));
+
     return (
         <div className="w-full px-2 sm:px-4 md:px-10">
             <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
@@ -341,29 +339,7 @@ export default function UsersManagement(){
                             </motion.button>
                         </div>
                     </div>
-
-                    {/* Tabs - Scrollable on mobile */}
-                    <div className="flex overflow-x-auto pb-2 mb-4 sm:mb-6 gap-2">
-                        {['All', 'Admin', 'Alumni', 'Alumni Admin'].map((tab) => (
-                            <motion.button
-                                key={tab}
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => {
-                                    setRoleFilter(tab);
-                                    setCurrentPage(1);
-                                }}
-                                className={`px-3 sm:px-4 py-2 rounded-lg whitespace-nowrap flex-shrink-0 cursor-pointer text-sm sm:text-base ${
-                                    roleFilter === tab 
-                                        ? 'bg-blue-600 text-white font-semibold' 
-                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                }`}
-                            >
-                                {tab}
-                            </motion.button>
-                        ))}
-                    </div>
-
+                    
                     {/* Search and Filter - Stack on mobile */}
                     <div className="flex flex-col sm:flex-row gap-3 mb-4 sm:mb-6">
                         <div className="relative flex-grow">
@@ -376,15 +352,51 @@ export default function UsersManagement(){
                                 onKeyDown={handleSearch}
                                 className="w-full pl-9 sm:pl-10 pr-4 py-2 rounded-lg bg-gray-100 text-gray-800 placeholder-gray-500 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                             />
+                        </div>                        <div className="relative">                            <motion.button
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                                onClick={() => setIsModalOpen(!isModalOpen)}
+                                className="relative bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-xl flex items-center justify-center cursor-pointer text-sm sm:text-base gap-2 shadow-sm"
+                            >
+                                <Shield className="w-4 h-4 text-gray-400" />
+                                {roleFilter === "All" ? "All Roles" : roleFilter}
+                                <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${isModalOpen ? 'rotate-180' : ''}`} />
+                            </motion.button>
+                            {/* Filter Dropdown */}
+                            {isModalOpen && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -10 }}
+                                    transition={{ duration: 0.2 }}
+                                    className="absolute right-0 mt-2 w-56 rounded-xl shadow-xl bg-white/95 backdrop-blur-sm border border-gray-200 z-50 overflow-hidden"
+                                >
+                                    <div className="py-1">
+                                        {['All', 'Admin', 'Alumni', 'Alumni Admin'].map((tab) => (
+                                            <motion.button
+                                                key={tab}
+                                                whileHover={{ backgroundColor: 'rgba(59, 130, 246, 0.05)' }}
+                                                onClick={() => {
+                                                    setRoleFilter(tab);
+                                                    setCurrentPage(1);
+                                                    setIsModalOpen(false);
+                                                }}
+                                                className={`flex items-center w-full px-4 py-2.5 text-sm ${
+                                                    roleFilter === tab
+                                                        ? 'bg-blue-50 text-blue-600 font-medium'
+                                                        : 'text-gray-700 hover:bg-gray-50'
+                                                }`}
+                                            >
+                                                <Shield className={`w-4 h-4 mr-2 ${
+                                                    roleFilter === tab ? 'text-blue-600' : 'text-gray-400'
+                                                }`} />
+                                                {tab}
+                                            </motion.button>
+                                        ))}
+                                    </div>
+                                </motion.div>
+                            )}
                         </div>
-                        <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            onClick={() => setIsModalOpen(true)}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-3 sm:px-4 py-2 rounded-lg flex items-center justify-center cursor-pointer text-sm sm:text-base"
-                        >
-                            Filters
-                        </motion.button>
                     </div>
 
                     {/* Mobile Card View for User Management */}
@@ -495,7 +507,9 @@ export default function UsersManagement(){
                                                     onClick={(e) => {
                                                         e.preventDefault();
                                                         const fileName = user.documentUrl?.split("/").pop()?.split(".")[0] || "document";
-                                                        handleDocumentDownload(user.documentUrl, fileName);
+                                                        if (user.documentUrl) {
+                                                            handleDocumentDownload(user.documentUrl, fileName);
+                                                        }
                                                     }}
                                                 >
                                                     View Verification Document
@@ -704,7 +718,9 @@ export default function UsersManagement(){
                                                         onClick={(e) => {
                                                             e.preventDefault();
                                                             const fileName = user.documentUrl?.split("/").pop()?.split(".")[0] || "document";
-                                                            handleDocumentDownload(user.documentUrl, fileName);
+                                                            if (user.documentUrl) {
+                                                                handleDocumentDownload(user.documentUrl, fileName);
+                                                            }
                                                         }}
                                                     >
                                                         View Verification Document
