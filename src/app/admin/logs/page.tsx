@@ -3,7 +3,25 @@ import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
 import { motion } from 'framer-motion';
 import { Search, Download, Calendar, User, Activity, Clock } from 'lucide-react';
-import { LogsDto } from "@/models/logs";
+import { LogSkeleton } from "./components/LogSkeleton";
+
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  DoubleArrowLeftIcon,
+  DoubleArrowRightIcon,
+} from "@radix-ui/react-icons";
+
+interface LogsDto {
+  // ...existing interface...
+}
+
+const tabs = ['ALL', 'INFO', 'WARNING', 'ERROR'];
+const dateRanges = [
+  { value: 'last7days', label: 'Last 7 Days' },
+  { value: 'last30days', label: 'Last 30 Days' },
+  { value: 'last90days', label: 'Last 90 Days' },
+];
 
 export default function AdminLogs() {
   const { data: session } = useSession();
@@ -12,16 +30,23 @@ export default function AdminLogs() {
   const [dateRange, setDateRange] = useState('last7days');
   const [logs, setLogs] = useState<LogsDto[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [filteredLogs, setFilteredLogs] = useState<LogsDto[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchLogs = async () => {
-      const response = await fetch("/api/admin/logs");
-      const data = await response.json();
-      console.log("The fetched logs are: ", data);
-      setLogs(data);
-      setFilteredLogs(data);
+      try {
+        setIsLoading(true);
+        const response = await fetch("/api/admin/logs");
+        const data = await response.json();
+        setLogs(data);
+        setFilteredLogs(data);
+      } catch (error) {
+        console.error("Error fetching logs:", error);
+      } finally {
+        setIsLoading(false);
+      }
     }
     fetchLogs();
   }, []);
@@ -207,124 +232,144 @@ export default function AdminLogs() {
           </div>
         </div>
 
-        {/* Mobile Card View */}
-        <div className="md:hidden space-y-3">
-          {currentItems.map((log) => (
-            <motion.div
-              key={log._id}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3 }}
-              className="bg-white rounded-lg shadow-sm p-3 space-y-2 border border-gray-100"
-            >
-              <div className="flex items-center space-x-3">
-                <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 bg-gray-100 rounded-full flex items-center justify-center">
-                  <User className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
-                </div>
-                <div>
-                  <div className="font-medium text-gray-900 text-sm sm:text-base">{log.name}</div>
-                  <div className="text-xs sm:text-sm text-gray-500">{log.ipAddress}</div>
-                </div>
-              </div>
-              <div className="flex items-center text-xs sm:text-sm text-gray-600">
-                <Activity className="w-4 h-4 mr-2 flex-shrink-0" />
-                <span className="truncate">{log.action}</span>
-              </div>
-              <div className="flex items-center text-xs sm:text-sm text-gray-600">
-                <Clock className="w-4 h-4 mr-2 flex-shrink-0" />
-                <span>{new Date(log.timestamp).toLocaleString()}</span>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Desktop Table View */}
-        <div className="hidden md:block overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timestamp</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">IP Address</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+        {isLoading ? (
+          <LogSkeleton />
+        ) : (
+          <>
+            {/* Mobile Card View */}
+            <div className="md:hidden space-y-3">
               {currentItems.map((log) => (
-                <motion.tr
+                <motion.div
                   key={log._id}
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ duration: 0.3 }}
+                  className="bg-white rounded-lg shadow-sm p-3 space-y-2 border border-gray-100"
                 >
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center">
-                      <div className="flex-shrink-0 h-10 w-10 bg-gray-100 rounded-full flex items-center justify-center">
-                        <User className="w-5 h-5 text-gray-600" />
-                      </div>
-                      <div className="ml-4">
-                        <div className="text-sm font-medium text-gray-900">{log.name}</div>
-                      </div>
+                  <div className="flex items-center space-x-3">
+                    <div className="flex-shrink-0 h-8 w-8 sm:h-10 sm:w-10 bg-gray-100 rounded-full flex items-center justify-center">
+                      <User className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
                     </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm text-gray-900">{log.action}</span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(log.timestamp).toLocaleString()}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {log.ipAddress}
-                  </td>
-                </motion.tr>
+                    <div>
+                      <div className="font-medium text-gray-900 text-sm sm:text-base">{log.name}</div>
+                      <div className="text-xs sm:text-sm text-gray-500">{log.ipAddress}</div>
+                    </div>
+                  </div>
+                  <div className="flex items-center text-xs sm:text-sm text-gray-600">
+                    <Activity className="w-4 h-4 mr-2 flex-shrink-0" />
+                    <span className="truncate">{log.action}</span>
+                  </div>
+                  <div className="flex items-center text-xs sm:text-sm text-gray-600">
+                    <Clock className="w-4 h-4 mr-2 flex-shrink-0" />
+                    <span>{new Date(log.timestamp).toLocaleString()}</span>
+                  </div>
+                </motion.div>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </div>
 
-        {/* Pagination */}
-        <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row items-center justify-between space-y-3 sm:space-y-0">
-          <div className="flex justify-center sm:justify-start space-x-2 w-full sm:w-auto order-2 sm:order-1">
-            <button
-              onClick={handlePreviousPage}
-              disabled={currentPage === 1}
-              className="px-3 py-1 text-sm rounded-md bg-gray-100 text-gray-700 disabled:opacity-50"
-            >
-              Prev
-            </button>
-            {getPageNumbers().map((number) => (
-              <button
-                key={number}
-                onClick={() => handlePageChange(number)}
-                className={`px-3 py-1 text-sm rounded-md ${
-                  currentPage === number
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700'
-                }`}
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timestamp</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">IP Address</th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {currentItems.map((log) => (
+                    <motion.tr
+                      key={log._id}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0 h-10 w-10 bg-gray-100 rounded-full flex items-center justify-center">
+                            <User className="w-5 h-5 text-gray-600" />
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900">{log.name}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <span className="text-sm text-gray-900">{log.action}</span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {new Date(log.timestamp).toLocaleString()}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {log.ipAddress}
+                      </td>
+                    </motion.tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}          {/* Pagination */}
+          <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row items-center justify-between space-y-3 sm:space-y-0">
+            <div className="flex justify-center sm:justify-start items-center bg-white/50 backdrop-blur-sm rounded-lg shadow-sm px-2 py-1 w-full sm:w-auto order-2 sm:order-1 gap-1.5">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setCurrentPage(1)}
+                disabled={currentPage === 1}
+                className="w-9 h-9 flex items-center justify-center rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50 disabled:hover:bg-gray-100"
               >
-                {number}
-              </button>
-            ))}
-            <button
-              onClick={handleNextPage}
-              disabled={currentPage === totalPages}
-              className="px-3 py-1 text-sm rounded-md bg-gray-100 text-gray-700 disabled:opacity-50"
-            >
-              Next
-            </button>
-            <button
-              onClick={handleLastPage}
-              disabled={currentPage === totalPages}
-              className="px-3 py-1 text-sm rounded-md bg-gray-100 text-gray-700 disabled:opacity-50"
-            >
-              Last
-            </button>
+                <DoubleArrowLeftIcon className="h-4 w-4" />
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handlePreviousPage}
+                disabled={currentPage === 1}
+                className="w-9 h-9 flex items-center justify-center rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50 disabled:hover:bg-gray-100"
+              >
+                <ChevronLeftIcon className="h-4 w-4" />
+              </motion.button>
+              {getPageNumbers().map((number) => (
+                <motion.button
+                  key={number}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => handlePageChange(number)}
+                  className={`w-9 h-9 flex items-center justify-center text-sm font-medium rounded-md ${
+                    currentPage === number
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {number}
+                </motion.button>
+              ))}
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleNextPage}
+                disabled={currentPage === totalPages}
+                className="w-9 h-9 flex items-center justify-center rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50 disabled:hover:bg-gray-100"
+              >
+                <ChevronRightIcon className="h-4 w-4" />
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={handleLastPage}
+                disabled={currentPage === totalPages}
+                className="w-9 h-9 flex items-center justify-center rounded-md bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50 disabled:hover:bg-gray-100"
+              >
+                <DoubleArrowRightIcon className="h-4 w-4" />
+              </motion.button>
+            </div>
+            <div className="text-sm text-gray-500 order-1 sm:order-2">
+              Showing <span className="font-medium text-gray-700">{indexOfFirstItem + 1}</span> to <span className="font-medium text-gray-700">{Math.min(indexOfLastItem, filteredLogs.length)}</span> of <span className="font-medium text-gray-700">{filteredLogs.length}</span> entries
+            </div>
           </div>
-          <div className="text-sm text-gray-500 order-1 sm:order-2">
-            Showing {indexOfFirstItem + 1} to {Math.min(indexOfLastItem, filteredLogs.length)} of {filteredLogs.length} entries
-          </div>
-        </div>
-
       </motion.div>
     </div>
   );
