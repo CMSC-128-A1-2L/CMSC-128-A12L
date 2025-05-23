@@ -63,10 +63,10 @@ export default function UsersManagement(){
     const [alumniUsers, setAlumniUsers] = useState<UserDto[]>([]);
     const [pendingVerificationUsers, setPendingVerificationUsers] = useState<UserDto[]>([]);
     const [activeSection, setActiveSection] = useState<'users' | 'pending'>('users');
+    const [isExporting, setIsExporting] = useState(false);
 
 
-    
-    const getRole = (role: any) => {
+      const getRole = (role: any) => {
         if(role.includes(UserRole.ADMIN) && role.includes(UserRole.ALUMNI)){
           return "Alumni Admin"
         }
@@ -79,7 +79,7 @@ export default function UsersManagement(){
         else{
           return "Pending Verification"
         }
-      }
+    }
     const handleAccept = async (userId: string) => {
         console.log(userId);
         const response = await fetch(`/api/admin/users/${userId}`, {
@@ -253,6 +253,77 @@ export default function UsersManagement(){
         return pageNumbers;
     };
 
+    // Handle export functionality
+    const handleExport = async () => {
+        try {
+            setIsExporting(true);
+            // Create CSV headers
+            const headers = [
+                "Name",
+                "Email",
+                "Role",
+                "Status",
+                "Graduation Year",
+                "Department",
+                "Current Company",
+                "Current Position",
+                "Location",
+                "LinkedIn"
+            ].join(",");
+
+            // Convert user data to CSV rows
+            const csvRows = filteredUsers.map(user => {                const row = [
+                    user.name,
+                    user.email,
+                    getRole(user.role),
+                    user.alumniStatus,
+                    user.graduationYear || "",
+                    user.department || "",
+                    user.currentCompany || "",
+                    user.currentPosition || "",
+                    user.currentLocation || "",
+                    user.linkedIn || ""
+                ].map(value => `"${String(value || "").replace(/"/g, '""')}"`); // Convert to string before using replace
+                return row.join(",");
+            });
+
+            // Combine headers and rows
+            const csvContent = [headers, ...csvRows].join("\n");
+
+            // Create blob and download
+            const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+            const link = document.createElement("a");
+            const url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", `alumni_data_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            
+            // Create success notification
+            createNotification({
+                type: "Success",
+                entity: session?.user.id || "",
+                userId: session?.user.id || "",
+                customMessage: "User data has been exported successfully!"
+            });
+            
+        } catch (error) {
+            console.error('Error exporting data:', error);
+            // Create error notification
+            createNotification({
+                type: "Error",
+                entity: session?.user.id || "",
+                userId: session?.user.id || "",
+                customMessage: "Failed to export user data. Please try again."
+            });
+        } finally {
+            setIsExporting(false);
+        }
+    };
+
     return (
         <div className="w-full px-2 sm:px-4 md:px-10">
             <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
@@ -301,10 +372,12 @@ export default function UsersManagement(){
                             <motion.button
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
-                                className="bg-blue-600 hover:bg-blue-700 text-white px-3 sm:px-4 py-2 rounded-lg flex items-center w-full md:w-auto justify-center cursor-pointer text-sm sm:text-base"
+                                onClick={handleExport}
+                                disabled={isExporting}
+                                className="bg-blue-600 hover:bg-blue-700 text-white px-3 sm:px-4 py-2 rounded-lg flex items-center w-full md:w-auto justify-center cursor-pointer text-sm sm:text-base disabled:bg-blue-400 disabled:cursor-not-allowed"
                             >
-                                <Download className="w-4 h-4 mr-2" />
-                                Export
+                                <Download className={`w-4 h-4 mr-2 ${isExporting ? 'animate-bounce' : ''}`} />
+                                {isExporting ? 'Exporting...' : 'Export'}
                             </motion.button>
                         </div>
                     </div>
