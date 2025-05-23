@@ -24,6 +24,8 @@ interface DashboardStats {
 
 export default function AdminDashboard() {
   const [selectedActivity, setSelectedActivity] = useState<ActivityItem | null>(null);
+  const [isLoadingStats, setIsLoadingStats] = useState(true);
+  const [isLoadingActivities, setIsLoadingActivities] = useState(true);
   const [stats, setStats] = useState<DashboardStats>({
     numberOfAlumni: 0,
     numberOfNewUsers: 0,
@@ -34,6 +36,7 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     async function fetchDashboardStats() {
+      setIsLoadingStats(true);
       try {
         const res = await fetch('/api/reports/admin-dashboard');
         if (!res.ok) throw new Error("Failed to fetch dashboard stats");
@@ -41,6 +44,8 @@ export default function AdminDashboard() {
         setStats(data);
       } catch (error) {
         console.error("Dashboard stats fetch error:", error);
+      } finally {
+        setIsLoadingStats(false);
       }
     }
 
@@ -49,48 +54,51 @@ export default function AdminDashboard() {
 
   const [activities, setActivities] = useState<ActivityItem[]>([]);
 
-useEffect(() => {
-  async function fetchActivities() {
-    try {
-      const res = await fetch('/api/reports/recent-activity');
-      if (!res.ok) throw new Error("Failed to fetch recent activities");
-      const data = await res.json();
+  useEffect(() => {
+    async function fetchActivities() {
+      setIsLoadingActivities(true);
+      try {
+        const res = await fetch('/api/reports/recent-activity');
+        if (!res.ok) throw new Error("Failed to fetch recent activities");
+        const data = await res.json();
 
-      const mappedActivities: ActivityItem[] = data.map((item: any) => {
-        let color = "";
-        switch (item.classifier) {
-          case 1:
-            color = "bg-blue-500";
-            break;
-          case 2:
-            color = "bg-green-500";
-            break;
-          case 3:
-            color = "bg-yellow-500";
-            break;
-        }
+        const mappedActivities: ActivityItem[] = data.map((item: any) => {
+          let color = "";
+          switch (item.classifier) {
+            case 1:
+              color = "bg-blue-500";
+              break;
+            case 2:
+              color = "bg-green-500";
+              break;
+            case 3:
+              color = "bg-yellow-500";
+              break;
+          }
 
-        return {
-          id: item.id,
-          title: item.heading,
-          content: item.message,
-          timestamp: item.timestamp,
-          color
-        };
-      });
+          return {
+            id: item.id,
+            title: item.heading,
+            content: item.message,
+            timestamp: item.timestamp,
+            color
+          };
+        });
 
-      setActivities(mappedActivities);
-    } catch (error) {
-      console.error("Activities fetch error:", error);
+        setActivities(mappedActivities);
+      } catch (error) {
+        console.error("Activities fetch error:", error);
+      } finally {
+        setIsLoadingActivities(false);
+      }
     }
-  }
 
-  fetchActivities();
-}, []);
+    fetchActivities();
+  }, []);
 
-const handleExportToPDF = () => {
-  setIsDownloadModalOpen(true);
-};
+  const handleExportToPDF = () => {
+    setIsDownloadModalOpen(true);
+  };
 
   return (
     <div className="px-4 sm:px-6 md:px-8 py-4 sm:py-6">
@@ -101,24 +109,38 @@ const handleExportToPDF = () => {
         <div className="relative z-10">
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white text-center">Welcome, Admin</h1>
         </div>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-4 sm:mb-6">
+      </div>      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-4 sm:mb-6">
         <div className="bg-white rounded-xl p-4 shadow-md">
           <h2 className="text-lg sm:text-xl font-semibold mb-2 text-black">Total Alumni</h2>
-          <p className="text-2xl sm:text-3xl font-bold text-black">{stats.numberOfAlumni}</p>
+          {isLoadingStats ? (
+            <div className="h-9 bg-gray-200 rounded animate-pulse"></div>
+          ) : (
+            <p className="text-2xl sm:text-3xl font-bold text-black">{stats.numberOfAlumni}</p>
+          )}
         </div>
         <div className="bg-white rounded-xl p-4 shadow-md">
           <h2 className="text-lg sm:text-xl font-semibold mb-2 text-black">Active Jobs</h2>
-          <p className="text-2xl sm:text-3xl font-bold text-black">{stats.numberOfOpportunities}</p>
+          {isLoadingStats ? (
+            <div className="h-9 bg-gray-200 rounded animate-pulse"></div>
+          ) : (
+            <p className="text-2xl sm:text-3xl font-bold text-black">{stats.numberOfOpportunities}</p>
+          )}
         </div>
         <div className="bg-white rounded-xl p-4 shadow-md">
           <h2 className="text-lg sm:text-xl font-semibold mb-2 text-black">Upcoming Events</h2>
-          <p className="text-2xl sm:text-3xl font-bold text-black">{stats.numberOfUpcomingEvents}</p>
+          {isLoadingStats ? (
+            <div className="h-9 bg-gray-200 rounded animate-pulse"></div>
+          ) : (
+            <p className="text-2xl sm:text-3xl font-bold text-black">{stats.numberOfUpcomingEvents}</p>
+          )}
         </div>
         <div className="bg-white rounded-xl p-4 shadow-md">
           <h2 className="text-lg sm:text-xl font-semibold mb-2 text-black">New Users</h2>
-          <p className="text-2xl sm:text-3xl font-bold text-black">{stats.numberOfNewUsers}</p>
+          {isLoadingStats ? (
+            <div className="h-9 bg-gray-200 rounded animate-pulse"></div>
+          ) : (
+            <p className="text-2xl sm:text-3xl font-bold text-black">{stats.numberOfNewUsers}</p>
+          )}
         </div>
       </div>
 
@@ -160,21 +182,39 @@ const handleExportToPDF = () => {
 
         <div className="bg-white rounded-xl p-4 shadow-md flex flex-col min-h-[300px] sm:h-[400px]">
           <h2 className="text-xl sm:text-2xl font-semibold mb-4 text-black">Recent Activity</h2>
-          <div className="border-b-2 border-gray-800 mb-4"></div>
-          <div className="flex flex-col space-y-3 sm:space-y-4 overflow-y-auto flex-grow">
-            {activities.map((activity) => (
-              <div
-                key={activity.id}
-                onClick={() => setSelectedActivity(activity)}
-                className="bg-gray-50 rounded-lg p-3 sm:p-4 cursor-pointer hover:bg-gray-100 transition-colors"
-              >
-                <div className="flex items-center space-x-3">
-                  <div className={`w-2 h-2 rounded-full ${activity.color}`}></div>
-                  <p className="text-sm font-medium text-black">{activity.title}</p>
+          <div className="border-b-2 border-gray-800 mb-4"></div>          <div className="flex flex-col space-y-3 sm:space-y-4 overflow-y-auto flex-grow">
+            {isLoadingActivities ? (
+              // Loading skeleton
+              [...Array(5)].map((_, index) => (
+                <div key={index} className="animate-pulse">
+                  <div className="bg-gray-200 rounded-lg p-3 sm:p-4">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-2 h-2 rounded-full bg-gray-300"></div>
+                      <div className="h-4 bg-gray-300 rounded w-3/4"></div>
+                    </div>
+                    <div className="h-3 bg-gray-300 rounded w-1/4 mt-2"></div>
+                  </div>
                 </div>
-                <p className="text-xs text-black mt-1">{activity.timestamp}</p>
+              ))
+            ) : activities.length > 0 ? (
+              activities.map((activity) => (
+                <div
+                  key={activity.id}
+                  onClick={() => setSelectedActivity(activity)}
+                  className="bg-gray-50 rounded-lg p-3 sm:p-4 cursor-pointer hover:bg-gray-100 transition-colors"
+                >
+                  <div className="flex items-center space-x-3">
+                    <div className={`w-2 h-2 rounded-full ${activity.color}`}></div>
+                    <p className="text-sm font-medium text-black">{activity.title}</p>
+                  </div>
+                  <p className="text-xs text-black mt-1">{activity.timestamp}</p>
+                </div>
+              ))
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                No recent activities
               </div>
-            ))}
+            )}
           </div>
         </div>
       </div>
