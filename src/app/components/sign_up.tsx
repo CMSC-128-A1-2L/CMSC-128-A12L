@@ -20,44 +20,98 @@ export default function SignUp() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
     
+    // First Name validation
     if (!formData.firstName.trim()) {
       newErrors.firstName = 'First name is required';
+    } else if (formData.firstName.trim().length > 50) {
+      newErrors.firstName = 'First name must be 50 characters or less';
+    } else if (!/^[a-zA-ZÀ-ÿ\s\-']+$/.test(formData.firstName.trim())) {
+      newErrors.firstName = 'First name can only contain letters, spaces, hyphens, and apostrophes';
     }
 
+    // Last Name validation
     if (!formData.lastName.trim()) {
       newErrors.lastName = 'Last name is required';
+    } else if (formData.lastName.trim().length > 50) {
+      newErrors.lastName = 'Last name must be 50 characters or less';
+    } else if (!/^[a-zA-ZÀ-ÿ\s\-']+$/.test(formData.lastName.trim())) {
+      newErrors.lastName = 'Last name can only contain letters, spaces, hyphens, and apostrophes';
     }
 
+    // Email validation
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    } else if (formData.email.trim().length > 100) {
+      newErrors.email = 'Email must be 100 characters or less';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
       newErrors.email = 'Please enter a valid email address';
+    } else if (!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(formData.email.trim())) {
+      newErrors.email = 'Please enter a valid email format';
+    } else {
+      // Check for common education domains
+      const emailDomain = formData.email.toLowerCase().split('@')[1];
+      const eduDomains = ['up.edu.ph', 'uplb.edu.ph', 'sti.edu.ph', 'admu.edu.ph', 'dlsu.edu.ph', 'ust.edu.ph'];
+      if (!eduDomains.includes(emailDomain)) {
+        newErrors.email = 'Please use your educational institution email address';
+      }
     }
 
+    // Password validation with comprehensive checks
     if (!formData.password) {
       newErrors.password = 'Password is required';
-    } else if (formData.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters long';
-    } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
-      newErrors.password = 'Password must contain at least one uppercase letter, one lowercase letter, and one number';
+    } else {
+      const passwordErrors = [];
+      if (formData.password.length < 8) {
+        passwordErrors.push('at least 8 characters');
+      }
+      if (formData.password.length > 128) {
+        passwordErrors.push('no more than 128 characters');
+      }
+      if (!/(?=.*[a-z])/.test(formData.password)) {
+        passwordErrors.push('one lowercase letter');
+      }
+      if (!/(?=.*[A-Z])/.test(formData.password)) {
+        passwordErrors.push('one uppercase letter');
+      }
+      if (!/(?=.*\d)/.test(formData.password)) {
+        passwordErrors.push('one number');
+      }
+      if (!/(?=.*[!@#$%^&*])/.test(formData.password)) {
+        passwordErrors.push('one special character (!@#$%^&*)');
+      }
+      if (/\s/.test(formData.password)) {
+        passwordErrors.push('no spaces');
+      }
+      
+      if (passwordErrors.length > 0) {
+        newErrors.password = `Password must contain ${passwordErrors.join(', ')}`;
+      }
     }
 
     if (!formData.confirmPassword) {
       newErrors.confirmPassword = 'Please confirm your password';
     } else if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match';
-    }
-
+    }    // PDF file validation with comprehensive checks
     if (!pdfFile) {
       newErrors.pdfFile = 'PDF document is required for registration';
     } else if (pdfFile.type !== 'application/pdf') {
       newErrors.pdfFile = 'Please upload a valid PDF file';
     } else if (pdfFile.size > 5 * 1024 * 1024) { // 5MB limit
       newErrors.pdfFile = 'PDF file size must be less than 5MB';
+    } else if (pdfFile.size < 1024) { // 1KB minimum
+      newErrors.pdfFile = 'PDF file seems too small to be valid';
+    } else {
+      // Check file name format: SurnameInitials_AlumniVerification.pdf
+      const fileName = pdfFile.name;
+      if (!fileName.toLowerCase().endsWith('.pdf')) {
+        newErrors.pdfFile = 'File must have a .pdf extension';
+      } else if (!/^[A-Z][a-z]+[A-Z]+_AlumniVerification\.pdf$/.test(fileName)) {
+        newErrors.pdfFile = 'File name must follow the format: SurnameInitials_AlumniVerification.pdf (e.g., SmithJD_AlumniVerification.pdf)';
+      }
     }
 
     setErrors(newErrors);
@@ -67,10 +121,51 @@ export default function SignUp() {
   // this function is used to handle the change of the input fields
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-    // Clear error when user starts typing
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
+    
+    // Real-time input sanitization
+    let sanitizedValue = value;
+    if (name === 'firstName' || name === 'lastName') {
+      // Remove any characters that aren't letters, spaces, hyphens, or apostrophes
+      sanitizedValue = value.replace(/[^a-zA-ZÀ-ÿ\s\-']/g, '');
+    } else if (name === 'email') {
+      // Convert to lowercase and remove spaces
+      sanitizedValue = value.toLowerCase().trim();
+    } else if (name === 'password' || name === 'confirmPassword') {
+      // Remove spaces from passwords
+      sanitizedValue = value.replace(/\s/g, '');
+    }
+
+    setFormData(prev => ({ ...prev, [name]: sanitizedValue }));
+
+    // Clear existing error for this field
+    setErrors(prev => ({ ...prev, [name]: '' }));
+
+    // Perform real-time validation
+    const newErrors: Record<string, string> = {};
+    
+    if (name === 'firstName' || name === 'lastName') {
+      if (sanitizedValue.length > 50) {
+        newErrors[name] = `${name === 'firstName' ? 'First' : 'Last'} name must be 50 characters or less`;
+      }
+    } else if (name === 'email') {
+      if (sanitizedValue.length > 100) {
+        newErrors.email = 'Email must be 100 characters or less';
+      } else if (sanitizedValue && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(sanitizedValue)) {
+        newErrors.email = 'Please enter a valid email address';
+      }
+    } else if (name === 'password') {
+      if (sanitizedValue.length > 0 && sanitizedValue.length < 8) {
+        newErrors.password = 'Password must be at least 8 characters';
+      }
+    } else if (name === 'confirmPassword') {
+      if (sanitizedValue !== formData.password) {
+        newErrors.confirmPassword = 'Passwords do not match';
+      }
+    }
+
+    // Update errors state with any new errors
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(prev => ({ ...prev, ...newErrors }));
     }
   };
 
@@ -133,7 +228,7 @@ export default function SignUp() {
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">
       {/* Left Panel - Dark Blue - Hidden on mobile */}
-      <div className="hidden lg:block w-full lg:w-1/2 bg-[#1a1f4d] flex flex-col items-center justify-center p-6 lg:p-12 relative overflow-hidden min-h-[300px] lg:min-h-screen">
+      <div className="hidden lg:flex w-full lg:w-1/2 bg-[#1a1f4d] flex-col items-center justify-center p-6 lg:p-12 relative overflow-hidden min-h-[300px] lg:min-h-screen">
         <div className="absolute inset-0 w-full h-full overflow-hidden">
           <ConstellationBackground customWidth={true} />
         </div>
