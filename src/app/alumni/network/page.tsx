@@ -407,7 +407,7 @@ export default function AlumniPage() {
             {/* Clear All Button */}
             <button
               onClick={clearFilters}
-              className="px-4 py-2 bg-white/10 backdrop-blur-sm hover:bg-white/20 rounded-lg text-white border border-white/20 transition-colors cursor-pointer"
+              className="px-4 py-2 bg-blue-600/30 hover:bg-blue-600/40 rounded-lg text-white border border-blue-400/50 transition-colors cursor-pointer"
             >
               Clear All
             </button>
