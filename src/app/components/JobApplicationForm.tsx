@@ -5,6 +5,18 @@ import { X, Upload, Briefcase } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
 
+// Helper function to validate file type
+const isValidFileType = (file: File): boolean => {
+  const validTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+  return validTypes.includes(file.type);
+};
+
+// Helper function to validate file size
+const isValidFileSize = (file: File): boolean => {
+  const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+  return file.size <= maxSize;
+};
+
 interface JobApplicationFormProps {
   jobId: string;
   jobTitle: string;
@@ -30,6 +42,7 @@ export default function JobApplicationForm({
     portfolio: ''
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Add useEffect to handle modal visibility
   useEffect(() => {
@@ -37,48 +50,94 @@ export default function JobApplicationForm({
     if (modal) {
       modal.showModal();
     }
+    return () => {
+      // Cleanup any file preview URLs
+      if (formData.resumeUrl && formData.resumeUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(formData.resumeUrl);
+      }
+    };
   }, []);
+
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {};
+    
+    if (!formData.fullName.trim()) newErrors.fullName = 'Full name is required';
+    if (!formData.email.trim()) newErrors.email = 'Email is required';
+    if (!formData.phone.trim()) newErrors.phone = 'Phone number is required';
+    if (!formData.coverLetter.trim()) newErrors.coverLetter = 'Cover letter is required';
+    if (!selectedFile) newErrors.resume = 'Resume is required';
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Validate file type
-    if (!file.type.includes('pdf') && !file.type.includes('document')) {
-      toast.error('Please upload a PDF or Word document');
+    if (!file) {
+      toast.error('Please select a file');
       return;
     }
 
-    // Validate file size (5MB)
-    if (file.size > 5 * 1024 * 1024) {
+    // Clear previous selection
+    setSelectedFile(null);
+    setFormData(prev => ({ ...prev, resumeUrl: '' }));
+
+    // Validate file type
+    if (!isValidFileType(file)) {
+      toast.error('Please upload a PDF or Word document (doc/docx)');
+      e.target.value = ''; // Reset file input
+      return;
+    }
+
+    // Validate file size
+    if (!isValidFileSize(file)) {
       toast.error('File size must be less than 5MB');
+      e.target.value = ''; // Reset file input
       return;
     }
 
     setSelectedFile(file);
     // Create a temporary URL for preview
-    setFormData(prev => ({ ...prev, resumeUrl: URL.createObjectURL(file) }));
+    const previewUrl = URL.createObjectURL(file);
+    setFormData(prev => ({ ...prev, resumeUrl: previewUrl }));
+    setErrors(prev => ({ ...prev, resume: '' }));
+    toast.success('Resume selected successfully');
   };
-
   const uploadResume = async (file: File): Promise<string> => {
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await fetch('/api/cloudinary/upload_resume', {
-      method: 'POST',
-      body: formData
-    });
+    try {
+      const response = await fetch('/api/cloudinary/upload_resume', {
+        method: 'POST',
+        body: formData
+      });
 
-    if (!response.ok) {
-      throw new Error('Failed to upload resume');
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to upload resume');
+      }
+
+      if (!data.url) {
+        throw new Error('No URL received from file upload');
+      }
+
+      return data.url;
+    } catch (error: any) {
+      console.error('Resume upload error:', error);
+      // Show error toast to user
+      toast.error(error.message || 'Failed to upload resume. Please try again.');
+      throw error;
     }
-
-    const data = await response.json();
-    return data.url;
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
+
     if (!selectedFile) {
       toast.error('Please upload your resume');
       return;
@@ -86,9 +145,22 @@ export default function JobApplicationForm({
 
     try {
       setLoading(true);
+      let resumeUrl;
 
-      // First upload the resume to Cloudinary
-      const resumeUrl = await uploadResume(selectedFile);
+      try {
+        // First upload the resume to Cloudinary
+        resumeUrl = await uploadResume(selectedFile);
+      } catch (error) {
+        // Error is already shown by uploadResume function
+        setLoading(false);
+        return;
+      }
+
+      if (!resumeUrl) {
+        toast.error('Failed to upload resume. Please try again.');
+        setLoading(false);
+        return;
+      }
       
       // Then submit the application with the Cloudinary URL
       const response = await fetch('/api/alumni/applications', {
@@ -98,18 +170,19 @@ export default function JobApplicationForm({
         },
         body: JSON.stringify({
           jobId,
-          coverLetter: formData.coverLetter,
+          coverLetter: formData.coverLetter.trim(),
           resume: resumeUrl,
-          fullName: formData.fullName,
-          email: formData.email,
-          phone: formData.phone,
-          portfolio: formData.portfolio
+          fullName: formData.fullName.trim(),
+          email: formData.email.trim(),
+          phone: formData.phone.trim(),
+          portfolio: formData.portfolio?.trim() || ''
         }),
       });
 
+      const responseData = await response.json();
+      
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to submit application');
+        throw new Error(responseData.error || 'Failed to submit application');
       }
 
       toast.success('Application submitted successfully');
@@ -117,7 +190,7 @@ export default function JobApplicationForm({
       onClose();
     } catch (error: any) {
       console.error('Error submitting application:', error);
-      toast.error(error.message || 'Failed to submit application');
+      toast.error(error.message || 'Failed to submit application. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -235,6 +308,7 @@ export default function JobApplicationForm({
                     'PDF, DOC, DOCX up to 5MB'
                   )}
                 </p>
+                {errors.resume && <p className="text-red-500 text-xs">{errors.resume}</p>}
               </div>
             </div>
           </div>
