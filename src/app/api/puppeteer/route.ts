@@ -1,32 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import chromium from "@sparticuz/chromium-min";
-import puppeteerCore, { Browser } from "puppeteer-core";
+import puppeteer from "puppeteer";
+import puppeteerCore from "puppeteer-core";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-
-const remoteExecutablePath =
- "https://github.com/Sparticuz/chromium/releases/download/v121.0.0/chromium-v121.0.0-pack.tar";let browser: Browser;
-async function getBrowser() {
-
-    if (browser) {
-        return browser;
-    }
-
-    if (process.env.NEXT_PUBLIC_VERCEL_ENVIRONMENT === "production") {
-        browser = await puppeteerCore.launch({
-            args: chromium.args,
-            executablePath: await chromium.executablePath(remoteExecutablePath),
-            headless: true,
-        });
-    } else {
-        browser = await puppeteerCore.launch({
-            args: ["--no-sandbox", "--disable-setuid-sandbox"],
-            headless: true,
-        });
-    }
-
-    return browser;
-}
 
 export async function GET(req: NextRequest) {
     const session = await getServerSession(authOptions);
@@ -42,9 +18,12 @@ export async function GET(req: NextRequest) {
         );
     }
 
-    
+    let browser;
     try {
-        const browser = await getBrowser();
+        browser = await puppeteer.launch({
+            headless: true,
+            args: ['--no-sandbox', '--disable-setuid-sandbox'],
+        });
         const page = await browser.newPage();
 
         // Set viewport to desktop width
