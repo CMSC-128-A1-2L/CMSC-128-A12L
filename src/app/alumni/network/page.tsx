@@ -5,7 +5,7 @@ import { FiFilter, FiUsers, FiMapPin, FiBriefcase, FiCalendar } from "react-icon
 import { IoIosArrowForward, IoIosArrowBack } from "react-icons/io";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { Search } from "lucide-react";
+import { Search, ChevronDown } from "lucide-react";
 import ConstellationBackground from "@/app/components/constellationBackground";
 
 type Alumni = {
@@ -28,14 +28,15 @@ export default function AlumniPage() {
   const router = useRouter();
   const [search, setSearch] = useState("");
   const [selectedFilter, setSelectedFilter] = useState({
-    department: "",
-    graduationYear: "",
-    currentLocation: "",
-    currentCompany: "",
+    department: [] as string[],
+    graduationYear: [] as string[],
+    currentLocation: [] as string[],
+    currentCompany: [] as string[],
   });
   const [currentPage, setCurrentPage] = useState(1);
   const [pageInput, setPageInput] = useState("1");
   const [showFilter, setShowFilter] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [alumni, setAlumni] = useState<Alumni[]>([]);
   const [loading, setLoading] = useState(true);
   const itemsPerPage = 10;
@@ -58,10 +59,11 @@ export default function AlumniPage() {
     };
     fetchAlumni();
   }, []);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setShowFilter(false);
+        setActiveDropdown(null);
       }
     };
 
@@ -75,22 +77,61 @@ export default function AlumniPage() {
     setPageInput(currentPage.toString());
   }, [currentPage]);
 
-  // filters 
+  // Handle dropdown toggle
+  const toggleDropdown = (dropdown: string) => {
+    if (activeDropdown === dropdown) {
+      setActiveDropdown(null);
+    } else {
+      setActiveDropdown(dropdown);
+    }
+  };
+
+  // Handle multi-select for filter options
+  const toggleFilterOption = (category: keyof typeof selectedFilter, value: string) => {
+    const currentSelections = [...selectedFilter[category]];
+    
+    if (currentSelections.includes(value)) {
+      // Remove if already selected
+      const newSelections = currentSelections.filter(item => item !== value);
+      setSelectedFilter({
+        ...selectedFilter,
+        [category]: newSelections
+      });
+    } else {
+      // Add if not selected
+      setSelectedFilter({
+        ...selectedFilter,
+        [category]: [...currentSelections, value]
+      });
+    }
+  };
+
+  // Check if a filter option is selected
+  const isOptionSelected = (category: keyof typeof selectedFilter, value: string) => {
+    return selectedFilter[category].includes(value);
+  };
+
+  // Updated filters logic for multi-select
   const filteredAlumni = alumni.filter((alumni) => {
     const fullName = `${alumni.name}`.toLowerCase();
     const searchMatch = fullName.includes(search.toLowerCase());
+    
     const departmentMatch =
-    selectedFilter.department === "" ||
-    alumni.department?.toLowerCase() === selectedFilter.department?.toLowerCase()
+      selectedFilter.department.length === 0 || 
+      (alumni.department && selectedFilter.department.includes(alumni.department));
+    
     const yearMatch =
-      selectedFilter.graduationYear === "" ||
-      alumni.graduationYear?.toString() === selectedFilter.graduationYear;
+      selectedFilter.graduationYear.length === 0 ||
+      (alumni.graduationYear && selectedFilter.graduationYear.includes(alumni.graduationYear.toString()));
+    
     const locationMatch =
-      selectedFilter.currentLocation === "" ||
-      alumni.currentLocation?.toLowerCase() === selectedFilter.currentLocation.toLowerCase();
+      selectedFilter.currentLocation.length === 0 ||
+      (alumni.currentLocation && selectedFilter.currentLocation.includes(alumni.currentLocation));
+    
     const companyMatch =
-      selectedFilter.currentCompany === "" ||
-      alumni.currentCompany?.toLowerCase() === selectedFilter.currentCompany.toLowerCase();
+      selectedFilter.currentCompany.length === 0 ||
+      (alumni.currentCompany && selectedFilter.currentCompany.includes(alumni.currentCompany));
+    
     return (
       searchMatch &&
       departmentMatch &&
@@ -100,13 +141,13 @@ export default function AlumniPage() {
     );
   });
 
-  // clear filter
+  // Clear filter - updated for array values
   const clearFilters = () => {
     setSelectedFilter({ 
-      department: "",
-      graduationYear: "",
-      currentLocation: "",
-      currentCompany: "",
+      department: [],
+      graduationYear: [],
+      currentLocation: [],
+      currentCompany: [],
     });
     setSearch("");
   };
@@ -171,125 +212,207 @@ export default function AlumniPage() {
             </div>
           </div>
 
-          {/* Filter Dropdown */}
-          <div className="relative" ref={dropdownRef}>
+          {/* Filter Button */}
+          <div className="relative">
             <button
               onClick={() => setShowFilter(!showFilter)}
               className="btn btn-outline flex items-center bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20 min-w-[100px]"
             >
               <FiFilter className="mr-1" /> Filter
             </button>
+          </div>
+        </div>
 
+        {/* Filter Row - New */}
             {showFilter && (
-              <ul className="absolute z-50 mt-2 bg-white/10 backdrop-blur-sm shadow-lg rounded-md w-[280px] sm:w-[320px] right-0 sm:right-auto sm:left-0 border border-white/20 max-h-[80vh] overflow-y-auto scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent">
+          <div className="flex flex-wrap justify-center gap-2 mb-6 max-w-4xl mx-auto" ref={dropdownRef}>
               {/* Department Filter */}
-              <li className="p-2 font-bold text-white sticky top-0 bg-white/10 backdrop-blur-sm z-10 border-b border-white/20">
+            <div className="relative">
+              <button
+                onClick={() => toggleDropdown('department')}
+                className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm hover:bg-white/20 rounded-lg text-white border border-white/20 transition-colors cursor-pointer"
+              >
+                Department
+                <ChevronDown size={16} className={`transition-transform ${activeDropdown === 'department' ? 'rotate-180' : ''}`} />
+              </button>
+              
+              {activeDropdown === 'department' && (
+                <div className="absolute z-50 mt-2 bg-gradient-to-r from-[#1a1f4d]/90 to-[#2a3f8f]/90 shadow-lg rounded-md w-56 border border-white/20 max-h-[60vh] overflow-y-auto">
+                  <div className="p-2 font-bold text-white sticky top-0 bg-gradient-to-r from-[#1a1f4d]/90 to-[#2a3f8f]/90 z-10 border-b border-white/20">
                 <div className="flex items-center justify-between">
                   <span>Department</span>
                   <button
-                    onClick={() => setSelectedFilter({ ...selectedFilter, department: "" })}
-                    className="text-sm text-gray-300 hover:text-white"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedFilter({ ...selectedFilter, department: [] });
+                        }}
+                        className="text-sm text-gray-300 hover:text-white cursor-pointer"
                   >
                     Clear
                   </button>
                 </div>
-              </li>
+                  </div>
               {[...new Set(alumni.map((a) => a.department).filter(Boolean))].map((dept) => (
-                <li key={dept}>
                   <button
-                    onClick={() => setSelectedFilter({ ...selectedFilter, department: dept! })}
+                      key={dept}
+                      onClick={() => {
+                        toggleFilterOption('department', dept!);
+                      }}
                     className="block w-full text-left px-4 py-2 hover:bg-white/20 cursor-pointer text-gray-200"
                   >
-                    {dept} {selectedFilter.department === dept && "✓"}
+                      <div className="flex items-center justify-between">
+                        <span className="truncate pr-2">{dept}</span>
+                        {isOptionSelected('department', dept!) && <span>✓</span>}
+                      </div>
                   </button>
-                </li>
               ))}
+                </div>
+              )}
+            </div>
           
               {/* Graduation Year Filter */}
-              <li className="p-2 font-bold text-white sticky top-0 bg-white/10 backdrop-blur-sm z-10 border-b border-white/20">
+            <div className="relative">
+              <button
+                onClick={() => toggleDropdown('graduationYear')}
+                className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm hover:bg-white/20 rounded-lg text-white border border-white/20 transition-colors cursor-pointer"
+              >
+                Graduation Year
+                <ChevronDown size={16} className={`transition-transform ${activeDropdown === 'graduationYear' ? 'rotate-180' : ''}`} />
+              </button>
+              
+              {activeDropdown === 'graduationYear' && (
+                <div className="absolute z-50 mt-2 bg-gradient-to-r from-[#1a1f4d]/90 to-[#2a3f8f]/90 shadow-lg rounded-md w-56 border border-white/20 max-h-[60vh] overflow-y-auto">
+                  <div className="p-2 font-bold text-white sticky top-0 bg-gradient-to-r from-[#1a1f4d]/90 to-[#2a3f8f]/90 z-10 border-b border-white/20">
                 <div className="flex items-center justify-between">
                   <span>Graduation Year</span>
                   <button
-                    onClick={() => setSelectedFilter({ ...selectedFilter, graduationYear: "" })}
-                    className="text-sm text-gray-300 hover:text-white"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedFilter({ ...selectedFilter, graduationYear: [] });
+                        }}
+                        className="text-sm text-gray-300 hover:text-white cursor-pointer"
                   >
                     Clear
                   </button>
                 </div>
-              </li>
+                  </div>
               {[...new Set(alumni.map((a) => a.graduationYear).filter(Boolean))]
                 .sort((a, b) => (b ?? 0) - (a ?? 0))
                 .map((year) => (
-                  <li key={year}>
+                      <button
+                        key={year}
+                        onClick={() => {
+                          toggleFilterOption('graduationYear', year!.toString());
+                        }}
+                        className="block w-full text-left px-4 py-2 hover:bg-white/20 cursor-pointer text-gray-200"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="truncate pr-2">{year}</span>
+                          {isOptionSelected('graduationYear', year!.toString()) && <span>✓</span>}
+                        </div>
+                      </button>
+                    ))}
+                </div>
+              )}
+            </div>
+
+            {/* Location Filter */}
+            <div className="relative">
+              <button
+                onClick={() => toggleDropdown('location')}
+                className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm hover:bg-white/20 rounded-lg text-white border border-white/20 transition-colors cursor-pointer"
+              >
+                Location
+                <ChevronDown size={16} className={`transition-transform ${activeDropdown === 'location' ? 'rotate-180' : ''}`} />
+              </button>
+              
+              {activeDropdown === 'location' && (
+                <div className="absolute z-50 mt-2 bg-gradient-to-r from-[#1a1f4d]/90 to-[#2a3f8f]/90 shadow-lg rounded-md w-56 border border-white/20 max-h-[60vh] overflow-y-auto">
+                  <div className="p-2 font-bold text-white sticky top-0 bg-gradient-to-r from-[#1a1f4d]/90 to-[#2a3f8f]/90 z-10 border-b border-white/20">
+                    <div className="flex items-center justify-between">
+                      <span>Location</span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedFilter({ ...selectedFilter, currentLocation: [] });
+                        }}
+                        className="text-sm text-gray-300 hover:text-white cursor-pointer"
+                      >
+                        Clear
+                      </button>
+                    </div>
+                  </div>
+                  {[...new Set(alumni.map((a) => a.currentLocation).filter(Boolean))].map((location) => (
                     <button
-                      onClick={() => setSelectedFilter({ ...selectedFilter, graduationYear: year!.toString() })}
+                      key={location}
+                      onClick={() => {
+                        toggleFilterOption('currentLocation', location!);
+                      }}
                       className="block w-full text-left px-4 py-2 hover:bg-white/20 cursor-pointer text-gray-200"
                     >
-                      {year} {selectedFilter.graduationYear === year?.toString() && "✓"}
+                      <div className="flex items-center justify-between">
+                        <span className="truncate pr-2">{location}</span>
+                        {isOptionSelected('currentLocation', location!) && <span>✓</span>}
+                      </div>
                     </button>
-                  </li>
-                ))}
-          
-              {/* Current Location Filter */}
-              <li className="p-2 font-bold text-white sticky top-0 bg-white/10 backdrop-blur-sm z-10 border-b border-white/20">
-                <div className="flex items-center justify-between">
-                  <span>Current Location</span>
-                  <button
-                    onClick={() => setSelectedFilter({ ...selectedFilter, currentLocation: "" })}
-                    className="text-sm text-gray-300 hover:text-white"
-                  >
-                    Clear
-                  </button>
+                  ))}
                 </div>
-              </li>
-              {[...new Set(alumni.map((a) => a.currentLocation).filter(Boolean))].map((location) => (
-                <li key={location}>
-                  <button
-                    onClick={() => setSelectedFilter({ ...selectedFilter, currentLocation: location! })}
-                    className="block w-full text-left px-4 py-2 hover:bg-white/20 cursor-pointer text-gray-200"
-                  >
-                    {location} {selectedFilter.currentLocation === location && "✓"}
-                  </button>
-                </li>
-              ))}
-          
-              {/* Current Company Filter */}
-              <li className="p-2 font-bold text-white sticky top-0 bg-white/10 backdrop-blur-sm z-10 border-b border-white/20">
-                <div className="flex items-center justify-between">
-                  <span>Current Company</span>
-                  <button
-                    onClick={() => setSelectedFilter({ ...selectedFilter, currentCompany: "" })}
-                    className="text-sm text-gray-300 hover:text-white"
-                  >
-                    Clear
-                  </button>
-                </div>
-              </li>
-              {[...new Set(alumni.map((a) => a.currentCompany).filter(Boolean))].map((company) => (
-                <li key={company}>
-                  <button
-                    onClick={() => setSelectedFilter({ ...selectedFilter, currentCompany: company! })}
-                    className="block w-full text-left px-4 py-2 hover:bg-white/20 cursor-pointer text-gray-200"
-                  >
-                    {company} {selectedFilter.currentCompany === company && "✓"}
-                  </button>
-                </li>
-              ))}
-              
+              )}
+            </div>
 
-                {/* Clear All Filters */}
-                  <li className="p-2 sticky bottom-0 bg-white/10 backdrop-blur-sm z-10 border-t border-white/20">
+            {/* Company Filter */}
+            <div className="relative">
+                  <button
+                onClick={() => toggleDropdown('company')}
+                className="flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm hover:bg-white/20 rounded-lg text-white border border-white/20 transition-colors cursor-pointer"
+                  >
+                Company
+                <ChevronDown size={16} className={`transition-transform ${activeDropdown === 'company' ? 'rotate-180' : ''}`} />
+                  </button>
+          
+              {activeDropdown === 'company' && (
+                <div className="absolute z-50 mt-2 bg-gradient-to-r from-[#1a1f4d]/90 to-[#2a3f8f]/90 shadow-lg rounded-md w-56 border border-white/20 max-h-[60vh] overflow-y-auto">
+                  <div className="p-2 font-bold text-white sticky top-0 bg-gradient-to-r from-[#1a1f4d]/90 to-[#2a3f8f]/90 z-10 border-b border-white/20">
+                <div className="flex items-center justify-between">
+                      <span>Company</span>
+                  <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedFilter({ ...selectedFilter, currentCompany: [] });
+                        }}
+                        className="text-sm text-gray-300 hover:text-white cursor-pointer"
+                  >
+                    Clear
+                  </button>
+                </div>
+                  </div>
+              {[...new Set(alumni.map((a) => a.currentCompany).filter(Boolean))].map((company) => (
                     <button
-                      onClick={clearFilters}
-                      className="w-full text-center px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-md cursor-pointer transition-colors duration-200"
+                      key={company}
+                      onClick={() => {
+                        toggleFilterOption('currentCompany', company!);
+                      }}
+                      className="block w-full text-left px-4 py-2 hover:bg-white/20 cursor-pointer text-gray-200"
                     >
-                      Clear All Filters
+                      <div className="flex items-center justify-between">
+                        <span className="truncate pr-2">{company}</span>
+                        {isOptionSelected('currentCompany', company!) && <span>✓</span>}
+                      </div>
                     </button>
-                  </li>
-              </ul>
-            )}
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Clear All Button */}
+            <button
+              onClick={clearFilters}
+              className="px-4 py-2 bg-white/10 backdrop-blur-sm hover:bg-white/20 rounded-lg text-white border border-white/20 transition-colors cursor-pointer"
+            >
+              Clear All
+            </button>
           </div>
-        </div>
+        )}
 
         {/* Content area */}
         <div className="flex gap-6 -mt-[5px]">
@@ -297,26 +420,93 @@ export default function AlumniPage() {
           <main className="flex-1">
             {/* Active filters */}
             <div className="flex flex-wrap items-center gap-2 mb-4">
-              {Object.entries(selectedFilter).map(([key, value]) =>
-                value ? (
-                  <div
-                    key={key}
-                    className="badge badge-lg gap-2 px-3 py-3 bg-white/20 backdrop-blur-sm text-white border-white/20"
+              {/* Department filters */}
+              {selectedFilter.department.map((dept) => (
+                <div
+                  key={`dept-${dept}`}
+                  className="badge badge-lg gap-2 px-3 py-3 bg-white/20 backdrop-blur-sm text-white border-white/20"
+                >
+                  <span className="truncate max-w-[150px]">{dept}</span>
+                  <button
+                    className="text-white opacity-60 hover:opacity-100 cursor-pointer"
+                    onClick={() => {
+                      const newDepartments = selectedFilter.department.filter(d => d !== dept);
+                      setSelectedFilter({
+                        ...selectedFilter,
+                        department: newDepartments
+                      });
+                    }}
                   >
-                    {value}
+                    ✕
+                  </button>
+                </div>
+              ))}
+
+              {/* Graduation Year filters */}
+              {selectedFilter.graduationYear.map((year) => (
+                <div
+                  key={`year-${year}`}
+                  className="badge badge-lg gap-2 px-3 py-3 bg-white/20 backdrop-blur-sm text-white border-white/20"
+                >
+                  <span className="truncate max-w-[150px]">{year}</span>
+                  <button
+                    className="text-white opacity-60 hover:opacity-100 cursor-pointer"
+                    onClick={() => {
+                      const newYears = selectedFilter.graduationYear.filter(y => y !== year);
+                      setSelectedFilter({
+                        ...selectedFilter,
+                        graduationYear: newYears
+                      });
+                    }}
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+
+              {/* Location filters */}
+              {selectedFilter.currentLocation.map((location) => (
+                <div
+                  key={`location-${location}`}
+                    className="badge badge-lg gap-2 px-3 py-3 bg-white/20 backdrop-blur-sm text-white border-white/20"
+                >
+                  <span className="truncate max-w-[150px]">{location}</span>
+                  <button
+                    className="text-white opacity-60 hover:opacity-100 cursor-pointer"
+                    onClick={() => {
+                      const newLocations = selectedFilter.currentLocation.filter(l => l !== location);
+                      setSelectedFilter({
+                        ...selectedFilter,
+                        currentLocation: newLocations
+                      });
+                    }}
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+
+              {/* Company filters */}
+              {selectedFilter.currentCompany.map((company) => (
+                <div
+                  key={`company-${company}`}
+                  className="badge badge-lg gap-2 px-3 py-3 bg-white/20 backdrop-blur-sm text-white border-white/20"
+                >
+                  <span className="truncate max-w-[150px]">{company}</span>
                     <button
                       className="text-white opacity-60 hover:opacity-100 cursor-pointer"
                       onClick={() => {
-                        const newFilters = { ...selectedFilter };
-                        newFilters[key as keyof typeof selectedFilter] = "";
-                        setSelectedFilter(newFilters);
+                      const newCompanies = selectedFilter.currentCompany.filter(c => c !== company);
+                      setSelectedFilter({
+                        ...selectedFilter,
+                        currentCompany: newCompanies
+                      });
                       }}
                     >
                       ✕
                     </button>
                   </div>
-                ) : null
-              )}
+              ))}
 
               {/* Results count */}
               {filteredAlumni.length > 0 && (
@@ -385,7 +575,7 @@ export default function AlumniPage() {
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.3, delay: index * 0.05 }}
-                      className="w-full h-[248px] sm:h-88 bg-white/10 backdrop-blur-sm rounded-lg overflow-hidden shadow-md flex flex-col relative group transition-all duration-300 border border-white/20"
+                      className="w-full h-[248px] sm:h-88 bg-white/10 backdrop-blur-sm rounded-lg overflow-hidden shadow-md flex flex-col relative group transition-all duration-300 border border-white/20 hover:-translate-y-2"
                     >
                       {/* Front View - Default */}
                       <div className="relative w-full h-full flex flex-col bg-white/10">
