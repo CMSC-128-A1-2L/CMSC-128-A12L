@@ -16,6 +16,7 @@ export interface DonationDto {
     sponsorshipGoal?: number;
     currentAmount?: number;
     isEventSponsorship?: boolean;
+    status?: 'SUCCESS' | 'FAIL';
 }
 
 export const DonationSchema = new Schema<DonationDto>({
@@ -28,5 +29,6 @@ export const DonationSchema = new Schema<DonationDto>({
     receiveDate: { type: Date },
     sponsorshipGoal: { type: Number },
     currentAmount: { type: Number, default: 0 },
-    isEventSponsorship: { type: Boolean, default: false }
+    isEventSponsorship: { type: Boolean, default: false },
+    status: { type: String, enum: ['SUCCESS', 'FAIL'], default: 'FAIL' }
 });

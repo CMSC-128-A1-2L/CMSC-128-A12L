@@ -12,7 +12,8 @@ export function mapDonationToDonationDto(donation: Donation): DonationDto {
         type: donation.type,
         monetaryValue: donation.monetaryValue,
         donorID: donation.donorID,
-        receiveDate: donation.receiveDate
+        receiveDate: donation.receiveDate,
+        status: donation.status
     };
 }
 
@@ -25,6 +26,7 @@ export function mapDonationDtoToDonation(donationDto: DonationDto): Donation {
         type: donationDto.type,
         monetaryValue: donationDto.monetaryValue,
         donorID: donationDto.donorID,
-        receiveDate: donationDto.receiveDate
+        receiveDate: donationDto.receiveDate,
+        status: donationDto.status
     };
-} 
+}

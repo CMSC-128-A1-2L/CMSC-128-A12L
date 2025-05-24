@@ -17,9 +17,9 @@ export default function DonationsPage() {
   const [showHistory, setShowHistory] = useState(false);
 
   // Get event sponsorship details from URL parameters
-  const eventId = searchParams.get('eventId');
-  const eventName = searchParams.get('eventName');
-  const sponsorshipGoal = searchParams.get('sponsorshipGoal');
+  const eventId = searchParams?.get('eventId') ?? '';
+  const eventName = searchParams?.get('eventName') ?? '';
+  const sponsorshipGoal = searchParams?.get('sponsorshipGoal') ?? '';
 
   useEffect(() => {
     const fetchDonations = async () => {
@@ -170,6 +170,7 @@ export default function DonationsPage() {
                     <tr className="border-b">
                       <th className="py-2 px-4 text-white font-bold text-center w-1/4">Donation Name</th>
                       <th className="py-2 px-4 text-white font-bold text-center w-1/4">Value</th>
+                      <th className="py-2 px-4 text-white font-bold text-center w-1/4">Status</th>
                       <th className="py-2 px-4 text-white font-bold text-center w-1/4">Mode of Payment</th>
                       <th className="py-2 px-4 text-white font-bold text-center w-1/4">Date</th>
                     </tr>
@@ -179,6 +180,7 @@ export default function DonationsPage() {
                       <tr key={donation._id || index} className="border-b hover:bg-blue-900">
                         <td className="py-2 px-4 text-white text-center">{donation.donationName}</td>
                         <td className="py-2 px-4 text-white text-center">₱{donation.monetaryValue.toLocaleString()}</td>
+                        <td className="py-2 px-4 text-white text-center">{donation.status === 'SUCCESS' ? 'Success' : 'Failed'}</td>
                         <td className="py-2 px-4 text-white text-center capitalize">{donation.description?.toLowerCase().includes('maya') ? 'maya' : 'stripe'}</td>
                         <td className="py-2 px-4 text-white text-center">{donation.receiveDate ? new Date(donation.receiveDate).toLocaleDateString() : 'N/A'}</td>
                       </tr>

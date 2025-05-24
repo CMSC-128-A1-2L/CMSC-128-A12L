@@ -71,6 +71,10 @@ export interface DonationRepository {
      * @returns A promise that resolves when the contribution is added
      */
     addSponsorshipContribution(eventId: string, contribution: Donation): Promise<void>;
+
+    // New methods for status and reference
+    getDonationByReference(reference: string): Promise<Donation | null>;
+    updateDonationStatus(id: string, status: 'SUCCESS' | 'FAIL'): Promise<void>;
 }
 
 class MongoDBDonationRepository implements DonationRepository {
@@ -144,6 +148,15 @@ class MongoDBDonationRepository implements DonationRepository {
             isEventSponsorship: false
         });
         await this.model.create(contributionDto);
+    }
+
+    async getDonationByReference(reference: string): Promise<Donation | null> {
+        const donationDto = await this.model.findOne({ description: { $regex: reference } });
+        return donationDto ? mapDonationDtoToDonation(donationDto) : null;
+    }
+
+    async updateDonationStatus(id: string, status: 'SUCCESS' | 'FAIL'): Promise<void> {
+        await this.model.findByIdAndUpdate(id, { $set: { status } });
     }
 
     constructor(connection: Connection) {

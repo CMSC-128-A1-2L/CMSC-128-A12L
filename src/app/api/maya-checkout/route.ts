@@ -79,7 +79,8 @@ export async function POST(request: Request) {
       monetaryValue: amount,
       donorID: [session.user.id],
       receiveDate: new Date(),
-      isEventSponsorship: !!body.eventId // true only if this is an event sponsorship
+      isEventSponsorship: !!body.eventId, // true only if this is an event sponsorship
+      status: 'FAIL' as 'FAIL' // Default to FAIL until payment is confirmed
     };
 
     // Save donation to database

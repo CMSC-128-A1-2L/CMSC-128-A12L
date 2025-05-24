@@ -14,4 +14,5 @@ export interface Donation {
     sponsorshipGoal?: number; // Optional field for event sponsorship goal
     currentAmount?: number; // Optional field to track current amount raised
     isEventSponsorship?: boolean; // Flag to indicate if this is an event sponsorship
+    status?: 'SUCCESS' | 'FAIL'; // Payment status
 }

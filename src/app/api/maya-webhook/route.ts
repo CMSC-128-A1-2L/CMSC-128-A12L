@@ -11,7 +11,8 @@ export const config = {
 
 export async function POST(req: Request) {
   try {
-    const signature = headers().get('maya-signature');
+    const headersObj = await headers();
+    const signature = headersObj.get('maya-signature');
     const webhookSecret = process.env.MAYA_WEBHOOK_SECRET;
 
     if (!webhookSecret) {
@@ -50,7 +51,7 @@ export async function POST(req: Request) {
       }
 
       // Update donation status
-      await donationRepo.updateDonationStatus(donation._id!, 'completed');
+      await donationRepo.updateDonationStatus(donation._id!, 'SUCCESS');
 
       // If this was an event sponsorship, update the event's sponsorship amount
       if (donation.eventId) {
