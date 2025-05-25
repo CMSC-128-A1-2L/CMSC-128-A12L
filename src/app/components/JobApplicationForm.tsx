@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { X, Upload, Briefcase } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { toast } from 'react-hot-toast';
@@ -33,6 +33,7 @@ export default function JobApplicationForm({
   onSuccess
 }: JobApplicationFormProps) {
   const [loading, setLoading] = useState(false);
+  const [dragActive, setDragActive] = useState(false);
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -60,7 +61,6 @@ export default function JobApplicationForm({
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
-    
     if (!formData.fullName.trim()) newErrors.fullName = 'Full name is required';
     if (!formData.email.trim()) newErrors.email = 'Email is required';
     if (!formData.phone.trim()) newErrors.phone = 'Phone number is required';
@@ -71,13 +71,7 @@ export default function JobApplicationForm({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) {
-      toast.error('Please select a file');
-      return;
-    }
-
+  const processFile = (file: File) => {
     // Clear previous selection
     setSelectedFile(null);
     setFormData(prev => ({ ...prev, resumeUrl: '' }));
@@ -85,14 +79,12 @@ export default function JobApplicationForm({
     // Validate file type
     if (!isValidFileType(file)) {
       toast.error('Please upload a PDF or Word document (doc/docx)');
-      e.target.value = ''; // Reset file input
       return;
     }
 
     // Validate file size
     if (!isValidFileSize(file)) {
       toast.error('File size must be less than 5MB');
-      e.target.value = ''; // Reset file input
       return;
     }
 
@@ -103,6 +95,51 @@ export default function JobApplicationForm({
     setErrors(prev => ({ ...prev, resume: '' }));
     toast.success('Resume selected successfully');
   };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) {
+      toast.error('Please select a file');
+      return;
+    }
+    processFile(file);
+  };
+
+  const handleDrag = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === "dragenter" || e.type === "dragover") {
+      setDragActive(true);
+    } else if (e.type === "dragleave") {
+      setDragActive(false);
+    }
+  }, []);
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+
+    const file = e.dataTransfer.files?.[0];
+    if (!file) {
+      toast.error('Please drop a valid file');
+      return;
+    }
+
+    // Create a new DataTransfer object and add the dropped file
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(file);    // Get the file input element and set its files property
+    const fileInput = document.getElementById('resume-upload') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.files = dataTransfer.files;
+      // Trigger change event to ensure form validation picks up the change
+      const event = new Event('change', { bubbles: true });
+      fileInput.dispatchEvent(event);
+    }
+
+    processFile(file);
+  }, []);
+
   const uploadResume = async (file: File): Promise<string> => {
     const formData = new FormData();
     formData.append('file', file);
@@ -126,11 +163,11 @@ export default function JobApplicationForm({
       return data.url;
     } catch (error: any) {
       console.error('Resume upload error:', error);
-      // Show error toast to user
       toast.error(error.message || 'Failed to upload resume. Please try again.');
       throw error;
     }
   };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -231,6 +268,7 @@ export default function JobApplicationForm({
                 placeholder="Enter your full name"
                 required
               />
+              {errors.fullName && <p className="text-red-500 text-xs mt-1">{errors.fullName}</p>}
             </div>
 
             <div>
@@ -243,6 +281,7 @@ export default function JobApplicationForm({
                 placeholder="Enter your email"
                 required
               />
+              {errors.email && <p className="text-red-500 text-xs mt-1">{errors.email}</p>}
             </div>
 
             <div>
@@ -255,6 +294,7 @@ export default function JobApplicationForm({
                 placeholder="Enter your phone number"
                 required
               />
+              {errors.phone && <p className="text-red-500 text-xs mt-1">{errors.phone}</p>}
             </div>
 
             <div>
@@ -279,13 +319,24 @@ export default function JobApplicationForm({
               placeholder="Tell us why you're interested in this position..."
               required
             />
+            {errors.coverLetter && <p className="text-red-500 text-xs mt-1">{errors.coverLetter}</p>}
           </div>
 
           <div>
             <label className="block text-sm font-medium text-white/80 mb-2">Resume/CV</label>
-            <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-white/10 border-dashed rounded-lg hover:border-white/20 transition-colors">
+            <div 
+              onDragEnter={handleDrag}
+              onDragLeave={handleDrag}
+              onDragOver={handleDrag}
+              onDrop={handleDrop}
+              className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 ${
+                dragActive 
+                  ? 'border-blue-500/50 bg-blue-500/5' 
+                  : 'border-white/10 hover:border-white/20'
+              } border-dashed rounded-lg transition-all duration-200`}
+            >
               <div className="space-y-1 text-center">
-                <Upload className="mx-auto h-12 w-12 text-white/30" />
+                <Upload className={`mx-auto h-12 w-12 ${dragActive ? 'text-blue-400' : 'text-white/30'} transition-colors`} />
                 <div className="flex flex-wrap justify-center text-sm text-white/60">
                   <label htmlFor="resume-upload" className="relative cursor-pointer rounded-md font-medium text-blue-200 hover:text-blue-300 focus-within:outline-none focus-within:ring-2 focus-within:ring-blue-500/50 focus-within:ring-offset-2">
                     <span>Upload a file</span>
@@ -343,6 +394,7 @@ export default function JobApplicationForm({
         </div>
       </motion.div>
 
+      {/* Keep the modal backdrop for clicking outside to close */}
       <form method="dialog" className="modal-backdrop">
         <button onClick={onClose}>close</button>
       </form>
