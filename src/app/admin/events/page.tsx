@@ -10,7 +10,9 @@ import {
   ChevronLeft,
   Plus,
   Image as ImageIcon,
+  Loader2,
 } from "lucide-react";
+import { toast } from "react-hot-toast";
 import EventCard from "@/app/components/eventContentCard";
 import EventRow from "@/app/components/eventContentRow";
 import AdminEventDetails from "@/app/components/AdminEventDetails";
@@ -36,6 +38,8 @@ export default function EventsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [processingIds, setProcessingIds] = useState<Set<string>>(new Set());
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -131,28 +135,109 @@ export default function EventsPage() {
   };
 
   // Handle form submission
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Here you would typically handle the form submission
-    console.log("Form submitted:", formData);
-    setShowEventModal(false);
-    setFormData({
-      name: "",
-      description: "",
-      type: "",
-      startDate: "",
-      endDate: "",
-      location: "",
-      monetaryValue: 0,
-      image: null,
-      sponsorship: {
-        enabled: false,
-        goal: 0,
-        currentAmount: 0,
-        sponsors: []
-      },
-    });
-    setPreviewImage(null);
+  const handleCreateEvent = async (eventData: Partial<Event>) => {
+    setIsSubmitting(true);
+    const toastId = toast.loading("Creating event...");
+    try {
+      const response = await fetch('/api/admin/events', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(eventData),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to create event');
+      }
+
+      const result = await response.json();
+      // Ensure the event has an _id before adding it to the state
+      if (result.event && result.event._id) {
+        setEvents(prevEvents => [...prevEvents, result.event]);
+      }
+
+      // Create notification using the service
+      await createNotification({
+        type: 'event',
+        entity: eventData,
+        entityName: eventData.name ?? '',
+        action: 'created',
+        sendAll: true
+      });
+
+      setShowEventModal(false);
+      toast.success("Event created successfully", { id: toastId });
+    } catch (error: any) {
+      console.error('Error creating event:', error);
+      toast.error(error.message || "Failed to create event", { id: toastId });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSaveEditedEvent = async (updatedEvent: Event) => {
+    setIsSubmitting(true);
+    const toastId = toast.loading("Updating event...");
+    try {
+      const response = await fetch(`/api/admin/events/${updatedEvent._id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...updatedEvent,
+          startDate: updatedEvent.startDate.toISOString(),
+          endDate: updatedEvent.endDate.toISOString(),
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to update event');
+      }
+
+      // Refresh the events list
+      await fetchEvents();
+      handleCloseEditModal();
+      toast.success("Event updated successfully", { id: toastId });
+    } catch (error: any) {
+      console.error('Error updating event:', error);
+      toast.error(error.message || "Failed to update event", { id: toastId });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleDeleteEvent = async (eventId: string) => {
+    setProcessingIds(prev => new Set(prev).add(eventId));
+    const toastId = toast.loading("Deleting event...");
+    try {
+      const response = await fetch(`/api/admin/events/${eventId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to delete event');
+      }
+
+      // Refresh the events list
+      await fetchEvents();
+      setIsModalOpen(false);
+      setSelectedEvent(null);
+      toast.success("Event deleted successfully", { id: toastId });
+    } catch (error: any) {
+      console.error('Error deleting event:', error);
+      toast.error(error.message || "Failed to delete event", { id: toastId });
+    } finally {
+      setProcessingIds(prev => {
+        const next = new Set(prev);
+        next.delete(eventId);
+        return next;
+      });
+    }
   };
 
   // Helper to safely format event data for display components
@@ -187,92 +272,6 @@ export default function EventsPage() {
     setEventToEdit(null);
   };
 
-  const handleSaveEditedEvent = async (updatedEvent: Event) => {
-    try {
-      const response = await fetch(`/api/admin/events/${updatedEvent._id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...updatedEvent,
-          startDate: updatedEvent.startDate.toISOString(),
-          endDate: updatedEvent.endDate.toISOString(),
-        }),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to update event');
-      }
-
-      // Refresh the events list
-      await fetchEvents();
-      handleCloseEditModal();
-    } catch (error) {
-      console.error('Error updating event:', error);
-      // You might want to show an error message to the user here
-    }
-  };
-
-  // Handle form submission
-  const handleCreateEvent = async (eventData: Partial<Event>) => {
-    try {
-      const response = await fetch('/api/admin/events', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(eventData),
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to create event');
-      }
-
-      const result = await response.json();
-      // Ensure the event has an _id before adding it to the state
-      if (result.event && result.event._id) {
-        setEvents(prevEvents => [...prevEvents, result.event]);
-      }
-
-      // Create notification using the service
-      await createNotification({
-        type: 'event',
-        entity: eventData,
-        entityName: eventData.name ?? '',
-        action: 'created',
-        sendAll: true
-      });
-
-      setShowEventModal(false);
-    } catch (error) {
-      console.error('Error creating event:', error);
-      // You might want to show an error message to the user here
-    }
-  };
-
-  const handleDeleteEvent = async (eventId: string) => {
-    try {
-      const response = await fetch(`/api/admin/events/${eventId}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to delete event');
-      }
-
-      // Refresh the events list
-      await fetchEvents();
-      setIsModalOpen(false);
-      setSelectedEvent(null);
-    } catch (error) {
-      console.error('Error deleting event:', error);
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -305,12 +304,12 @@ export default function EventsPage() {
         <div className="container mx-auto p-4 sm:p-6 max-w-7xl">
           {/* Header */}
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
-            <h1 className="text-2xl font-bold text-gray-800">Events Management</h1>
-            <button
+            <h1 className="text-2xl font-bold text-gray-800">Events Management</h1>            <button
               onClick={() => setShowEventModal(true)}
               className="btn btn-primary gap-2"
+              disabled={isSubmitting}
             >
-              <Plus size={20} />
+              {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Plus size={20} />}
               Create Event
             </button>
           </div>
@@ -359,8 +358,7 @@ export default function EventsPage() {
                     exit={{ opacity: 0, y: -20 }}
                     transition={{ duration: 0.3 }}
                   >
-                    {isGridView ? (
-                      <EventCard
+                    {isGridView ? (                      <EventCard
                         _id={eventForDisplay._id!}
                         title={eventForDisplay.name}
                         organizer={eventForDisplay.organizer}
@@ -373,6 +371,7 @@ export default function EventsPage() {
                         onClose={() => {}}
                         index={0}
                         rsvp={eventForDisplay.rsvp || { enabled: false, options: [] }}
+                        isProcessing={processingIds.has(event._id!)}
                       />
                     ) : (
                       <EventRow
@@ -424,12 +423,12 @@ export default function EventsPage() {
         </div>
       )}
 
-      {/* Create Event Modal */}
-      {showEventModal && (
+      {/* Create Event Modal */}      {showEventModal && (
         <CreateEventModal
           isOpen={showEventModal}
           onClose={() => setShowEventModal(false)}
           onSubmit={handleCreateEvent}
+          isSubmitting={isSubmitting}
         />
       )}
 
@@ -454,16 +453,17 @@ export default function EventsPage() {
           onDeleteClick={() => handleDeleteEvent(selectedEvent._id!)}
           onClose={handleCloseDetailsModal}
           isOpen={isModalOpen}
+          isLoading={isSubmitting}
         />
       )}
 
-      {/* Edit Event Modal */}
-      {isEditModalOpen && eventToEdit && (
+      {/* Edit Event Modal */}      {isEditModalOpen && eventToEdit && (
         <EditEventModal
           isOpen={isEditModalOpen}
           onClose={handleCloseEditModal}
           onSave={handleSaveEditedEvent}
           event={eventToEdit}
+          isSubmitting={isSubmitting}
         />
       )}
     </>

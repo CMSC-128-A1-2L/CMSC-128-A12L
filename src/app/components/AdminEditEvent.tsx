@@ -1,7 +1,7 @@
 "use client";
 import React, { useState, useEffect, useRef } from "react";
 import { Event } from "@/entities/event";
-import { Calendar, MapPin, X, Handshake, Info, Users, Image as ImageIcon } from "lucide-react";
+import { Calendar, MapPin, X, Handshake, Info, Users, Image as ImageIcon, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface EditEventModalProps {
@@ -9,6 +9,7 @@ interface EditEventModalProps {
   onClose: () => void;
   onSave: (updatedEvent: Event) => void;
   event: Event;
+  isSubmitting?: boolean;
 }
 
 // Helper to format date for datetime-local input
@@ -45,7 +46,8 @@ export default function EditEventModal({
   isOpen,
   onClose,
   onSave,
-  event
+  event,
+  isSubmitting
 }: EditEventModalProps) {
   const [formData, setFormData] = useState({
     ...event,
@@ -387,11 +389,23 @@ export default function EditEventModal({
               type="button"
               onClick={onClose}
               className="btn btn-ghost"
+              disabled={isSubmitting}
             >
               Cancel
             </button>
-            <button type="submit" className="btn btn-primary">
-              Save Changes
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                'Save Changes'
+              )}
             </button>
           </div>
         </form>

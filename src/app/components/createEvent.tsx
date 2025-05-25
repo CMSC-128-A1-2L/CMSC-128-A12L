@@ -1,13 +1,14 @@
 "use client";
 import React, { useState, useRef } from "react";
 import { motion } from "framer-motion";
-import { X, Image as ImageIcon, Calendar, MapPin, Handshake, DollarSign } from "lucide-react";
+import { X, Image as ImageIcon, Calendar, MapPin, Handshake, DollarSign, Loader2 } from "lucide-react";
 import { Event } from "@/entities/event";
 
 interface CreateEventModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (eventData: Partial<Event>) => void;
+  isSubmitting?: boolean;
 }
 
 interface SponsorshipChip {
@@ -15,7 +16,7 @@ interface SponsorshipChip {
   name: string;
 }
 
-const CreateEventModal: React.FC<CreateEventModalProps> = ({ isOpen, onClose, onSubmit }) => {
+const CreateEventModal: React.FC<CreateEventModalProps> = ({ isOpen, onClose, onSubmit, isSubmitting }) => {
   const [formData, setFormData] = useState<Partial<Event>>({
     name: "",
     organizer: "",
@@ -359,11 +360,23 @@ const CreateEventModal: React.FC<CreateEventModalProps> = ({ isOpen, onClose, on
               type="button"
               onClick={onClose}
               className="btn btn-ghost"
+              disabled={isSubmitting}
             >
               Cancel
             </button>
-            <button type="submit" className="btn btn-primary">
-              Create Event
+            <button
+              type="submit"
+              className="btn btn-primary"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                'Create Event'
+              )}
             </button>
           </div>
         </form>

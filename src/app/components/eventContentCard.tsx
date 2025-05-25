@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { Calendar, MapPin, Users, Edit2, Trash2 } from "lucide-react";
+import { Calendar, MapPin, Users, Edit2, Trash2, Loader2 } from "lucide-react";
 
 interface EventCardProps {
     _id: string;
@@ -27,6 +27,7 @@ interface EventCardProps {
     onEditClick: () => void;
     onDeleteClick: () => void;
     onDetailsClick: () => void;
+    isProcessing?: boolean;
   }
 
 const EventCard: React.FC<EventCardProps> = ({
@@ -37,7 +38,8 @@ const EventCard: React.FC<EventCardProps> = ({
     imageUrl,
     onDetailsClick,
     onEditClick,
-    onDeleteClick
+    onDeleteClick,
+    isProcessing
 }) => {
   return (
     <div className="card bg-white shadow-sm hover:shadow-md transition-all duration-200 rounded-lg overflow-hidden h-[280px]">
@@ -92,14 +94,16 @@ const EventCard: React.FC<EventCardProps> = ({
               <button
                 onClick={onEditClick}
                 className="btn btn-sm btn-ghost"
+                disabled={isProcessing}
               >
                 <Edit2 size={16} className="text-gray-600" />
               </button>
               <button
                 onClick={onDeleteClick}
                 className="btn btn-sm btn-ghost text-red-500 hover:text-red-600"
+                disabled={isProcessing}
               >
-                <Trash2 size={16} />
+                {isProcessing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 size={16} />}
               </button>
             </div>
           </div>
