@@ -10,6 +10,7 @@ import {
   LogsIcon,
   SwitchCamera,
   Newspaper,
+  Flag,
 } from "lucide-react";
 import { RefObject } from "react";
 import Link from "next/link";
@@ -46,6 +47,11 @@ export default function AdminSidebar({
       { name: "Logs", icon: <LogsIcon size={20} />, path: "/admin/logs" },
     ],
     management: [
+      {
+        name: "User Reports",
+        icon: <Flag size={20} />,
+        path: "/admin/user-reports",
+      },
       {
         name: "Manage Users",
         icon: <Users size={20} />,
