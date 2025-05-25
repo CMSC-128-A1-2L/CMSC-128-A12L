@@ -196,7 +196,7 @@ export default function TermsPage() {
                             <section>
                                 <h2 className="text-xl font-semibold text-white mb-4">8. Contact Information</h2>
                                 <p className="leading-relaxed">
-                                    If you have any questions about these Terms of Service, please contact us at support@alumni-gateway.com
+                                    If you have any questions about these Terms of Service, please contact us at cmsc128a12l@gmail.com
                                 </p>
                             </section>
                         </div>

@@ -125,7 +125,7 @@ export default function PrivacyPage() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ duration: 1 }}
-                className="relative min-h-screen pt-42 pb-16 px-4 md:px-8 bg-gradient-to-br from-[#1a237e] to-[#0d47a1]"
+                className="relative min-h-screen pt-68 pb-20 px-4 md:px-8 bg-gradient-to-br from-[#1a237e] to-[#0d47a1]"
             >
                 <ConstellationBackground />
                 <div className="max-w-4xl mx-auto">
@@ -135,88 +135,36 @@ export default function PrivacyPage() {
                         transition={{ duration: 0.8, delay: 0.2 }}
                         className="bg-white/10 backdrop-blur-sm rounded-lg p-8 md:p-12 shadow-xl border border-white/20"
                     >
-                        <h1 className="text-center text-3xl md:text-4xl font-bold text-white mb-8">Privacy Policy</h1>
+                        <h1 className="text-center text-3xl md:text-4xl font-bold text-white mb-8">Get in Touch</h1>
                         
                         <div className="space-y-6 text-gray-200">
                             <section>
-                                <h2 className="text-xl font-semibold text-white mb-4">1. Information We Collect</h2>
-                                <p className="leading-relaxed">
-                                    We collect information that you provide directly to us, including but not limited to:
-                                </p>
-                                <ul className="list-disc list-inside mt-2 space-y-2">
-                                    <li>Name and contact information</li>
-                                    <li>Academic and professional background</li>
-                                    <li>Profile information and preferences</li>
-                                    <li>Communication preferences</li>
-                                </ul>
+                                 <div className="flex items-center justify-center space-x-6">
+                                <div className="w-14 h-14 bg-white/10 rounded-full flex items-center justify-center flex-shrink-0">
+                                    <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    </svg>
+                                </div>
+                                <div className="text-center">
+                                    <h3 className="text-white font-semibold text-lg mb-1">Address</h3>
+                                    <p className="text-gray-300">University of the Philippines<br />Los Baños, Laguna</p>
+                                </div>
+                                </div>
                             </section>
 
                             <section>
-                                <h2 className="text-xl font-semibold text-white mb-4">2. How We Use Your Information</h2>
-                                <p className="leading-relaxed">
-                                    We use the information we collect to:
-                                </p>
-                                <ul className="list-disc list-inside mt-2 space-y-2">
-                                    <li>Provide and maintain our services</li>
-                                    <li>Send you updates and communications</li>
-                                    <li>Improve our platform and user experience</li>
-                                    <li>Connect you with other alumni</li>
-                                    <li>Comply with legal obligations</li>
-                                </ul>
-                            </section>
-
-                            <section>
-                                <h2 className="text-xl font-semibold text-white mb-4">3. Information Sharing</h2>
-                                <p className="leading-relaxed">
-                                    We may share your information with:
-                                </p>
-                                <ul className="list-disc list-inside mt-2 space-y-2">
-                                    <li>Other alumni members (with your consent)</li>
-                                    <li>Service providers and partners</li>
-                                    <li>Legal authorities when required by law</li>
-                                </ul>
-                            </section>
-
-                            <section>
-                                <h2 className="text-xl font-semibold text-white mb-4">4. Data Security</h2>
-                                <p className="leading-relaxed">
-                                    We implement appropriate security measures to protect your personal information. However, no method of transmission over the Internet is 100% secure, and we cannot guarantee absolute security.
-                                </p>
-                            </section>
-
-                            <section>
-                                <h2 className="text-xl font-semibold text-white mb-4">5. Your Rights</h2>
-                                <p className="leading-relaxed">
-                                    You have the right to:
-                                </p>
-                                <ul className="list-disc list-inside mt-2 space-y-2">
-                                    <li>Access your personal information</li>
-                                    <li>Correct inaccurate data</li>
-                                    <li>Request deletion of your data</li>
-                                    <li>Opt-out of communications</li>
-                                    <li>Export your data</li>
-                                </ul>
-                            </section>
-
-                            <section>
-                                <h2 className="text-xl font-semibold text-white mb-4">6. Cookies and Tracking</h2>
-                                <p className="leading-relaxed">
-                                    We use cookies and similar tracking technologies to improve your browsing experience and analyze website traffic. You can control cookie settings through your browser preferences.
-                                </p>
-                            </section>
-
-                            <section>
-                                <h2 className="text-xl font-semibold text-white mb-4">7. Changes to This Policy</h2>
-                                <p className="leading-relaxed">
-                                    We may update this privacy policy from time to time. We will notify you of any changes by posting the new policy on this page and updating the effective date.
-                                </p>
-                            </section>
-
-                            <section>
-                                <h2 className="text-xl font-semibold text-white mb-4">8. Contact Us</h2>
-                                <p className="leading-relaxed">
-                                    If you have any questions about this Privacy Policy, please contact us at cmsc128a12l@gmail.com
-                                </p>
+                                 <div className="flex items-center justify-center space-x-6">
+                                <div className="w-14 h-14 bg-white/10 rounded-full flex items-center justify-center flex-shrink-0">
+                                <svg className="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                </svg>
+                                </div>
+                                <div className="text-center">
+                                <h3 className="text-white font-semibold text-lg mb-1">Email</h3>
+                                <p className="text-gray-300">cmsc128a12l@gmail.com</p>
+                                </div>
+                            </div>
                             </section>
                         </div>
                     </motion.div>
