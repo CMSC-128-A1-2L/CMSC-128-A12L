@@ -255,6 +255,13 @@ export default function AlumniDashboard() {
       href: "/alumni/announcements",
       color: "bg-red-500",
       description: "Stay updated with important news"
+    },
+    {
+      title: "Donations",
+      icon: Heart,
+      href: "/alumni/donations",
+      color: "bg-pink-500",
+      description: "Support our alumni initiatives"
     }
   ];
 
@@ -335,7 +342,7 @@ export default function AlumniDashboard() {
           <h2 className="text-2xl font-bold text-white mb-6">Quick Actions</h2>
           <div className="relative">
             <div className="overflow-x-auto pb-4 -mx-4 px-4 sm:mx-0 sm:px-0">
-              <div className="flex space-x-4 sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 sm:gap-4">
+              <div className="flex space-x-4 sm:grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 sm:gap-4">
                 {quickActions.map((action, index) => (
                   <motion.div
                     key={action.title}
@@ -344,8 +351,8 @@ export default function AlumniDashboard() {
                     className="w-[280px] sm:w-full h-[200px] flex-shrink-0"
                   >
                     <Link href={action.href}>
-                      <Card className="p-6 hover:shadow-lg transition-all duration-300 cursor-pointer bg-white/10 backdrop-blur-sm border-0 h-full">
-                        <div className="flex items-center justify-between mb-4">
+                      <Card className="p-4 hover:shadow-lg transition-all duration-300 cursor-pointer bg-white/10 backdrop-blur-sm border-0 h-full">
+                        <div className="flex items-center justify-between mb-3">
                           <div className={`p-3 rounded-xl ${action.color} text-white shadow-lg`}>
                             <action.icon className="w-6 h-6" />
                           </div>
