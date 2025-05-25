@@ -26,36 +26,11 @@ import {
 import EditProfileModal from "@/app/components/EditProfileModal";
 import debounce from "lodash/debounce";
 import { COUNTRIES, validatePhoneNumber } from "@/lib/countries";
+import { toast } from "react-hot-toast";
 
-// Add validation functions at the top level
-const CURRENT_YEAR = new Date().getFullYear();
-const FOUNDING_YEAR = 1950; // Changed from 1909 to 1950
-
-const validateGraduationYear = (year: number) => {
-  return year >= FOUNDING_YEAR && year <= CURRENT_YEAR;
-};
-
-const validateUrl = (url: string) => {
-  if (!url) return true;
-  try {
-    new URL(url);
-    return true;
-  } catch {
-    return false;
-  }
-};
-
-const getHostname = (url: string) => {
-  if (!url) return '';
-  try {
-    return new URL(url).hostname;
-  } catch {
-    return url;
-  }
-};
-
-// Add these interfaces before the component
+// Interfaces
 interface ValidationErrors {
+  email?: string;
   graduationYear?: string;
   phoneNumber?: string;
   currentLocation?: string;
@@ -63,6 +38,9 @@ interface ValidationErrors {
   bio?: string;
   linkedIn?: string;
   website?: string;
+  name?: string;
+  currentCompany?: string;
+  currentPosition?: string;
 }
 
 interface ProfileData {
@@ -71,7 +49,7 @@ interface ProfileData {
   graduationYear?: number;
   department?: string;
   bio?: string;
-  imageUrl?: string; // Changed from profilePicture to imageUrl
+  imageUrl?: string;
   phoneNumber?: string;
   currentLocation?: string;
   currentCompany?: string;
@@ -88,7 +66,54 @@ interface Session {
   };
 }
 
-const LINKEDIN_REGEX = /^https?:\/\/(www\.)?linkedin\.com\/[a-zA-Z0-9\-_/]+$/i;
+// Validation helper functions
+const validateName = (value: string): boolean => {
+  return NAME_REGEX.test(value) && value.length <= MAX_NAME_LENGTH;
+};
+
+const validateEmail = (value: string): boolean => {
+  return EMAIL_REGEX.test(value);
+};
+
+const validateGraduationYear = (value: number): boolean => {
+  return value >= FOUNDING_YEAR && value <= CURRENT_YEAR;
+};
+
+const validateLinkedIn = (value: string): boolean => {
+  return value.length <= MAX_URL_LENGTH && LINKEDIN_REGEX.test(value);
+};
+
+const validateUrl = (value: string): boolean => {
+  return value.length <= MAX_URL_LENGTH && URL_REGEX.test(value);
+};
+
+// Constants
+const CURRENT_YEAR = new Date().getFullYear();
+const FOUNDING_YEAR = 1950;
+const MAX_NAME_LENGTH = 100;
+const MAX_BIO_LENGTH = 500;
+const MAX_LOCATION_LENGTH = 100;
+const MAX_DEPARTMENT_LENGTH = 100;
+const MAX_COMPANY_LENGTH = 100;
+const MAX_POSITION_LENGTH = 100;
+const MAX_URL_LENGTH = 200;
+
+// Validation patterns
+const NAME_REGEX = /^[a-zA-Z\s.-]+$/;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_REGEX = /^[\d\s+()-]+$/;
+const URL_REGEX = new RegExp(
+  '^https?:\\/\\/' + // Protocol (http:// or https://)
+  '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|' + // Domain name
+  'localhost|' + // localhost
+  '((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
+  '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*' + // Port and path
+  '(\\?[;&a-z\\d%_.~+=-]*)?' + // Query string
+  '(\\#[-a-z\\d_]*)?$', // Fragment locator
+  'i'
+);
+
+const LINKEDIN_REGEX = /^https?:\/\/(www\.)?linkedin\.com\/(in\/[a-zA-Z0-9_-]+|company\/[a-zA-Z0-9_-]+)\/?$/i;
 
 // Add styles for constellation animation
 const constellationStyles = `
@@ -243,21 +268,34 @@ export default function AlumniProfile() {
       }
     };
   }, []);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || !e.target.files[0]) return;
 
     const file = e.target.files[0];
 
-    // Check file size
+    // Check file size - 3MB limit
     if (file.size > 3 * 1024 * 1024) {
+      toast.error('Image size must be less than 3MB');
       return;
     }
 
     // Check file type
     if (!file.type.startsWith("image/")) {
+      toast.error('File must be an image');
       return;
     }
+
+    // Validate file type more specifically
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Only JPG, PNG and WebP images are allowed');
+      return;
+    }
+
+    setIsUploadingImage(true);
+    const uploadToast = toast.loading('Uploading image...');
 
     try {
       // First upload to Cloudinary
@@ -273,19 +311,19 @@ export default function AlumniProfile() {
       );
 
       if (!uploadResponse.ok) {
-        throw new Error("Failed to upload image");
+        const error = await uploadResponse.text();
+        throw new Error(error || "Failed to upload image");
       }
 
       const { url, public_id } = await uploadResponse.json();
 
       // Then update the user profile with the new image URL
       const updateResponse = await fetch("/api/users/profile", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        method: "PUT",        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...profileData,
-          imageUrl: url, // Changed from profilePicture to imageUrl
-          cloudinaryPublicId: public_id, // Store this if you need to manage/delete images later
+          imageUrl: url,
+          cloudinaryPublicId: public_id,
         }),
       });
 
@@ -296,10 +334,17 @@ export default function AlumniProfile() {
       // Update local state
       setProfileData((prev) => ({
         ...prev,
-        imageUrl: url, // Changed from profilePicture to imageUrl
+        imageUrl: url,
       }));
+
+      toast.dismiss(uploadToast);
+      toast.success('Profile picture updated successfully');
     } catch (error) {
       console.error("Error:", error);
+      toast.dismiss(uploadToast);
+      toast.error(error instanceof Error ? error.message : 'Failed to update profile picture');
+    } finally {
+      setIsUploadingImage(false);
     }
   };
 
@@ -336,73 +381,99 @@ export default function AlumniProfile() {
       setWebsiteHostname('');
     }
   }, [profileData.website]);
-
-  // Add validation handler
+  // Validation handler with comprehensive field validation
   const handleValidation = debounce((field: string, value: any) => {
     const errors = { ...validationErrors };
 
     switch (field) {
+      case "name":
+        if (!value) {
+          errors.name = "Name is required";
+        } else if (!validateName(value)) {
+          errors.name = "Name can only contain letters, spaces, dots, and hyphens";
+        } else if (value.length > MAX_NAME_LENGTH) {
+          errors.name = `Name must be less than ${MAX_NAME_LENGTH} characters`;
+        } else {
+          delete errors.name;
+        }
+        break;
+
+      case "email":
+        if (!value) {
+          errors.email = "Email is required";
+        } else if (!validateEmail(value)) {
+          errors.email = "Please enter a valid email address";
+        } else {
+          delete errors.email;
+        }
+        break;
+
       case "graduationYear":
         if (value && !validateGraduationYear(value)) {
           errors.graduationYear = `Year must be between ${FOUNDING_YEAR} and ${CURRENT_YEAR}`;
         } else {
           delete errors.graduationYear;
         }
-        break;
-
-      case "phoneNumber":
-        if (value && !validatePhoneNumber(value, phoneFormat)) {
-          errors.phoneNumber = "Invalid phone number format";
+        break;      case "phoneNumber":
+        const digitsOnly = value ? value.replace(/\D/g, "") : "";
+        if (value && (!validatePhoneNumber(value, phoneFormat) || digitsOnly.length !== 11)) {
+          errors.phoneNumber = "Please enter exactly 11 digits for the phone number";
         } else {
           delete errors.phoneNumber;
         }
         break;
 
       case "currentLocation":
-        if (value?.length > 100) {
-          errors.currentLocation = "Location must be less than 100 characters";
+        if (value?.length > MAX_LOCATION_LENGTH) {
+          errors.currentLocation = `Location must be less than ${MAX_LOCATION_LENGTH} characters`;
         } else {
           delete errors.currentLocation;
         }
         break;
 
+      case "currentCompany":
+        if (value?.length > MAX_COMPANY_LENGTH) {
+          errors.currentCompany = `Company name must be less than ${MAX_COMPANY_LENGTH} characters`;
+        } else {
+          delete errors.currentCompany;
+        }
+        break;
+
+      case "currentPosition":
+        if (value?.length > MAX_POSITION_LENGTH) {
+          errors.currentPosition = `Position must be less than ${MAX_POSITION_LENGTH} characters`;
+        } else {
+          delete errors.currentPosition;
+        }
+        break;
+
       case "department":
-        if (value?.length > 100) {
-          errors.department = "Department must be less than 100 characters";
+        if (value?.length > MAX_DEPARTMENT_LENGTH) {
+          errors.department = `Department must be less than ${MAX_DEPARTMENT_LENGTH} characters`;
         } else {
           delete errors.department;
         }
         break;
 
       case "bio":
-        if (value?.length > 500) {
-          errors.bio = "Bio must be less than 500 characters";
+        if (value?.length > MAX_BIO_LENGTH) {
+          errors.bio = `Bio must be less than ${MAX_BIO_LENGTH} characters`;
         } else {
           delete errors.bio;
         }
         break;
 
       case "linkedIn":
-        if (value && (!LINKEDIN_REGEX.test(value) || value.length > 100)) {
-          errors.linkedIn =
-            "Must be a valid LinkedIn URL (e.g. https://linkedin.com/in/username) and less than 100 characters";
+        if (value && !validateLinkedIn(value)) {
+          errors.linkedIn = "Must be a valid LinkedIn URL (e.g. https://linkedin.com/in/username)";
         } else {
           delete errors.linkedIn;
         }
         break;
 
       case "website":
-        if (value) {
-          try {
-            new URL(value);
-            if (value.length > 100) {
-              errors.website = "Website must be less than 100 characters";
-            } else {
-              delete errors.website;
-            }
-          } catch {
-            errors.website = "Must be a valid URL (e.g. https://example.com)";
-          }
+        if (value && !validateUrl(value)) {
+          errors.website = "Must be a valid URL (e.g. https://example.com)";
         } else {
           delete errors.website;
         }
@@ -411,26 +482,45 @@ export default function AlumniProfile() {
 
     setValidationErrors(errors);
   }, 300);
-
-  // Modify handleSaveProfile to show success alert
+  // Enhanced handleSaveProfile with comprehensive validation and error handling
   const handleSaveProfile = async () => {
-    // Check if there are any validation errors
-    console.log(profileData);
+    // Validate all fields before saving
+    const fields = Object.keys(profileData);
+    let hasErrors = false;
+    
+    fields.forEach(field => {
+      handleValidation(field, profileData[field as keyof ProfileData]);
+      if (validationErrors[field as keyof ValidationErrors]) {
+        hasErrors = true;
+      }
+    });
 
-    if (Object.keys(validationErrors).length > 0) {
+    // Show error toast if there are validation errors
+    if (hasErrors) {
+      toast.error("Please fix the validation errors before saving");
       return;
     }
+
     try {
+      // Show loading state
+      const loadingToast = toast.loading("Saving profile changes...");
+
       const response = await fetch("/api/users/profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(profileData),
       });
 
-      if (!response.ok) throw new Error("Failed to update profile");
+      if (!response.ok) {
+        throw new Error(await response.text() || "Failed to update profile");
+      }
 
       setBackupData(null); // Clear backup after successful save
       setIsEditMode(false);
+      
+      // Dismiss loading toast and show success
+      toast.dismiss(loadingToast);
+      toast.success("Profile updated successfully");
       setShowSuccessAlert(true);
 
       // Hide alert after 3 seconds
@@ -439,6 +529,7 @@ export default function AlumniProfile() {
       }, 3000);
     } catch (error) {
       console.error("Error updating profile:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to update profile");
     }
   };
 
@@ -568,25 +659,32 @@ export default function AlumniProfile() {
           <div className="w-full lg:w-[43.33%] p-4 sm:p-6 relative">
             {/* Profile Picture */}
             <div className="relative -mt-[176px] sm:-mt-[176px]">
-              <div className="h-56 w-56 sm:h-56 sm:w-56 rounded-full border-4 border-white/20 shadow-lg overflow-hidden bg-white/10 mx-auto relative group">
-                {profileData.imageUrl ? (
-                  <img
-                    src={profileData.imageUrl}
-                    alt={profileData.name}
-                    className="w-full h-full object-cover"
-                  />
+              <div className="h-56 w-56 sm:h-56 sm:w-56 rounded-full border-4 border-white/20 shadow-lg overflow-hidden bg-white/10 mx-auto relative group">                {isUploadingImage ? (
+                  <div className="w-full h-full flex items-center justify-center bg-black/50">
+                    <div className="animate-spin rounded-full h-8 w-8 border-2 border-white border-t-transparent" />
+                  </div>
                 ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <UserIcon className="h-24 w-24 sm:h-24 sm:w-24 text-white/60" />
-                  </div>
-                )}
-                {isEditMode && (
-                  <div
-                    className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                    onClick={() => fileInputRef.current?.click()}
-                  >
-                    <Camera className="h-10 w-10 sm:h-8 sm:w-8 text-white" />
-                  </div>
+                  <>
+                    {profileData.imageUrl ? (
+                      <img
+                        src={profileData.imageUrl}
+                        alt={profileData.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <UserIcon className="h-24 w-24 sm:h-24 sm:w-24 text-white/60" />
+                      </div>
+                    )}
+                    {isEditMode && (
+                      <div
+                        className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                        onClick={() => fileInputRef.current?.click()}
+                      >
+                        <Camera className="h-10 w-10 sm:h-8 sm:w-8 text-white" />
+                      </div>
+                    )}
+                  </>
                 )}
                 <input
                   type="file"
@@ -864,40 +962,39 @@ export default function AlumniProfile() {
                                     {country.code}
                                   </option>
                                 ))}
-                              </select>
-                              <input
-                                type="tel"
+                              </select>                              <input                                type="tel"
                                 value={profileData.phoneNumber || ""}
                                 onChange={(e) => {
-                                  const value = e.target.value.replace(
-                                    /\D/g,
-                                    ""
-                                  ); // Remove all non-digits
-                                  if (value.length <= 10) {
-                                    setProfileData((prev) => ({
-                                      ...prev,
-                                      phoneNumber: value,
-                                    }));
+                                  // Remove all non-digits
+                                  let value = e.target.value.replace(/\D/g, "");
+                                  
+                                  // Limit to 11 digits
+                                  if (value.length > 11) {
+                                    value = value.slice(0, 11);
                                   }
+                                  
+                                  setProfileData((prev) => ({
+                                    ...prev,
+                                    phoneNumber: value,
+                                  }));
                                 }}
                                 onBlur={(e) => {
-                                  const value = e.target.value;
-                                  // Clear the value if it's not exactly 10 digits when leaving the field
-                                  if (value.length > 0 && value.length !== 10) {
+                                  // On blur, validate the phone number format
+                                  const digitsOnly = e.target.value.replace(/\D/g, "");
+                                  if (digitsOnly.length > 0 && digitsOnly.length !== 11) {
                                     setProfileData((prev) => ({
                                       ...prev,
                                       phoneNumber: "",
                                     }));
                                   }
                                 }}
-                                maxLength={10}
-                                pattern="[0-9]{10}"
+                                maxLength={11}
+                                pattern="[0-9]{11}"
                                 className="bg-white/10 text-white rounded-lg p-2 flex-1 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 placeholder="Enter mobile number (10 digits)"
                               />
-                            </div>
-                            <p className="text-[10px] sm:text-xs text-white/60 mt-1">
-                              Enter exactly 10 digits
+                            </div>                              <p className="text-[10px] sm:text-xs text-white/60 mt-1">
+                              Enter exactly 11 digits
                             </p>
                           </div>
                         ) : (
@@ -1447,3 +1544,13 @@ export default function AlumniProfile() {
     </>
   );
 }
+
+// Helper functions
+const getHostname = (url: string): string => {
+  try {
+    const urlObj = new URL(url);
+    return urlObj.hostname;
+  } catch {
+    return url;
+  }
+};
