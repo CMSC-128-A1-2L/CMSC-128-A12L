@@ -41,8 +41,8 @@ interface Report {
   status: ReportStatus;
   adminResponse?: string;
   attachmentUrl?: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export default function ReportsPage() {
@@ -52,7 +52,6 @@ export default function ReportsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [filterStatus, setFilterStatus] = useState<ReportStatus | "all">("all");
 
-  // Form states
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState<ReportCategory>(ReportCategory.OTHER);
@@ -98,14 +97,15 @@ export default function ReportsPage() {
       if (!response.ok) throw new Error(data.error);
 
       toast.success("Report submitted successfully");
-      setReports([data, ...reports]);
-      
+
+      // Re-fetch reports instead of directly modifying the state
+      fetchReports();
+
       // Reset form
       setTitle("");
       setDescription("");
       setCategory(ReportCategory.OTHER);
       setAttachmentUrl("");
-      
     } catch (error: any) {
       toast.error(error.message || "Failed to submit report");
     } finally {
@@ -113,7 +113,7 @@ export default function ReportsPage() {
     }
   };
 
-  const filteredReports = reports.filter(report => 
+  const filteredReports = reports.filter(report =>
     filterStatus === "all" || report.status === filterStatus
   );
 
@@ -131,6 +131,7 @@ export default function ReportsPage() {
         return "bg-gray-500/20 text-gray-400";
     }
   };
+
   return (
     <div className="min-h-[85vh] container mx-auto p-6 max-w-6xl pb-20">
       <div className="relative">
@@ -139,10 +140,10 @@ export default function ReportsPage() {
             <h1 className="text-2xl font-bold text-white mb-2">Reports</h1>
             <p className="text-gray-400">Track and manage your submitted reports</p>
           </div>
-          
+
           <div className="flex flex-wrap gap-3">
-            <Select 
-              value={filterStatus} 
+            <Select
+              value={filterStatus}
               onValueChange={(value: string) => setFilterStatus(value as ReportStatus | "all")}
             >
               <SelectTrigger className="w-[150px] bg-white/5 border-white/10 text-gray-200">
@@ -173,47 +174,39 @@ export default function ReportsPage() {
                   </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
-                  <div>
-                    <Input
-                      placeholder="Title"
-                      value={title}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setTitle(e.target.value)}
-                      className="bg-white/5 border-white/10 text-gray-200 placeholder:text-gray-500"
-                    />
-                  </div>
-                  <div>
-                    <Select
-                      value={category}
-                      onValueChange={(value) => setCategory(value as ReportCategory)}
-                    >
-                      <SelectTrigger className="bg-white/5 border-white/10 text-gray-200">
-                        <SelectValue placeholder="Select category" />
-                      </SelectTrigger>
-                      <SelectContent className="bg-gray-900 border-white/10">
-                        {Object.values(ReportCategory).map((cat) => (
-                          <SelectItem key={cat} value={cat} className="text-gray-200">
-                            {cat.charAt(0).toUpperCase() + cat.slice(1).replace("_", " ")}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Textarea
-                      placeholder="Description"
-                      value={description}
-                      onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setDescription(e.target.value)}
-                      className="h-32 bg-white/5 border-white/10 text-gray-200 placeholder:text-gray-500"
-                    />
-                  </div>
-                  <div>
-                    <Input
-                      placeholder="Attachment URL (optional)"
-                      value={attachmentUrl}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAttachmentUrl(e.target.value)}
-                      className="bg-white/5 border-white/10 text-gray-200 placeholder:text-gray-500"
-                    />
-                  </div>
+                  <Input
+                    placeholder="Title"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    className="bg-white/5 border-white/10 text-gray-200 placeholder:text-gray-500"
+                  />
+                  <Select
+                    value={category}
+                    onValueChange={(value) => setCategory(value as ReportCategory)}
+                  >
+                    <SelectTrigger className="bg-white/5 border-white/10 text-gray-200">
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-gray-900 border-white/10">
+                      {Object.values(ReportCategory).map((cat) => (
+                        <SelectItem key={cat} value={cat} className="text-gray-200">
+                          {cat.charAt(0).toUpperCase() + cat.slice(1).replace("_", " ")}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Textarea
+                    placeholder="Description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    className="h-32 bg-white/5 border-white/10 text-gray-200 placeholder:text-gray-500"
+                  />
+                  <Input
+                    placeholder="Attachment URL (optional)"
+                    value={attachmentUrl}
+                    onChange={(e) => setAttachmentUrl(e.target.value)}
+                    className="bg-white/5 border-white/10 text-gray-200 placeholder:text-gray-500"
+                  />
                 </div>
                 <div className="flex justify-end">
                   <Button
@@ -232,7 +225,7 @@ export default function ReportsPage() {
 
         <AnimatePresence mode="wait">
           {isLoading ? (
-            <motion.div 
+            <motion.div
               key="loading"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -242,7 +235,7 @@ export default function ReportsPage() {
               <Loader2 className="w-8 h-8 animate-spin text-blue-400" />
             </motion.div>
           ) : filteredReports.length === 0 ? (
-            <motion.div 
+            <motion.div
               key="empty"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -253,7 +246,7 @@ export default function ReportsPage() {
               <p className="text-gray-400">No reports found</p>
             </motion.div>
           ) : (
-            <motion.div 
+            <motion.div
               key="grid"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -274,12 +267,12 @@ export default function ReportsPage() {
                       <div className="flex justify-between items-start mb-4">
                         <h3 className="text-lg font-semibold text-white">{report.title}</h3>
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(report.status)}`}>
-                          {report.status.charAt(0).toUpperCase() + report.status.slice(1)}
+                          {report.status?.charAt(0).toUpperCase() + report.status.slice(1)}
                         </span>
                       </div>
-                      
+
                       <p className="text-gray-300 mb-4 line-clamp-3">{report.description}</p>
-                      
+
                       {report.adminResponse && (
                         <div className="bg-white/5 rounded-lg p-3 mb-4 border border-white/10">
                           <div className="text-sm font-medium text-gray-200 mb-1">
@@ -292,7 +285,11 @@ export default function ReportsPage() {
                       <div className="flex items-center gap-2 text-sm text-gray-400 mb-3">
                         <FileText className="w-4 h-4" />
                         <span>
-                          {report.category.charAt(0).toUpperCase() + report.category.slice(1).replace("_", " ")}
+                          {report.category
+                            ? `${report.category.charAt(0).toUpperCase()}${report.category
+                                .slice(1)
+                                .replace("_", " ")}`
+                            : "Uncategorized"}
                         </span>
                       </div>
 

@@ -142,8 +142,7 @@ export default function UserReportsManagementPage() {
     .filter(report =>
       report.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       report.description.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-  const getStatusColor = (status: ReportStatus) => {
+    );  const getStatusColor = (status: ReportStatus | undefined) => {
     switch (status) {
       case ReportStatus.PENDING:
         return "bg-yellow-500/20 text-yellow-400";
@@ -154,7 +153,7 @@ export default function UserReportsManagementPage() {
       case ReportStatus.REJECTED:
         return "bg-red-500/20 text-red-400";
       default:
-        return "bg-gray-500/20 text-gray-400";
+        return "bg-yellow-500/20 text-yellow-400"; // Default to pending style
     }
   };  return (
     <div className="min-h-[85vh] w-full px-4 md:px-8 py-6 pb-20">
@@ -287,13 +286,13 @@ export default function UserReportsManagementPage() {
                             report.category.slice(1).replace("_", " ")}
                         </span>
                       </div>
-                    </div>
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(
-                        report.status
-                      )}`}
+                    </div>                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-medium ${getStatusColor(report.status || ReportStatus.PENDING)}`}
                     >
-                      {report.status.charAt(0).toUpperCase() + report.status.slice(1)}
+                      {report.status ? 
+                        `${report.status.charAt(0).toUpperCase()}${report.status.slice(1)}` : 
+                        "Pending"
+                      }
                     </span>
                   </div>                  <p className="text-gray-700 mb-4 line-clamp-3">{report.description}</p>
 
