@@ -23,6 +23,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import ConstellationBackground from "@/app/components/constellationBackground";
 import { UserRole } from "@/entities/user";
+import CountUp from "react-countup";
 
 interface DashboardStats {
   connections: number;
@@ -92,6 +93,7 @@ Date.prototype.toRelativeString = function(): string {
 export default function AlumniDashboard() {
   const { data: session } = useSession();
   const [loading, setLoading] = useState(true);
+  const [activitiesLoading, setActivitiesLoading] = useState(true);
   const [stats, setStats] = useState<DashboardStats>({
     connections: 0,
     upcomingEvents: 0,
@@ -162,6 +164,7 @@ export default function AlumniDashboard() {
     const fetchRecentActivities = async () => {
       if (!session?.user?.id) return;
       
+      setActivitiesLoading(true);
       try {
         const response = await fetch('/api/logs/user?limit=3');
         const logs: UserLog[] = await response.json();
@@ -214,6 +217,8 @@ export default function AlumniDashboard() {
         setRecentActivities(activities);
       } catch (error) {
         console.error('Error fetching recent activities:', error);
+      } finally {
+        setActivitiesLoading(false);
       }
     };
 
@@ -375,7 +380,13 @@ export default function AlumniDashboard() {
           <h2 className="text-2xl font-bold text-white mb-6">Recent Activity</h2>
           <Card className="p-6 bg-white/10 backdrop-blur-sm border-0">
             <div className="space-y-6">
-              {recentActivities.length > 0 ? (
+              {activitiesLoading ? (
+                <>
+                  <ActivitySkeleton />
+                  <ActivitySkeleton />
+                  <ActivitySkeleton />
+                </>
+              ) : recentActivities.length > 0 ? (
                 recentActivities.map((activity, index) => (
                   <ActivityItem
                     key={index}
@@ -407,6 +418,24 @@ function StatCard({ title, value, icon: Icon, color, trend, loading }: {
   trend: string;
   loading: boolean;
 }) {
+  // State to track the current random value during loading
+  const [randomValue, setRandomValue] = useState(Math.floor(Math.random() * 50) + 50);
+  
+  // Effect to continuously update random values while loading
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    
+    if (loading) {
+      interval = setInterval(() => {
+        setRandomValue(Math.floor(Math.random() * 100) + 20);
+      }, 2000); // Update every 2 seconds
+    }
+    
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [loading]);
+  
   return (
     <motion.div
       whileHover={{ scale: 1.02 }}
@@ -416,17 +445,26 @@ function StatCard({ title, value, icon: Icon, color, trend, loading }: {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm text-gray-300">{title}</p>
-            {loading ? (
-              <div className="mt-1 space-y-2">
-                <div className="h-8 w-16 bg-white/10 rounded animate-pulse" />
-                <div className="h-4 w-24 bg-white/10 rounded animate-pulse" />
-              </div>
-            ) : (
-              <>
-                <h3 className="text-3xl font-bold mt-1 text-white">{value}</h3>
-                <p className="text-sm text-gray-400 mt-1">{trend}</p>
-              </>
-            )}
+            <h3 className="text-3xl font-bold mt-1 text-white">
+              {loading ? (
+                <CountUp 
+                  key={randomValue} // Force re-render when random value changes
+                  start={randomValue - 20}
+                  end={randomValue}
+                  duration={1.8}
+                />
+              ) : (
+                <CountUp 
+                  start={0}
+                  end={value}
+                  duration={2}
+                  preserveValue
+                />
+              )}
+            </h3>
+            <p className="text-sm text-gray-400 mt-1">
+              {loading ? "Loading..." : trend}
+            </p>
           </div>
           <div className={`p-4 rounded-xl ${color} bg-opacity-10 ${loading ? 'animate-pulse' : ''}`}>
             <Icon className={`w-8 h-8 ${color}`} />
@@ -453,6 +491,21 @@ function ActivityItem({ icon: Icon, title, description, time, color }: {
         <h4 className="font-semibold text-white">{title}</h4>
         <p className="text-gray-200">{description}</p>
         <p className="text-sm text-gray-400 mt-1">{time}</p>
+      </div>
+    </div>
+  );
+}
+
+function ActivitySkeleton() {
+  return (
+    <div className="flex items-start space-x-4">
+      <div className="p-3 rounded-xl bg-white/5 animate-pulse">
+        <div className="w-6 h-6"></div>
+      </div>
+      <div className="flex-1">
+        <div className="h-5 bg-white/5 rounded w-1/3 mb-2 animate-pulse"></div>
+        <div className="h-4 bg-white/5 rounded w-3/4 mb-2 animate-pulse"></div>
+        <div className="h-3 bg-white/5 rounded w-1/4 animate-pulse"></div>
       </div>
     </div>
   );

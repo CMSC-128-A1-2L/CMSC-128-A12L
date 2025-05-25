@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
-import { ArrowRight, MessageSquare } from "lucide-react";
+import { ArrowRight, MessageSquare, Megaphone } from "lucide-react";
 import { motion } from "framer-motion";
 import ConstellationBackground from "@/app/components/constellationBackground";
 import AnnouncementModal from "@/app/components/announcementModal";
+import CountUp from "react-countup";
 
 interface RawAnnouncement {
   _id: string;
@@ -27,10 +28,12 @@ interface AnnouncementForModal {
 export default function AnnouncementsPage() {
   const [announcements, setAnnouncements] = useState<RawAnnouncement[]>([]);
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<AnnouncementForModal | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchAnnouncements = async () => {
       try {
+        setLoading(true);
         const response = await fetch("/api/alumni/announcements");
         if (!response.ok) {
           throw new Error("Failed to fetch announcements");
@@ -46,6 +49,8 @@ export default function AnnouncementsPage() {
       } catch (error) {
         console.error("Error fetching announcements:", error);
         setAnnouncements([]);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -90,44 +95,57 @@ export default function AnnouncementsPage() {
 
       {/* Main Content */}
       <div className="flex-grow">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.2 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12"
-        >
-          {announcements.map((announcement) => (
-            <motion.div
-              key={announcement._id}
-              whileHover={{ y: -5 }}
-              transition={{ duration: 0.2 }}
-            >
-              <Card
-                className="p-6 hover:shadow-lg transition-all duration-300 cursor-pointer bg-white/10 backdrop-blur-sm border-0 h-full"
-                onClick={() => handleCardClick(announcement)}
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-16">
+            <div className="p-4 rounded-full bg-white/5 mb-4">
+              <Megaphone className="w-8 h-8 text-blue-400 animate-pulse" />
+            </div>
+            <h3 className="text-3xl font-bold text-white mb-2">
+              <CountUp end={100} duration={2} />
+              <span className="text-blue-400">%</span>
+            </h3>
+            <p className="text-gray-400">Loading announcements...</p>
+          </div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12"
+          >
+            {announcements.map((announcement) => (
+              <motion.div
+                key={announcement._id}
+                whileHover={{ y: -5 }}
+                transition={{ duration: 0.2 }}
               >
-                <div className="flex items-center justify-between mb-4">
-                  <div className="p-3 rounded-xl bg-blue-500 text-white shadow-lg">
-                    <MessageSquare className="w-6 h-6" />
+                <Card
+                  className="p-6 hover:shadow-lg transition-all duration-300 cursor-pointer bg-white/10 backdrop-blur-sm border-0 h-full"
+                  onClick={() => handleCardClick(announcement)}
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="p-3 rounded-xl bg-blue-500 text-white shadow-lg">
+                      <MessageSquare className="w-6 h-6" />
+                    </div>
+                    <span className="text-sm text-gray-300">Announcement</span>
                   </div>
-                  <span className="text-sm text-gray-300">Announcement</span>
-                </div>
-                <h3 className="text-xl font-semibold text-white mb-2">
-                  {announcement.title}
-                </h3>
-                <p className="text-gray-200 text-sm mb-4 line-clamp-3">
-                  {announcement.content}
-                </p>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-400">
-                    {new Date(announcement.publishDate).toLocaleDateString()}
-                  </span>
-                  <ArrowRight className="w-5 h-5 text-gray-400" />
-                </div>
-              </Card>
-            </motion.div>
-          ))}
-        </motion.div>
+                  <h3 className="text-xl font-semibold text-white mb-2">
+                    {announcement.title}
+                  </h3>
+                  <p className="text-gray-200 text-sm mb-4 line-clamp-3">
+                    {announcement.content}
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-400">
+                      {new Date(announcement.publishDate).toLocaleDateString()}
+                    </span>
+                    <ArrowRight className="w-5 h-5 text-gray-400" />
+                  </div>
+                </Card>
+              </motion.div>
+            ))}
+          </motion.div>
+        )}
       </div>
 
       {/* Modal */}

@@ -13,6 +13,7 @@ import NewsletterCard from "@/app/components/newslettersContentCard";
 import NewsletterRow from "@/app/components/newslettersContentRow";
 import useIsMobile from "@/hooks/useIsMobile";
 import MobileNewslettersView from "@/app/components/MobileNewslettersView";
+import CountUp from "react-countup";
 
 export default function NewslettersPage() {
   const router = useRouter();
@@ -226,12 +227,12 @@ export default function NewslettersPage() {
       </div>
 
       {/* Carousel Section/Pinned News */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 bg-white/5 rounded-2xl">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="relative"
+          className="relative bg-white/5 rounded-2xl p-6"
         >
           <h2 className="text-2xl font-bold text-white mb-6">Pinned News</h2>
           <div className="relative px-12 rounded-xl">
@@ -378,8 +379,15 @@ export default function NewslettersPage() {
 
           <main className={`flex-1 transition-all duration-300 ${filterSidebarOpen ? '' : 'w-full'}`}>
             {loading ? (
-              <div className="flex items-center justify-center py-12">
-                <div className="text-white/80">Loading newsletters...</div>
+              <div className="flex flex-col items-center justify-center py-16">
+                <div className="p-4 rounded-full bg-white/5 mb-4">
+                  <Newspaper className="w-8 h-8 text-purple-400 animate-pulse" />
+                </div>
+                <h3 className="text-3xl font-bold text-white mb-2">
+                  <CountUp end={100} duration={2} />
+                  <span className="text-purple-400">%</span>
+                </h3>
+                <p className="text-gray-400">Loading newsletters...</p>
               </div>
             ) : (
               <>

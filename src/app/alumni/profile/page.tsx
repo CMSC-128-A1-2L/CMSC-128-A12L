@@ -22,6 +22,7 @@ import {
   FileText,
   Linkedin,
   CheckCircle2,
+  Loader2,
 } from "lucide-react";
 import EditProfileModal from "@/app/components/EditProfileModal";
 import debounce from "lodash/debounce";
@@ -106,6 +107,10 @@ export default function AlumniProfile() {
   const [selectedOption, setSelectedOption] = useState("personal");
   const [isEditMode, setIsEditMode] = useState(false);
   const [showSuccessAlert, setShowSuccessAlert] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isImageUploading, setIsImageUploading] = useState(false);
+  const [isImageLoading, setIsImageLoading] = useState(true);
   const [profileData, setProfileData] = useState<ProfileData>({
     name: session?.user?.name || "",
     email: session?.user?.email || "",
@@ -248,18 +253,19 @@ export default function AlumniProfile() {
     if (!e.target.files || !e.target.files[0]) return;
 
     const file = e.target.files[0];
-
-    // Check file size
-    if (file.size > 3 * 1024 * 1024) {
-      return;
-    }
-
-    // Check file type
-    if (!file.type.startsWith("image/")) {
-      return;
-    }
-
+    setIsImageUploading(true);
+    
     try {
+      // Check file size
+      if (file.size > 3 * 1024 * 1024) {
+        return;
+      }
+
+      // Check file type
+      if (!file.type.startsWith("image/")) {
+        return;
+      }
+
       // First upload to Cloudinary
       const formData = new FormData();
       formData.append("file", file);
@@ -300,11 +306,14 @@ export default function AlumniProfile() {
       }));
     } catch (error) {
       console.error("Error:", error);
+    } finally {
+      setIsImageUploading(false);
     }
   };
 
   useEffect(() => {
     const fetchProfileData = async () => {
+      setIsLoading(true);
       try {
         const response = await fetch("/api/users/profile");
         if (!response.ok) throw new Error("Failed to fetch profile data");
@@ -315,6 +324,8 @@ export default function AlumniProfile() {
         }));
       } catch (error) {
         console.error("Error fetching profile:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -336,6 +347,20 @@ export default function AlumniProfile() {
       setWebsiteHostname('');
     }
   }, [profileData.website]);
+
+  // Reset image loading state when the image URL changes
+  useEffect(() => {
+    if (profileData.imageUrl) {
+      setIsImageLoading(true);
+      
+      // Add a timeout to ensure the loader doesn't get stuck forever
+      const timeoutId = setTimeout(() => {
+        setIsImageLoading(false);
+      }, 5000); // 5 seconds timeout
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [profileData.imageUrl]);
 
   // Add validation handler
   const handleValidation = debounce((field: string, value: any) => {
@@ -420,6 +445,8 @@ export default function AlumniProfile() {
     if (Object.keys(validationErrors).length > 0) {
       return;
     }
+    
+    setIsSaving(true);
     try {
       const response = await fetch("/api/users/profile", {
         method: "PUT",
@@ -439,6 +466,8 @@ export default function AlumniProfile() {
       }, 3000);
     } catch (error) {
       console.error("Error updating profile:", error);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -569,18 +598,30 @@ export default function AlumniProfile() {
             {/* Profile Picture */}
             <div className="relative -mt-[176px] sm:-mt-[176px]">
               <div className="h-56 w-56 sm:h-56 sm:w-56 rounded-full border-4 border-white/20 shadow-lg overflow-hidden bg-white/10 mx-auto relative group">
-                {profileData.imageUrl ? (
-                  <img
-                    src={profileData.imageUrl}
-                    alt={profileData.name}
-                    className="w-full h-full object-cover"
-                  />
+                {isImageUploading ? (
+                  <div className="w-full h-full flex items-center justify-center bg-black/30">
+                    <Loader2 className="h-12 w-12 text-white animate-spin" />
+                  </div>
+                ) : profileData.imageUrl ? (
+                  <>
+                    <img
+                      src={profileData.imageUrl}
+                      alt={profileData.name}
+                      className={`w-full h-full object-cover ${isImageLoading ? 'hidden' : 'block'}`}
+                      onLoad={() => setIsImageLoading(false)}
+                    />
+                    {isImageLoading && (
+                      <div className="w-full h-full flex items-center justify-center bg-black/20">
+                        <Loader2 className="h-10 w-10 text-white/70 animate-spin" />
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <div className="w-full h-full flex items-center justify-center">
                     <UserIcon className="h-24 w-24 sm:h-24 sm:w-24 text-white/60" />
                   </div>
                 )}
-                {isEditMode && (
+                {isEditMode && !isImageUploading && (
                   <div
                     className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
                     onClick={() => fileInputRef.current?.click()}
@@ -594,76 +635,86 @@ export default function AlumniProfile() {
                   className="hidden"
                   accept="image/*"
                   onChange={handleImageUpload}
+                  disabled={isImageUploading}
                 />
               </div>
             </div>
 
             {/* Profile Info */}
             <div className="mt-6 text-center">
-              <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2 sm:mb-4">
-                {profileData.name}
-              </h1>
-              <p className="text-base sm:text-lg text-white/80">
-                {profileData.currentPosition}{" "}
-                {profileData.currentCompany &&
-                  `at ${profileData.currentCompany}`}
-              </p>
-              <p className="text-sm sm:text-base text-white/60 mb-6 sm:mb-8">
-                {profileData.email}
-              </p>
+              {isLoading ? (
+                <div className="flex flex-col items-center space-y-4">
+                  <Loader2 className="h-8 w-8 text-blue-400 animate-spin" />
+                  <p className="text-white/70">Loading profile information...</p>
+                </div>
+              ) : (
+                <>
+                  <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2 sm:mb-4">
+                    {profileData.name}
+                  </h1>
+                  <p className="text-base sm:text-lg text-white/80">
+                    {profileData.currentPosition}{" "}
+                    {profileData.currentCompany &&
+                      `at ${profileData.currentCompany}`}
+                  </p>
+                  <p className="text-sm sm:text-base text-white/60 mb-6 sm:mb-8">
+                    {profileData.email}
+                  </p>
 
-              <div className="flex flex-col items-center gap-2 sm:gap-3">
-                {profileData.currentLocation && (
-                  <div className="flex items-center gap-2 text-white/70 text-sm sm:text-base">
-                    <MapPin className="h-4 w-4" />
-                    <span>{profileData.currentLocation}</span>
+                  <div className="flex flex-col items-center gap-2 sm:gap-3">
+                    {profileData.currentLocation && (
+                      <div className="flex items-center gap-2 text-white/70 text-sm sm:text-base">
+                        <MapPin className="h-4 w-4" />
+                        <span>{profileData.currentLocation}</span>
+                      </div>
+                    )}
+                    {profileData.graduationYear && (
+                      <div className="flex items-center gap-2 text-white/70 text-sm sm:text-base">
+                        <GraduationCap className="h-4 w-4" />
+                        <span>Class of {profileData.graduationYear}</span>
+                      </div>
+                    )}
+                    {profileData.department && (
+                      <div className="flex items-center gap-2 text-white/70 text-sm sm:text-base">
+                        <Building2 className="h-4 w-4" />
+                        <span>{profileData.department}</span>
+                      </div>
+                    )}
+                    {profileData.phoneNumber && (
+                      <div className="flex items-center gap-2 text-white/70 text-sm sm:text-base mb-4 sm:mb-0">
+                        <Phone className="h-4 w-4" />
+                        <span>{profileData.phoneNumber}</span>
+                      </div>
+                    )}
+                    {profileData.website && (
+                      <div className="flex items-center gap-2 text-white/70 text-sm sm:text-base">
+                        <Globe className="h-4 w-4" />
+                        <a 
+                          href={profileData.website} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          className="hover:text-white transition-colors"
+                        >
+                          {getHostname(profileData.website)}
+                        </a>
+                      </div>
+                    )}
+                    {profileData.linkedIn && (
+                      <div className="flex items-center gap-2 text-white/70 text-sm sm:text-base">
+                        <Linkedin className="h-4 w-4" />
+                        <a
+                          href={profileData.linkedIn}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:text-white transition-colors"
+                        >
+                          LinkedIn Profile
+                        </a>
+                      </div>
+                    )}
                   </div>
-                )}
-                {profileData.graduationYear && (
-                  <div className="flex items-center gap-2 text-white/70 text-sm sm:text-base">
-                    <GraduationCap className="h-4 w-4" />
-                    <span>Class of {profileData.graduationYear}</span>
-                  </div>
-                )}
-                {profileData.department && (
-                  <div className="flex items-center gap-2 text-white/70 text-sm sm:text-base">
-                    <Building2 className="h-4 w-4" />
-                    <span>{profileData.department}</span>
-                  </div>
-                )}
-                {profileData.phoneNumber && (
-                  <div className="flex items-center gap-2 text-white/70 text-sm sm:text-base mb-4 sm:mb-0">
-                    <Phone className="h-4 w-4" />
-                    <span>{profileData.phoneNumber}</span>
-                  </div>
-                )}
-                {profileData.website && (
-                  <div className="flex items-center gap-2 text-white/70 text-sm sm:text-base">
-                    <Globe className="h-4 w-4" />
-                    <a 
-                      href={profileData.website} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="hover:text-white transition-colors"
-                    >
-                      {getHostname(profileData.website)}
-                    </a>
-                  </div>
-                )}
-                {profileData.linkedIn && (
-                  <div className="flex items-center gap-2 text-white/70 text-sm sm:text-base">
-                    <Linkedin className="h-4 w-4" />
-                    <a
-                      href={profileData.linkedIn}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="hover:text-white transition-colors"
-                    >
-                      LinkedIn Profile
-                    </a>
-                  </div>
-                )}
-              </div>
+                </>
+              )}
 
               {/* Edit Profile Button */}
               <div className="mt-2 sm:mt-8 mb-6 sm:mb-32 flex gap-4 justify-center">
@@ -671,6 +722,7 @@ export default function AlumniProfile() {
                   <button
                     onClick={() => handleEditMode(false)}
                     className="px-6 sm:px-6 py-3 sm:py-2.5 rounded-full transition-all duration-300 flex items-center gap-3 sm:gap-3 cursor-pointer font-medium text-sm sm:text-sm bg-gray-500 hover:bg-gray-600 text-white shadow-lg hover:shadow-gray-500/30"
+                    disabled={isSaving}
                   >
                     Cancel
                   </button>
@@ -679,32 +731,26 @@ export default function AlumniProfile() {
                   onClick={() =>
                     isEditMode ? handleSaveProfile() : setIsEditMode(true)
                   }
+                  disabled={isLoading || isSaving}
                   className={`px-6 sm:px-6 py-3 sm:py-2.5 rounded-full transition-all duration-300 flex items-center gap-3 sm:gap-3 cursor-pointer font-medium text-sm sm:text-sm ${
                     isEditMode
                       ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white shadow-lg hover:shadow-emerald-500/30"
                       : "bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-indigo-500/30"
                   }`}
                 >
-                  {isEditMode ? (
+                  {isSaving ? (
                     <>
-                      <svg
-                        className="w-4 h-4 sm:w-4 sm:h-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth="2"
-                          d="M5 13l4 4L19 7"
-                        />
-                      </svg>
-                      <span>Save Profile</span>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <span>Saving...</span>
+                    </>
+                  ) : isEditMode ? (
+                    <>
+                      <CheckCircle2 className="h-4 w-4" />
+                      <span>Save Changes</span>
                     </>
                   ) : (
                     <>
-                      <Edit2 className="h-4 w-4 sm:h-4 sm:w-4" />
+                      <Edit2 className="h-4 w-4" />
                       <span>Edit Profile</span>
                     </>
                   )}

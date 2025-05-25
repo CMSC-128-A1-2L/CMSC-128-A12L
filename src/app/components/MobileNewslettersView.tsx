@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
-import { Search, Filter, ChevronLeft, ChevronRight, Plus, X } from 'lucide-react';
+import { Search, Filter, ChevronLeft, ChevronRight, Plus, X, Newspaper } from 'lucide-react';
 import { motion } from 'framer-motion';
 import NewsletterCard from './newslettersContentCard';
 
@@ -9,6 +9,7 @@ import { useSession } from "next-auth/react";
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import MobileNewslettersFilterDrawer from './MobileNewslettersFilterDrawer';
+import CountUp from "react-countup";
 
 interface MobileNewslettersViewProps {
   newsletters: any[];
@@ -278,8 +279,15 @@ export default function MobileNewslettersView({
         )}
 
         {loading ? (
-          <div className="flex justify-center py-8">
-            <div className="text-white/80">Loading newsletters...</div>
+          <div className="flex flex-col items-center justify-center py-16">
+            <div className="p-4 rounded-full bg-white/5 mb-4">
+              <Newspaper className="w-8 h-8 text-purple-400 animate-pulse" />
+            </div>
+            <h3 className="text-3xl font-bold text-white mb-2">
+              <CountUp end={100} duration={2} />
+              <span className="text-purple-400">%</span>
+            </h3>
+            <p className="text-gray-400">Loading newsletters...</p>
           </div>
         ) : (
           <>

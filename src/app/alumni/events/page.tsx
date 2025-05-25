@@ -12,6 +12,7 @@ import { Event } from "@/entities/event";
 import MobileEventView from "@/app/components/MobileEventView";
 import CreateEvent from "@/pages/createEvent";
 import EditEventModal from "@/app/components/editEvent";
+import CountUp from "react-countup";
 
 import {
   Search,
@@ -22,6 +23,7 @@ import {
   Plus,
   Filter,
   X,
+  Calendar,
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { Popover } from '@headlessui/react';
@@ -583,8 +585,15 @@ export default function EventListings() {
               {/* Main content */}
               <main className={`flex-1 transition-all duration-300 ${filterSidebarOpen ? '' : 'w-full'}`}>
                 {loading ? (
-                  <div className="flex items-center justify-center py-12">
-                    <div className="text-white/80">Loading events...</div>
+                  <div className="flex flex-col items-center justify-center py-16">
+                    <div className="p-4 rounded-full bg-white/5 mb-4">
+                      <Calendar className="w-8 h-8 text-green-400 animate-pulse" />
+                    </div>
+                    <h3 className="text-3xl font-bold text-white mb-2">
+                      <CountUp end={100} duration={2} />
+                      <span className="text-green-400">%</span>
+                    </h3>
+                    <p className="text-gray-400">Loading events...</p>
                   </div>
                 ) : (
                   <>

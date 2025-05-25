@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Search, Filter, ChevronLeft, ChevronRight, Plus, X } from 'lucide-react';
+import { Search, Filter, ChevronLeft, ChevronRight, Plus, X, Briefcase } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import JobCard from './jobContentCard';
 import JobDetails from './jobDetails';
@@ -9,6 +9,7 @@ import MobileFilterDrawer from './MobileFilterDrawer';
 import CreateJL from './createJL';
 import JobApplicationForm from './JobApplicationForm';
 import EditJobListComponent from './editJobList';
+import CountUp from "react-countup";
 
 import { useSession } from "next-auth/react";
 import Footer from './footer';
@@ -257,8 +258,15 @@ export default function MobileJobView({
 
         {/* Jobs List */}
         {loading ? (
-          <div className="flex justify-center py-8">
-            <div className="text-white/80">Loading jobs...</div>
+          <div className="flex flex-col items-center justify-center py-16">
+            <div className="p-4 rounded-full bg-white/5 mb-4">
+              <Briefcase className="w-8 h-8 text-blue-400 animate-pulse" />
+            </div>
+            <h3 className="text-3xl font-bold text-white mb-2">
+              <CountUp end={100} duration={2} />
+              <span className="text-blue-400">%</span>
+            </h3>
+            <p className="text-gray-400">Loading job opportunities...</p>
           </div>
         ) : (
           <>

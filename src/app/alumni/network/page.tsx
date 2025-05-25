@@ -38,6 +38,7 @@ export default function AlumniPage() {
   const [showFilter, setShowFilter] = useState(false);
   const [alumni, setAlumni] = useState<Alumni[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filterLoading, setFilterLoading] = useState(false);
   const itemsPerPage = 10;
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -100,15 +101,34 @@ export default function AlumniPage() {
     );
   });
 
-  // clear filter
+  // Update handleFilterChange to simulate loading when filters change
+  const handleFilterChange = (key: string, value: string) => {
+    setFilterLoading(true);
+    // Create a new filter object
+    const newFilter = { ...selectedFilter };
+    newFilter[key as keyof typeof selectedFilter] = value;
+    
+    // Apply the filter after a short delay to show loading animation
+    setTimeout(() => {
+      setSelectedFilter(newFilter);
+      setCurrentPage(1);
+      setFilterLoading(false);
+    }, 500);
+  };
+
+  // Update clearFilters function
   const clearFilters = () => {
-    setSelectedFilter({ 
-      department: "",
-      graduationYear: "",
-      currentLocation: "",
-      currentCompany: "",
-    });
-    setSearch("");
+    setFilterLoading(true);
+    setTimeout(() => {
+      setSelectedFilter({ 
+        department: "",
+        graduationYear: "",
+        currentLocation: "",
+        currentCompany: "",
+      });
+      setSearch("");
+      setFilterLoading(false);
+    }, 500);
   };
 
   const totalPages = Math.ceil(filteredAlumni.length / itemsPerPage);
@@ -187,7 +207,7 @@ export default function AlumniPage() {
                 <div className="flex items-center justify-between">
                   <span>Department</span>
                   <button
-                    onClick={() => setSelectedFilter({ ...selectedFilter, department: "" })}
+                    onClick={() => handleFilterChange("department", "")}
                     className="text-sm text-gray-300 hover:text-white"
                   >
                     Clear
@@ -197,7 +217,7 @@ export default function AlumniPage() {
               {[...new Set(alumni.map((a) => a.department).filter(Boolean))].map((dept) => (
                 <li key={dept}>
                   <button
-                    onClick={() => setSelectedFilter({ ...selectedFilter, department: dept! })}
+                    onClick={() => handleFilterChange("department", dept!)}
                     className="block w-full text-left px-4 py-2 hover:bg-white/20 cursor-pointer text-gray-200"
                   >
                     {dept} {selectedFilter.department === dept && "✓"}
@@ -210,7 +230,7 @@ export default function AlumniPage() {
                 <div className="flex items-center justify-between">
                   <span>Graduation Year</span>
                   <button
-                    onClick={() => setSelectedFilter({ ...selectedFilter, graduationYear: "" })}
+                    onClick={() => handleFilterChange("graduationYear", "")}
                     className="text-sm text-gray-300 hover:text-white"
                   >
                     Clear
@@ -222,7 +242,7 @@ export default function AlumniPage() {
                 .map((year) => (
                   <li key={year}>
                     <button
-                      onClick={() => setSelectedFilter({ ...selectedFilter, graduationYear: year!.toString() })}
+                      onClick={() => handleFilterChange("graduationYear", year!.toString())}
                       className="block w-full text-left px-4 py-2 hover:bg-white/20 cursor-pointer text-gray-200"
                     >
                       {year} {selectedFilter.graduationYear === year?.toString() && "✓"}
@@ -235,7 +255,7 @@ export default function AlumniPage() {
                 <div className="flex items-center justify-between">
                   <span>Current Location</span>
                   <button
-                    onClick={() => setSelectedFilter({ ...selectedFilter, currentLocation: "" })}
+                    onClick={() => handleFilterChange("currentLocation", "")}
                     className="text-sm text-gray-300 hover:text-white"
                   >
                     Clear
@@ -245,7 +265,7 @@ export default function AlumniPage() {
               {[...new Set(alumni.map((a) => a.currentLocation).filter(Boolean))].map((location) => (
                 <li key={location}>
                   <button
-                    onClick={() => setSelectedFilter({ ...selectedFilter, currentLocation: location! })}
+                    onClick={() => handleFilterChange("currentLocation", location!)}
                     className="block w-full text-left px-4 py-2 hover:bg-white/20 cursor-pointer text-gray-200"
                   >
                     {location} {selectedFilter.currentLocation === location && "✓"}
@@ -258,7 +278,7 @@ export default function AlumniPage() {
                 <div className="flex items-center justify-between">
                   <span>Current Company</span>
                   <button
-                    onClick={() => setSelectedFilter({ ...selectedFilter, currentCompany: "" })}
+                    onClick={() => handleFilterChange("currentCompany", "")}
                     className="text-sm text-gray-300 hover:text-white"
                   >
                     Clear
@@ -268,7 +288,7 @@ export default function AlumniPage() {
               {[...new Set(alumni.map((a) => a.currentCompany).filter(Boolean))].map((company) => (
                 <li key={company}>
                   <button
-                    onClick={() => setSelectedFilter({ ...selectedFilter, currentCompany: company! })}
+                    onClick={() => handleFilterChange("currentCompany", company!)}
                     className="block w-full text-left px-4 py-2 hover:bg-white/20 cursor-pointer text-gray-200"
                   >
                     {company} {selectedFilter.currentCompany === company && "✓"}
@@ -306,11 +326,7 @@ export default function AlumniPage() {
                     {value}
                     <button
                       className="text-white opacity-60 hover:opacity-100 cursor-pointer"
-                      onClick={() => {
-                        const newFilters = { ...selectedFilter };
-                        newFilters[key as keyof typeof selectedFilter] = "";
-                        setSelectedFilter(newFilters);
-                      }}
+                      onClick={() => handleFilterChange(key as keyof typeof selectedFilter, "")}
                     >
                       ✕
                     </button>
@@ -374,10 +390,24 @@ export default function AlumniPage() {
                 transition={{ duration: 0.3 }}
                 className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-4"
               >
-                {loading ? (
-                  <div className="col-span-full text-center py-8">
-                    <p className="text-gray-400">Loading alumni data...</p>
-                  </div>
+                {loading || filterLoading ? (
+                  <>
+                    {/* Skeleton cards */}
+                    {Array.from({ length: 10 }).map((_, index) => (
+                      <div 
+                        key={`skeleton-${index}`}
+                        className="w-full h-[248px] sm:h-88 bg-white/10 backdrop-blur-sm rounded-lg overflow-hidden shadow-md flex flex-col relative border border-white/20 animate-pulse"
+                      >
+                        <div className="w-full h-[85%] bg-white/5 flex items-center justify-center">
+                          <FiUsers className="text-white/10 w-12 h-12 sm:w-16 sm:h-16" />
+                        </div>
+                        <div className="w-full flex-1 py-2 sm:py-3 px-2 text-center bg-black/20 backdrop-blur-sm">
+                          <div className="h-4 bg-white/10 rounded w-3/4 mx-auto mb-2"></div>
+                          <div className="h-3 bg-white/10 rounded w-1/2 mx-auto"></div>
+                        </div>
+                      </div>
+                    ))}
+                  </>
                 ) : displayedAlumni.length > 0 ? (
                   displayedAlumni.map((alumni, index) => (
                     <motion.div

@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { Search, Filter, ChevronLeft, ChevronRight, Plus, X } from 'lucide-react';
+import { Search, Filter, ChevronLeft, ChevronRight, Plus, X, Calendar } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import EventCard from './alumniEventCard';
 import EventDetails from './eventDetails';
 import MobileEventFilterDrawer from './MobileEventFilterDrawer';
 import { Event } from '@/entities/event';
 import { useSession } from "next-auth/react";
+import CountUp from "react-countup";
 
 interface MobileEventViewProps {
   events: Event[];
@@ -196,8 +197,15 @@ export default function MobileEventView({
 
         {/* Events List */}
         {loading ? (
-          <div className="flex justify-center py-8">
-            <div className="text-white/80">Loading events...</div>
+          <div className="flex flex-col items-center justify-center py-16">
+            <div className="p-4 rounded-full bg-white/5 mb-4">
+              <Calendar className="w-8 h-8 text-green-400 animate-pulse" />
+            </div>
+            <h3 className="text-3xl font-bold text-white mb-2">
+              <CountUp end={100} duration={2} />
+              <span className="text-green-400">%</span>
+            </h3>
+            <p className="text-gray-400">Loading events...</p>
           </div>
         ) : (
           <>
