@@ -42,7 +42,7 @@ export default function PieChart({ title, data, type = "pie" }: PieChartProps) {
               weight: "bold",
               size: 14,
             },
-            formatter: (value: number) => value,
+            formatter: (value: number) => (value === 0 ? "" : value),
           },
         },
       }}
