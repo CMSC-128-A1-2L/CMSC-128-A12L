@@ -41,18 +41,15 @@ class MongoDBReportRepository implements ReportRepository {
     async getAllReports(): Promise<Report[]> {
         const reportDtos = await this.model.find().sort({ updatedAt: -1 });
         return reportDtos.map(mapReportDtoToReport);
-    }
-
-    async updateReport(report: Report): Promise<void> {
-        const reportDto = mapReportToReportDto(report);
-        await this.model.findByIdAndUpdate(report._id, reportDto);
+    }    async updateReport(id: string, updateData: Partial<Report>): Promise<Report | null> {
+        const reportDto = mapReportToReportDto({ ...await this.getReportById(id) as Report, ...updateData });
+        const updated = await this.model.findByIdAndUpdate(id, { $set: reportDto }, { new: true });
+        return updated ? mapReportDtoToReport(updated) : null;
     }
 
     async deleteReport(id: string): Promise<void> {
         await this.model.findByIdAndDelete(id);
-    }
-
-    async updateReportStatus(id: string, status: ReportStatus, adminResponse?: string): Promise<void> {
+    }    async updateReportStatus(id: string, status: ReportStatus, adminResponse?: string): Promise<Report | null> {
         const updateData: Partial<ReportDto> = {
             status,
             updatedAt: new Date()
@@ -60,7 +57,8 @@ class MongoDBReportRepository implements ReportRepository {
         if (adminResponse !== undefined) {
             updateData.adminResponse = adminResponse;
         }
-        await this.model.findByIdAndUpdate(id, { $set: updateData });
+        const updated = await this.model.findByIdAndUpdate(id, { $set: updateData }, { new: true });
+        return updated ? mapReportDtoToReport(updated) : null;
     }
 }
 

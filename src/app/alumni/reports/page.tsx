@@ -277,9 +277,16 @@ export default function ReportsPage() {
                         }
                       </span>
                     </div>
-                  </CardHeader>
-                  <CardContent>
+                  </CardHeader>                  <CardContent>
                     <p className="text-gray-600 mb-4 line-clamp-3">{report.description}</p>
+                    {report.adminResponse && (
+                      <div className="bg-gray-50 rounded-lg p-3 mb-4">
+                        <div className="text-sm font-medium text-gray-900 mb-1">
+                          Admin Response:
+                        </div>
+                        <p className="text-gray-600 text-sm">{report.adminResponse}</p>
+                      </div>
+                    )}
                     <div className="flex items-center text-sm text-gray-500">
                       <FileText className="w-4 h-4 mr-1" />
                       <span>
