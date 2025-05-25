@@ -9,7 +9,6 @@ import { useState, useEffect } from "react";
 import FilterModal from "../../components/filterModal";
 import { motion } from 'framer-motion';
 import { UserDto } from "@/models/user";
-import ScrollIndicator from "../../components/ScrollIndicator";
 import { createNotification } from "@/services/notification.service";
 import { UserRole } from "@/entities/user";
 
@@ -765,9 +764,6 @@ const isAlumni = (user: UserDto) => user.role === UserRole.ALUMNI || (Array.isAr
                     </div>
                 </motion.div>
             </div>
-            
-            {/* Page Scroll Indicator */}
-            <ScrollIndicator className="hidden md:block" />
         </div>
     );
 }
