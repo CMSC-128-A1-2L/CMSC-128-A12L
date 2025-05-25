@@ -67,9 +67,8 @@ export async function GET(request: NextRequest) {
     const validActionPattern = /^\/api\/admin\/(events|users|opportunities)(\/.*)?$/;
 
     const validLogs = allLogs
-      .filter((log) => {
-        const method = log.status?.toUpperCase();
-        const path = log.action?.split(" ")[1];
+      .filter((log) => {      const method = log.status ? log.status.toUpperCase() : "";
+      const path = (log.action ?? "").split(" ")[1];
         return validMethods.includes(method) && validActionPattern.test(path);
       })
       .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());

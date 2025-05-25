@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Montserrat } from "next/font/google";
 import { Facebook, Twitter, Youtube } from "lucide-react";
+import { FaXTwitter } from "react-icons/fa6"; // This is the "X" logo
 
 const montserrat = Montserrat({ subsets: ["latin"] });
 
@@ -66,8 +67,8 @@ export default function Footer() {
             <Link href="https://www.facebook.com/ICS.UPLB/" target="_blank" className="text-gray-300 hover:text-white transition-colors">
               <Facebook size={20} />
             </Link>
-            <Link href="https://ics.uplb.edu.ph/#" target="_blank" className="text-gray-300 hover:text-white transition-colors">
-              <Twitter size={20} />
+            <Link href="https://x.com/ics_uplb" target="_blank" className="text-gray-300 hover:text-white transition-colors">
+              <FaXTwitter  size={20} />
             </Link>
             <Link href="https://www.youtube.com/@ics-uplb" target="_blank" className="text-gray-300 hover:text-white transition-colors">
               <Youtube size={20} />

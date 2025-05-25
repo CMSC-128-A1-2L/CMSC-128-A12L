@@ -11,6 +11,7 @@ import {
   Settings,
   LayoutDashboard,
   Newspaper,
+  Flag,
 } from "lucide-react";
 import { RefObject } from "react";
 import Link from "next/link";
@@ -85,11 +86,15 @@ export default function AlumniSidebar({
         name: "Announcements",
         icon: <Bell size={20} />,
         path: "/alumni/announcements",
-      },
-      {
+      },      {
         name: "Donations",
         icon: <DollarSign size={20} />,
         path: "/alumni/donations",
+      },
+      {
+        name: "Reports",
+        icon: <Flag size={20} />,
+        path: "/alumni/reports",
       },
     ],
     others: [
