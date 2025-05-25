@@ -36,7 +36,7 @@ export async function PUT(request: NextRequest, { params }: { params: { reportId
             updatedAt: new Date()
         };
 
-        await reportRepository.updateReport(updatedReport);
+        await reportRepository.updateReport(reportId, updatedReport);
         return NextResponse.json({ message: "Report updated successfully", report: updatedReport });
 
     } catch (error) {

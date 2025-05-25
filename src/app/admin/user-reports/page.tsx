@@ -75,7 +75,7 @@ export default function UserReportsManagementPage() {
   };
   const handleStatusChange = async (reportId: string, newStatus: ReportStatus) => {
     try {
-      const response = await fetch(`/api/reports/${reportId}`, {
+      const response = await fetch(`/api/admin/user-reports/${reportId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -104,7 +104,7 @@ export default function UserReportsManagementPage() {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch(`/api/admin/reports/${selectedReport._id}`, {
+      const response = await fetch(`/api/admin/user-reports/${selectedReport._id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
