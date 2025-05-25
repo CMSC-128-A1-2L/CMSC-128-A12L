@@ -55,8 +55,10 @@ export default function BarChart({ title, data }: BarChartProps) {
             ctx.fillStyle = "black";
             ctx.font = "bold 12px Arial";
             ctx.textAlign = "center";
-            // Draw value above bar
-            ctx.fillText(value.toString(), x, y);
+            // Draw value above bar only if not zero
+            if (value !== 0) {
+              ctx.fillText(value.toString(), x, y);
+            }
           });
         }
       });
